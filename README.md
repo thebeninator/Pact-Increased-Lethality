@@ -22,6 +22,7 @@ All features listed below can be toggled on/off.
 - Kontakt-1 ERA
   - Consumes HEAT rounds
   - Poor performance against AP
+  - Only applied to T-72M1s by default
 
 ![Screenshot_7](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/d5fb1292-9fcb-45e7-95ad-8c32a3924468)
 ![Screenshot_9](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/b14f4d40-2413-4b07-a71a-87c68979116a)
