@@ -1,6 +1,6 @@
 # Pact Increased Lethality
 
-All settings listed below can be toggled on/off.
+All features listed below can be toggled on/off.
 
 # T-55
 - 3BK17M HEAT-FS-T
