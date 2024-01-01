@@ -9,6 +9,10 @@ using UnityEngine;
 using GHPC.State;
 using PactIncreasedLethality;
 using System.Collections;
+using MelonLoader.Utils;
+using System.IO;
+using Thermals;
+using GHPC;
 
 [assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.0.0", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
@@ -16,7 +20,7 @@ using System.Collections;
 /// todo
 // [*?] figure out reference shenanigans w/ reticle cloning
 // [] applique for t55 
-// [] the brick
+// [*] the brick
 
 namespace PactIncreasedLethality
 {
@@ -36,6 +40,7 @@ namespace PactIncreasedLethality
             cfg = MelonPreferences.CreateCategory("PactIncreasedLethality");
             T55.Config(cfg);
             T72.Config(cfg);
+            Kontakt1.Config(cfg);
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -43,6 +48,7 @@ namespace PactIncreasedLethality
             if (sceneName == "MainMenu2_Scene" || sceneName == "LOADER_MENU" || sceneName == "LOADER_INITIAL" || sceneName == "t64_menu") return;
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Low);
+            Kontakt1.Init();
             T72.Init();
             T55.Init();
         }

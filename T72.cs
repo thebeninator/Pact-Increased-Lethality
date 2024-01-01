@@ -36,14 +36,70 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> t72_patch;
         static MelonPreferences_Entry<bool> use_3bm22;
         static MelonPreferences_Entry<bool> thermals;
+        static MelonPreferences_Entry<bool> era_t72m1;
+        static MelonPreferences_Entry<bool> era_t72m;
+
+        public static void Config(MelonPreferences_Category cfg)
+        {
+            t72_patch = cfg.CreateEntry<bool>("T-72 Patch", true);
+            t72_patch.Description = "///////////////";
+            use_3bm22 = cfg.CreateEntry<bool>("Use 3BM22", true);
+            use_3bm22.Comment = "Replaces 3BM15 (increased penetration)";
+            thermals = cfg.CreateEntry<bool>("Has Thermals", true);
+            thermals.Comment = "Replaces night vision sight with thermal sight";
+            era_t72m1 = cfg.CreateEntry<bool>("Kontakt-1 ERA (T-72M1)", true);
+            era_t72m1.Comment = "BRICK ME UP LADS (UFP, LFP, Sideskirts, Turret)";
+            era_t72m = cfg.CreateEntry<bool>("Kontakt-1 ERA (T-72M)", false);
+            era_t72m.Comment = "BRICK ME UP LADS (UFP, LFP, Turret)";
+        }
 
         public static IEnumerator Convert(GameState _) {
+            foreach (GameObject armor_go in GameObject.FindGameObjectsWithTag("Penetrable")) {
+                if (!era_t72m1.Value && !era_t72m.Value) break;
+
+                if (Kontakt1.kontakt_1_hull_array == null) continue;
+                if (Kontakt1.kontakt_1_turret_array == null) continue;
+                if (!armor_go.GetComponent<LateFollow>()) continue;
+
+                string name = armor_go.GetComponent<LateFollow>().ParentUnit.FriendlyName;
+                bool t72m = era_t72m.Value && name == "T-72M";
+                bool t72m1 = era_t72m1.Value && name == "T-72M1";
+
+                if (!t72m && !t72m1) continue;
+
+                if (armor_go.name == "T-72 HULL COLLIDERS")
+                {
+                    if (armor_go.transform.Find("ARMOR/hull era array(Clone)")) continue;
+                    GameObject hull_array = GameObject.Instantiate(Kontakt1.kontakt_1_hull_array, armor_go.transform.Find("ARMOR"));
+                    hull_array.transform.localEulerAngles = new Vector3(0f, 90f, 0f);
+                    hull_array.transform.localPosition = new Vector3(-0.8219f, 0.7075f, 2.4288f);
+
+                    if (t72m) {
+                        GameObject.Destroy(hull_array.transform.Find("left side skirt array").gameObject);
+                        GameObject.Destroy(hull_array.transform.Find("right side skirt array").gameObject);
+                    }
+                }
+
+                if (armor_go.name == "T-72 TURRET COLLIDERS")
+                {
+                    if (armor_go.transform.Find("ARMOR/turret era array(Clone)")) continue;
+                    GameObject turret_array = GameObject.Instantiate(Kontakt1.kontakt_1_turret_array, armor_go.transform.Find("ARMOR"));
+                    turret_array.transform.localEulerAngles = new Vector3(0f, 90f, 0f);
+                    turret_array.transform.localPosition = new Vector3(0.0199f, 2.1973f, -0.8363f);
+                }
+            }
+
             foreach (GameObject vic_go in PactIncreasedLethalityMod.vic_gos)
             {
                 Vehicle vic = vic_go.GetComponent<Vehicle>();
 
                 if (vic == null) continue;
                 if (!vic.FriendlyName.Contains("T-72")) continue;
+
+                if ((era_t72m1.Value && vic.FriendlyName == "T-72M1") || (vic.FriendlyName == "T-72M" && era_t72m.Value)) {
+                    vic.transform.GetChild(0).GetChild(0).gameObject.SetActive(false);
+                    vic._friendlyName += "V";
+                }
 
                 vic.AimablePlatforms[1].transform.Find("optic cover parent").gameObject.SetActive(false);
 
@@ -156,19 +212,9 @@ namespace PactIncreasedLethality
             yield break;
         }
 
-        public static void Config(MelonPreferences_Category cfg) {
-            t72_patch = cfg.CreateEntry<bool>("T-72 Patch", true);
-            t72_patch.Description = "///////////////";
-            use_3bm22 = cfg.CreateEntry<bool>("Use 3BM22", true);
-            use_3bm22.Comment = "Replaces 3BM15 (increased penetration)";
-            thermals = cfg.CreateEntry<bool>("Has Thermals", true);
-            thermals.Comment = "Replaces night vision sight with thermal sight";
-        }
-
         public static void Init() {
             if (!t72_patch.Value) return; 
             
-
             // thermal border
             if (thermal_canvas == null)
             {
@@ -199,7 +245,7 @@ namespace PactIncreasedLethality
             {
                 foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
                 {
-                    if (s.AmmoType.Name == "3BM15 APFSDS-T") ammo_3bm15 = s.AmmoType;           
+                    if (s.AmmoType.Name == "3BM15 APFSDS-T") { ammo_3bm15 = s.AmmoType; break; }
                 }
 
                 ammo_3bm22 = new AmmoType();

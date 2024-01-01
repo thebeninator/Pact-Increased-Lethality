@@ -42,6 +42,17 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> better_stab;
         static MelonPreferences_Entry<bool> has_lrf;
 
+        public static void Config(MelonPreferences_Category cfg)
+        {
+            t55_patch = cfg.CreateEntry<bool>("T-55 Patch", true);
+            use_3bk17m = cfg.CreateEntry<bool>("Use 3BK17M", true);
+            use_3bk17m.Comment = "Replaces 3BK5M (improved ballistics, marginally better penetration)";
+            better_stab = cfg.CreateEntry<bool>("Better Stabilizer", true);
+            better_stab.Comment = "Less reticle blur, shake while on the move";
+            has_lrf = cfg.CreateEntry<bool>("Laser Rangefinder", true);
+            has_lrf.Comment = "Only gives range: user will need to set range manually";
+        }
+
         public static IEnumerator Convert(GameState _)
         {
             foreach (GameObject vic_go in PactIncreasedLethalityMod.vic_gos)
@@ -146,23 +157,13 @@ namespace PactIncreasedLethality
             yield break;
         }
 
-        public static void Config(MelonPreferences_Category cfg)
-        {
-            t55_patch = cfg.CreateEntry<bool>("T-55 Patch", true);
-            use_3bk17m = cfg.CreateEntry<bool>("Use 3BK17M", true);
-            use_3bk17m.Comment = "Replaces 3BK5M (improved ballistics, marginally better penetration)";
-            better_stab = cfg.CreateEntry<bool>("Better Stabilizer", true);
-            better_stab.Comment = "Less reticle blur, shake while on the move";
-            has_lrf = cfg.CreateEntry<bool>("Laser Rangefinder", true);
-            has_lrf.Comment = "Only gives range: user will need to set range manually";
-        }
-
         public static void Init()
         {
             if (!t55_patch.Value) return;
             
             if (!range_readout)
             {
+
                 foreach (GameObject obj in Resources.FindObjectsOfTypeAll(typeof(GameObject)))
                 {
                     if (obj.name == "M1IP")
@@ -187,7 +188,7 @@ namespace PactIncreasedLethality
             {
                 foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
                 {
-                    if (s.AmmoType.Name == "3BK5M HEAT-FS-T") ammo_3bk5m = s.AmmoType;
+                    if (s.AmmoType.Name == "3BK5M HEAT-FS-T") { ammo_3bk5m = s.AmmoType; break; }
                 }
 
                 ammo_3bk17m = new AmmoType();
