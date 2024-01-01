@@ -15,6 +15,9 @@ using GHPC.Equipment;
 using GHPC.State;
 using System.Collections;
 using MelonLoader;
+using GHPC;
+using TMPro;
+using HarmonyLib;
 
 namespace PactIncreasedLethality
 {

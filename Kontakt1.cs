@@ -50,6 +50,9 @@ namespace PactIncreasedLethality
             {
                 if (!transform.gameObject.name.Contains("kontakt")) continue;
 
+                Component.Destroy(transform.gameObject.GetComponent<MeshCollider>());
+                transform.gameObject.AddComponent<BoxCollider>();
+
                 transform.gameObject.AddComponent<UniformArmor>();
                 UniformArmor armor = transform.gameObject.GetComponent<UniformArmor>();
                 armor.SetName("Kontakt-1");
@@ -87,7 +90,6 @@ namespace PactIncreasedLethality
             {
                 var kontakt_bundle_hull = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/kontakt1assets", "hull"));
                 var kontakt_bundle_turret = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/kontakt1assets", "turret"));
-
 
                 if (kontakt_bundle_hull == null || kontakt_bundle_turret == null)
                 {
