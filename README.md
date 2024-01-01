@@ -21,6 +21,6 @@ All settings listed below can be toggled on/off.
   - Completely blinded by gun smoke
 - Kontakt-1 ERA
   - Consumes HEAT rounds
-  - Marginal performance against AP
+  - Poor performance against AP
 
 ![Screenshot_7](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/d5fb1292-9fcb-45e7-95ad-8c32a3924468)
