@@ -14,7 +14,7 @@ using System.IO;
 using Thermals;
 using GHPC;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.0.1", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.0.2", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 /// todo

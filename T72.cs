@@ -97,7 +97,7 @@ namespace PactIncreasedLethality
                 Vehicle vic = vic_go.GetComponent<Vehicle>();
 
                 if (vic == null) continue;
-                if (!vic.FriendlyName.Contains("T-72")) continue;
+                if (!vic.FriendlyName.Contains("T-72M")) continue;
 
                 if ((era_t72m1.Value && vic.FriendlyName == "T-72M1") || (vic.FriendlyName == "T-72M" && era_t72m.Value)) {
                     vic.transform.GetChild(0).GetChild(0).gameObject.SetActive(false);
