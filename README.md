@@ -13,8 +13,10 @@ All features listed below can be toggled on/off.
 ![Screenshot_3](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/9c494b20-3291-40f4-9be5-f75ac587caa4)
 
 # T-72M/1 
-- 3BM22 APFSDS-T
-  - Better penetration compared to 3BM15
+- New APFSDS rounds
+  - 3BM22 (better penetration compared to 3BM15)
+  - 3BM26 (even better penetration)
+  - ???
 - Thermal sight
   - Very blurry
   - Extremely limited FOV
