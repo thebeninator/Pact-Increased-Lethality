@@ -163,7 +163,6 @@ namespace PactIncreasedLethality
             
             if (!range_readout)
             {
-
                 foreach (GameObject obj in Resources.FindObjectsOfTypeAll(typeof(GameObject)))
                 {
                     if (obj.name == "M1IP")

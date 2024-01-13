@@ -15,6 +15,8 @@ using GHPC.Equipment;
 using HarmonyLib;
 using System.Reflection;
 using System.Reflection.Emit;
+using HarmonyLib.Tools;
+using static HarmonyLib.Tools.Logger;
 
 namespace PactIncreasedLethality
 {
@@ -56,6 +58,21 @@ namespace PactIncreasedLethality
 
             sphere_colliders = cfg.CreateEntry<bool>("Spherical Colliders", false);
             sphere_colliders.Comment = "Changes how Kontakt-1 handles collisions. FPS increase at the cost of jankier hit detection";
+        }
+
+        public static void LoadTex() {
+            if (concrete_tex == null)
+            {
+                foreach (Texture t in Resources.FindObjectsOfTypeAll<Texture>())
+                {
+                    if (t.name == "GHPC_ConcretePanels_Diffuse") { concrete_tex = t; break; }
+                }
+
+                foreach (Texture t in Resources.FindObjectsOfTypeAll<Texture>())
+                {
+                    if (t.name == "GHPC_ConcretePanels_Normal") { concrete_tex_normal = t; break; }
+                }
+            }
         }
 
         private static void ERA_Setup(Transform[] era_transforms) {
@@ -116,18 +133,8 @@ namespace PactIncreasedLethality
 
                 if (kontakt_bundle_hull == null || kontakt_bundle_turret == null)
                 {
-                    MelonLogger.Msg(ConsoleColor.DarkCyan, "COULD NOT FIND ASSET FILE(S) FOR KONTAKT-1! (<mods>/kontakt1assets");
+                    MelonLogger.Msg(ConsoleColor.DarkCyan, "COULD NOT FIND ASSET FILE(S) FOR KONTAKT-1! (<mods>/kontakt1assets)");
                     return;
-                }
-
-                foreach (Texture t in Resources.FindObjectsOfTypeAll<Texture>())
-                {
-                    if (t.name == "GHPC_ConcretePanels_Diffuse") { concrete_tex = t; break; }
-                }
-
-                foreach (Texture t in Resources.FindObjectsOfTypeAll<Texture>())
-                {
-                    if (t.name == "GHPC_ConcretePanels_Normal") { concrete_tex_normal = t; break; }
                 }
 
                 kontakt_1_hull_array = kontakt_bundle_hull.LoadAsset<GameObject>("hull era array.prefab");
@@ -154,11 +161,11 @@ namespace PactIncreasedLethality
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
             var detonate_era = AccessTools.Method(typeof(GHPC.IArmor), "Detonate");
-            var is_era = AccessTools.PropertyGetter(typeof(GHPC.IArmor), nameof(GHPC.IArmor.IsEra));
-            var pen_rating = AccessTools.PropertyGetter(typeof(GHPC.Weapons.LiveRound), nameof(GHPC.Weapons.LiveRound.CurrentPenRating));
-            var debug = AccessTools.Field(typeof(GHPC.Weapons.LiveRound), nameof(GHPC.Weapons.LiveRound.Debug));
-            var shot_info = AccessTools.Field(typeof(GHPC.Weapons.LiveRound), nameof(GHPC.Weapons.LiveRound.Info));
-            var caliber = AccessTools.Field(typeof(AmmoType), nameof(AmmoType.Caliber));
+            var is_era       = AccessTools.PropertyGetter(typeof(GHPC.IArmor), nameof(GHPC.IArmor.IsEra));
+            var pen_rating   = AccessTools.PropertyGetter(typeof(GHPC.Weapons.LiveRound), nameof(GHPC.Weapons.LiveRound.CurrentPenRating));
+            var debug        = AccessTools.Field(typeof(GHPC.Weapons.LiveRound), nameof(GHPC.Weapons.LiveRound.Debug));
+            var shot_info    = AccessTools.Field(typeof(GHPC.Weapons.LiveRound), nameof(GHPC.Weapons.LiveRound.Info));
+            var caliber      = AccessTools.Field(typeof(AmmoType), nameof(AmmoType.Caliber));
 
             var instr = new List<CodeInstruction>(instructions);
             int idx = -1;
