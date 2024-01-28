@@ -144,14 +144,14 @@ namespace PactIncreasedLethality
                 for (int i = 0; i < 6; i++)
                 {
                     corSystem.createSound(
-                        Path.Combine(MelonEnvironment.ModsDirectory + "\\pil\\ags17", "aavp7a1_mk19_fire_1p_0" + (i + 1) + ".ogg"), MODE._3D_IGNOREGEOMETRY, out AGS17_Sound.sounds[i]);
+                        Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_1p_0" + (i + 1) + ".ogg"), MODE._3D_IGNOREGEOMETRY, out AGS17_Sound.sounds[i]);
                     AGS17_Sound.sounds[i].set3DMinMaxDistance(35f, 5000f);
                 }
 
                 for (int i = 0; i < 7; i++)
                 {
                     corSystem.createSound(
-                        Path.Combine(MelonEnvironment.ModsDirectory + "\\pil\\ags17", "aavp7a1_mk19_fire_close_3p_0" + (i + 1) + ".ogg"), MODE._3D_INVERSETAPEREDROLLOFF, out AGS17_Sound.sounds_exterior[i]);
+                        Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_close_3p_0" + (i + 1) + ".ogg"), MODE._3D_INVERSETAPEREDROLLOFF, out AGS17_Sound.sounds_exterior[i]);
                     AGS17_Sound.sounds_exterior[i].set3DMinMaxDistance(35f, 5000f);
                 }
 

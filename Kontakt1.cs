@@ -94,8 +94,8 @@ namespace PactIncreasedLethality
                 transform.gameObject.AddComponent<UniformArmor>();
                 UniformArmor armor = transform.gameObject.GetComponent<UniformArmor>();
                 armor.SetName("Kontakt-1");
-                armor.PrimaryHeatRha = 350f;
-                armor.PrimarySabotRha = sabot_eater.Value ? 100f : 40f;
+                armor.PrimaryHeatRha = 300f;
+                armor.PrimarySabotRha = sabot_eater.Value ? 100f : 30f;
                 armor.SecondaryHeatRha = 0f;
                 armor.SecondarySabotRha = 0f;
                 armor._canShatterLongRods = true;
@@ -128,14 +128,8 @@ namespace PactIncreasedLethality
         public static void Init() {
             if (kontakt_1_hull_array == null)
             {
-                var kontakt_bundle_hull = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/kontakt1assets", "hull"));
-                var kontakt_bundle_turret = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/kontakt1assets", "turret"));
-
-                if (kontakt_bundle_hull == null || kontakt_bundle_turret == null)
-                {
-                    MelonLogger.Msg(ConsoleColor.DarkCyan, "COULD NOT FIND ASSET FILE(S) FOR KONTAKT-1! (<mods>/kontakt1assets)");
-                    return;
-                }
+                var kontakt_bundle_hull = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/kontakt1", "hull"));
+                var kontakt_bundle_turret = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/kontakt1", "turret"));
 
                 kontakt_1_hull_array = kontakt_bundle_hull.LoadAsset<GameObject>("hull era array.prefab");
                 kontakt_1_hull_array.transform.localScale = new Vector3(10f, 10f, 10f);
