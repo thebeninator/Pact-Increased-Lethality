@@ -353,7 +353,9 @@ namespace PactIncreasedLethality
                 {
                     if (s.AmmoType.Name == "3BK5M HEAT-FS-T") ammo_3bk5m = s.AmmoType;
                     if (s.AmmoType.Name == "9M111 Fagot") ammo_9m111 = s.AmmoType;
-                    if (s.AmmoType.Name == "3OF412 HE-T") ammo_3of412 = s.AmmoType;                  
+                    if (s.AmmoType.Name == "3OF412 HE-T") ammo_3of412 = s.AmmoType;
+
+                    if (ammo_3bk5m != null && ammo_9m111 != null && ammo_3of412 != null) break;
                 }
 
                 ammo_3bk17m = new AmmoType();
@@ -394,7 +396,7 @@ namespace PactIncreasedLethality
                 ammo_9m117.RhaPenetration = 550f;
                 ammo_9m117.TntEquivalentKg = 4.77f;
                 ammo_9m117.Guidance = AmmoType.GuidanceType.Saclos;
-                ammo_9m117.TurnSpeed = 0.12f;
+                ammo_9m117.TurnSpeed = 0.18f;
                 ammo_9m117.ShotVisual = ammo_9m111.ShotVisual;
                 ammo_9m117.RangedFuseTime = 12.5f;
                 ammo_9m117.SpiralPower = 25f;

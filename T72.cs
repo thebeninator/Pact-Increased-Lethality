@@ -86,6 +86,9 @@ namespace PactIncreasedLethality
             era_t72m.Comment = "BRICK ME UP LADS (gill variants will not have side-skirt ERA)";
         }
 
+        static ReticleSO reticleSO_t64;
+        static ReticleMesh.CachedReticle reticle_cached_t64;
+
         public static IEnumerator Convert(GameState _) {
             foreach (GameObject armor_go in GameObject.FindGameObjectsWithTag("Penetrable")) {
                 if (!era_t72m1.Value && !era_t72m.Value) break;
@@ -284,6 +287,8 @@ namespace PactIncreasedLethality
                         scanline_canvas.hideFlags = HideFlags.DontUnloadUnusedAsset;
                         scanline_canvas.name = "t72 scanline canvas";
                     }
+
+                    if (scanline_canvas != null && thermal_canvas != null) break;
                 }
             }
 
@@ -296,7 +301,7 @@ namespace PactIncreasedLethality
 
                 foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
                 {
-                    if (s.name == "clip_3BM22") clip_codex_3bm22 = s;
+                    if (s.name == "clip_3BM22") {clip_codex_3bm22 = s; break; }
                 }
 
                 ammo_3bm26 = new AmmoType();

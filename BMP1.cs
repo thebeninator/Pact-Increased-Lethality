@@ -120,7 +120,7 @@ namespace PactIncreasedLethality
                     coax.WeaponSound.SingleShotMode = true;
                     coax.WeaponSound.SingleShotEventPaths = new string[] { "blyat" };
                     coax.BaseDeviationAngle *= 12f;
-                    coax.SetCycleTime(0.22f);
+                    coax.SetCycleTime(0.19f);
                     coax.CodexEntry = gun_ags17;
                     coax.Feed.AmmoTypeInBreech = null;
                     coax.Feed.ReadyRack.ClipTypes[0] = vog17m1_hedp.Value ? clip_vog17m1 : clip_vog17;
@@ -157,7 +157,7 @@ namespace PactIncreasedLethality
 
                 foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
                 {
-                    if (s.AmmoType.Name == "3UOR6 HE-T") ammo_3uor6 = s.AmmoType;
+                    if (s.AmmoType.Name == "3UOR6 HE-T") { ammo_3uor6 = s.AmmoType; break; } 
                 }
 
                 gun_ags17 = ScriptableObject.CreateInstance<WeaponSystemCodexScriptable>();
@@ -211,7 +211,7 @@ namespace PactIncreasedLethality
                 ammo_vog17m1.TntEquivalentKg = 0.032f;
                 ammo_vog17m1.ArmingDistance = 25f;
                 ammo_vog17m1.Category = AmmoType.AmmoCategory.ShapedCharge;
-                ammo_vog17m1.SpallMultiplier = 0.3f;
+                ammo_vog17m1.SpallMultiplier = 0.1f;
                 ammo_vog17m1.ImpactFuseTime = 0f;
                 ammo_vog17m1.ShatterOnRicochet = false;
                 ammo_vog17m1.AlwaysProduceBlast = true;
