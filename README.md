@@ -5,6 +5,8 @@ All features listed below can be toggled on/off.
 # T-55
 - 3BK17M HEAT-FS-T
   - Better ballistics and negligibly better penetration compared to 3BK5M
+- 9M117 Bastion GLATGM
+  - Replaces 3OF412
 - Better Stabilizer
   - Less reticle blur & shake while on the move 
 - Laser Rangefinder
