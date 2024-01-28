@@ -30,10 +30,6 @@ namespace PactIncreasedLethality
         static ReticleMesh.CachedReticle reticle_cached;
 
         static AmmoClipCodexScriptable clip_codex_3bm22;
-        static AmmoType.AmmoClip clip_3bm22;
-        static AmmoCodexScriptable ammo_codex_3bm22;
-        static AmmoType ammo_3bm22;
-        static GameObject ammo_3bm22_vis = null;
 
         static AmmoClipCodexScriptable clip_codex_3bm26;
         static AmmoType.AmmoClip clip_3bm26;
@@ -113,7 +109,7 @@ namespace PactIncreasedLethality
                     hull_array.transform.localEulerAngles = new Vector3(0f, 90f, 0f);
                     hull_array.transform.localPosition = new Vector3(-0.8219f, 0.7075f, 2.4288f);
 
-                    if (t72m && parent.transform.name.Contains("Gill")) {
+                    if (t72m && parent.transform.name.ToLower().Contains("gill")) {
                         GameObject.Destroy(hull_array.transform.Find("left side skirt array").gameObject);
                         GameObject.Destroy(hull_array.transform.Find("right side skirt array").gameObject);
                     }
@@ -133,7 +129,7 @@ namespace PactIncreasedLethality
                 Vehicle vic = vic_go.GetComponent<Vehicle>();
 
                 if (vic == null) continue;
-                if (!vic.FriendlyName.Contains("T-72M")) continue;
+                if (!vic.FriendlyName.Contains("T-72")) continue;
 
                 if ((era_t72m1.Value && vic.FriendlyName == "T-72M1") || (vic.FriendlyName == "T-72M" && era_t72m.Value)) {
                     vic.transform.GetChild(0).GetChild(0).gameObject.SetActive(false);
@@ -179,7 +175,7 @@ namespace PactIncreasedLethality
                     weapon.Feed.Start();
                     loadout_manager.RegisterAllBallistics();
                 } catch (Exception) {
-                    MelonLogger.Msg("Loading 3BM15 for " + vic.FriendlyName);
+                    MelonLogger.Msg("Loading default AP round for " + vic.FriendlyName);
                 }
                 
                 // everything below is for creating the border & reticle for the thermal sight
@@ -291,45 +287,23 @@ namespace PactIncreasedLethality
                 }
             }
 
-            if (ammo_3bm22 == null)
+            if (ammo_3bm26 == null)
             {
                 foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
                 {
                     if (s.AmmoType.Name == "3BM15 APFSDS-T") { ammo_3bm15 = s.AmmoType; break; }
                 }
 
-                ammo_3bm22 = new AmmoType();
-                Util.ShallowCopy(ammo_3bm22, ammo_3bm15);
-                ammo_3bm22.Name = "3BM22 APFSDS-T";
-                ammo_3bm22.Caliber = 125;
-                ammo_3bm22.RhaPenetration = 480f;
-                ammo_3bm22.Mass = 4.6f;
-
-                ammo_codex_3bm22 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_3bm22.AmmoType = ammo_3bm22;
-                ammo_codex_3bm22.name = "ammo_3bm22";
-
-                clip_3bm22 = new AmmoType.AmmoClip();
-                clip_3bm22.Capacity = 1;
-                clip_3bm22.Name = "3BM22 APFSDS-T";
-                clip_3bm22.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_3bm22.MinimalPattern[0] = ammo_codex_3bm22;
-
-                clip_codex_3bm22 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_3bm22.name = "clip_3bm22";
-                clip_codex_3bm22.ClipType = clip_3bm22;
-
-                ammo_3bm22_vis = GameObject.Instantiate(ammo_3bm15.VisualModel);
-                ammo_3bm22_vis.name = "3BM22 visual";
-                ammo_3bm22.VisualModel = ammo_3bm22_vis;
-                ammo_3bm22.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm22;
-                ammo_3bm22.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm22;
+                foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
+                {
+                    if (s.name == "clip_3BM22") clip_codex_3bm22 = s;
+                }
 
                 ammo_3bm26 = new AmmoType();
                 Util.ShallowCopy(ammo_3bm26, ammo_3bm15);
                 ammo_3bm26.Name = "3BM26 APFSDS-T";
                 ammo_3bm26.Caliber = 125;
-                ammo_3bm26.RhaPenetration = 510f;
+                ammo_3bm26.RhaPenetration = 490f;
                 ammo_3bm26.Mass = 4.8f;
                 ammo_3bm26.MuzzleVelocity = 1720f;
 

@@ -39,6 +39,10 @@
     <Reference Include="Assembly-CSharp_publicized">
       <HintPath>..\..\..\Desktop\Assembly-CSharp_publicized.dll</HintPath>
     </Reference>
+    <Reference Include="FMODUnity, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\FMODUnity.dll</HintPath>
+    </Reference>
     <Reference Include="MelonLoader">
       <HintPath>..\..\..\Desktop\GHPC MODDED\MelonLoader\net35\MelonLoader.dll</HintPath>
     </Reference>
@@ -73,6 +77,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Gunner HEAT PC\Bin\GHPC_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
@@ -83,6 +91,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BMP1.cs" />
     <Compile Include="Kontakt1.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
