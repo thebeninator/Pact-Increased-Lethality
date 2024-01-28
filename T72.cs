@@ -86,9 +86,6 @@ namespace PactIncreasedLethality
             era_t72m.Comment = "BRICK ME UP LADS (gill variants will not have side-skirt ERA)";
         }
 
-        static ReticleSO reticleSO_t64;
-        static ReticleMesh.CachedReticle reticle_cached_t64;
-
         public static IEnumerator Convert(GameState _) {
             foreach (GameObject armor_go in GameObject.FindGameObjectsWithTag("Penetrable")) {
                 if (!era_t72m1.Value && !era_t72m.Value) break;

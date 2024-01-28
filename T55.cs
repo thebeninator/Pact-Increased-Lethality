@@ -14,6 +14,7 @@ using UnityEngine;
 using GHPC.Equipment;
 using GHPC.State;
 using System.Collections;
+using GHPC.Player;
 using MelonLoader;
 using HarmonyLib;
 using GHPC;
@@ -71,15 +72,18 @@ namespace PactIncreasedLethality
         }
 
         public static void OnLateUpdate() {
-            var player_manager = PactIncreasedLethalityMod.player_manager;
+            PlayerInput player_manager = PactIncreasedLethalityMod.player_manager;
+            CameraManager camera_manager = PactIncreasedLethalityMod.camera_manager;
 
             if (player_manager == null) return;
+            if (camera_manager == null) return; 
             if (player_manager.CurrentPlayerWeapon == null) return;
             if (player_manager.CurrentPlayerWeapon.Name != "100mm gun D-10T") return;
             if (!use_9m117.Value) return;
 
             WeaponSystem weapon = player_manager.CurrentPlayerWeapon.Weapon;
-            CameraManager camera_manager = PactIncreasedLethalityMod.camera_manager;
+
+            if (weapon == null) return;
 
             if (weapon.FCS.CurrentAmmoType.Name == "9M117 Bastion")
             {
@@ -87,11 +91,14 @@ namespace PactIncreasedLethality
 
                 if (!camera_manager.ExteriorMode)
                 {
-                    if (Util.GetDayOptic(weapon.FCS).slot.DefaultFov == 4.2f) return;
+                    UsableOptic day_optic = Util.GetDayOptic(weapon.FCS);
 
-                    Util.GetDayOptic(weapon.FCS).slot.DefaultFov = 4.2f;
-                    Util.GetDayOptic(weapon.FCS).slot.OtherFovs[0] = 4.2f;
-                    Util.GetDayOptic(weapon.FCS).reticleMesh = weapon.FCS.transform.GetChild(0).GetChild(3).gameObject.GetComponent<ReticleMesh>();
+                    if (day_optic.slot.DefaultFov == 4.2f) return;
+
+                    day_optic.slot.DefaultFov = 4.2f;
+                    day_optic.slot.OtherFovs[0] = 4.2f;
+                    day_optic.reticleMesh = weapon.FCS.transform.GetChild(0).GetChild(3).gameObject.GetComponent<ReticleMesh>();
+                    day_optic.transform.Find("t55 range canvas(Clone)").gameObject.SetActive(false);
                     weapon.FCS.transform.GetChild(0).GetChild(0).gameObject.SetActive(false);
                     weapon.FCS.transform.GetChild(0).GetChild(3).gameObject.SetActive(true);
                     camera_manager.ZoomChanged();
@@ -102,11 +109,14 @@ namespace PactIncreasedLethality
 
                 if (!camera_manager.ExteriorMode)
                 {
-                    if (Util.GetDayOptic(weapon.FCS).slot.DefaultFov == 10.64f) return;
+                    UsableOptic day_optic = Util.GetDayOptic(weapon.FCS);
 
-                    Util.GetDayOptic(weapon.FCS).slot.DefaultFov = 10.64f;
-                    Util.GetDayOptic(weapon.FCS).slot.OtherFovs[0] = 5.04f;
-                    Util.GetDayOptic(weapon.FCS).reticleMesh = weapon.FCS.transform.GetChild(0).GetChild(0).gameObject.GetComponent<ReticleMesh>();
+                    if (day_optic.slot.DefaultFov == 10.64f) return;
+
+                    day_optic.slot.DefaultFov = 10.64f;
+                    day_optic.slot.OtherFovs[0] = 5.04f;
+                    day_optic.reticleMesh = weapon.FCS.transform.GetChild(0).GetChild(0).gameObject.GetComponent<ReticleMesh>();
+                    day_optic.transform.Find("t55 range canvas(Clone)").gameObject.SetActive(true);
                     weapon.FCS.transform.GetChild(0).GetChild(0).gameObject.SetActive(true);
                     weapon.FCS.transform.GetChild(0).GetChild(3).gameObject.SetActive(false);
                     camera_manager.ZoomChanged();
@@ -178,89 +188,90 @@ namespace PactIncreasedLethality
                 t.GetComponent<Reparent>().NewParent = Util.GetDayOptic(fcs).transform;
                 t.transform.GetChild(0).transform.localPosition = new Vector3(-284.1897f, -5.5217f, 0.1f);
                 t.SetActive(true);
-
-                if (!reticleSO_atgm && use_9m117.Value)
+                if (use_9m117.Value)
                 {
-                    GameObject reticle_mesh_atgm = GameObject.Instantiate(weapon.FCS.transform.GetChild(0).GetChild(0).gameObject, weapon.FCS.transform.GetChild(0).transform);
-                    reticle_mesh_atgm.SetActive(false);
-
-                    reticleSO_atgm = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55"].tree);
-                    reticleSO_atgm.name = "T55_atgm";
-
-                    Util.ShallowCopy(reticle_cached_atgm, ReticleMesh.cachedReticles["T55"]);
-                    reticle_cached_atgm.tree = reticleSO_atgm;
-
-                    reticle_cached_atgm.tree.lights = new List<ReticleTree.Light>() {
-                        new ReticleTree.Light(),
-                    };
-
-                    reticle_cached_atgm.tree.lights[0] = ReticleMesh.cachedReticles["T55"].tree.lights[0];
-                    reticle_cached_atgm.mesh = null;
-
-                    reticleSO_atgm.planes[0].elements = new List<ReticleTree.TransformElement>();
-                    ReticleTree.Angular eeeee = new ReticleTree.Angular(new Vector2(), null);
-                    eeeee.name = "Boresight";
-                    eeeee.align = ReticleTree.GroupBase.Alignment.Boresight;
-
-                    // centre chevron
-
-                    for (int i = -1; i <= 1; i += 2)
+                    if (!reticleSO_atgm)
                     {
-                        ReticleTree.Line chev_line = new ReticleTree.Line();
-                        chev_line.thickness.mrad = 0.1833f;
-                        chev_line.length.mrad = 2.0944f;
-                        chev_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                        chev_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
-                        chev_line.rotation.mrad = i == 1 ? 5497.787f : 785.398f;
-                        chev_line.position = new ReticleTree.Position(0.6756f * i, -0.6756f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+                        reticleSO_atgm = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55"].tree);
+                        reticleSO_atgm.name = "T55_atgm";
 
-                        ReticleTree.Line side = new ReticleTree.Line();
-                        side.thickness.mrad = 0.1833f;
-                        side.length.mrad = 7.0944f;
-                        side.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                        side.length.unit = AngularLength.AngularUnit.MIL_USSR;
-                        side.position = new ReticleTree.Position(5f * i, 0, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+                        Util.ShallowCopy(reticle_cached_atgm, ReticleMesh.cachedReticles["T55"]);
+                        reticle_cached_atgm.tree = reticleSO_atgm;
 
-                        side.illumination = ReticleTree.Light.Type.NightIllumination;
-                        chev_line.illumination = ReticleTree.Light.Type.NightIllumination;
+                        reticle_cached_atgm.tree.lights = new List<ReticleTree.Light>() {
+                            new ReticleTree.Light(),
+                        };
 
-                        eeeee.elements.Add(chev_line);
-                        eeeee.elements.Add(side);
+                        reticle_cached_atgm.tree.lights[0] = ReticleMesh.cachedReticles["T55"].tree.lights[0];
+                        reticle_cached_atgm.mesh = null;
+
+                        reticleSO_atgm.planes[0].elements = new List<ReticleTree.TransformElement>();
+                        ReticleTree.Angular eeeee = new ReticleTree.Angular(new Vector2(), null);
+                        eeeee.name = "Boresight";
+                        eeeee.align = ReticleTree.GroupBase.Alignment.Boresight;
+
+                        // centre chevron
+
+                        for (int i = -1; i <= 1; i += 2)
+                        {
+                            ReticleTree.Line chev_line = new ReticleTree.Line();
+                            chev_line.thickness.mrad = 0.1833f;
+                            chev_line.length.mrad = 2.0944f;
+                            chev_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
+                            chev_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
+                            chev_line.rotation.mrad = i == 1 ? 5497.787f : 785.398f;
+                            chev_line.position = new ReticleTree.Position(0.6756f * i, -0.6756f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+
+                            ReticleTree.Line side = new ReticleTree.Line();
+                            side.thickness.mrad = 0.1833f;
+                            side.length.mrad = 7.0944f;
+                            side.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
+                            side.length.unit = AngularLength.AngularUnit.MIL_USSR;
+                            side.position = new ReticleTree.Position(5f * i, 0, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+
+                            side.illumination = ReticleTree.Light.Type.NightIllumination;
+                            chev_line.illumination = ReticleTree.Light.Type.NightIllumination;
+
+                            eeeee.elements.Add(chev_line);
+                            eeeee.elements.Add(side);
+                        }
+
+                        ReticleTree.Line middle_line = new ReticleTree.Line();
+                        middle_line.thickness.mrad = 0.1833f;
+                        middle_line.length.mrad = 7.0944f;
+                        middle_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
+                        middle_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
+                        middle_line.position = new ReticleTree.Position(0f, -5f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+                        middle_line.rotation.mrad = 1570.8f;
+
+                        ReticleTree.Line middle_line2 = new ReticleTree.Line();
+                        middle_line2.thickness.mrad = 0.1833f;
+                        middle_line2.length.mrad = 7.0944f / 2f;
+                        middle_line2.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
+                        middle_line2.length.unit = AngularLength.AngularUnit.MIL_USSR;
+                        middle_line2.position = new ReticleTree.Position(-3f, -5f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+
+                        ReticleTree.Line middle_line3 = new ReticleTree.Line();
+                        middle_line3.thickness.mrad = 0.1833f;
+                        middle_line3.length.mrad = 5.0944f / 2f;
+                        middle_line3.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
+                        middle_line3.length.unit = AngularLength.AngularUnit.MIL_USSR;
+                        middle_line3.position = new ReticleTree.Position(5f, -7.0944f / 2, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+                        middle_line3.rotation.mrad = 1570.8f;
+
+                        middle_line.illumination = ReticleTree.Light.Type.NightIllumination;
+                        middle_line2.illumination = ReticleTree.Light.Type.NightIllumination;
+                        middle_line3.illumination = ReticleTree.Light.Type.NightIllumination;
+
+                        eeeee.elements.Add(middle_line);
+                        eeeee.elements.Add(middle_line2);
+                        eeeee.elements.Add(middle_line3);
+
+                        reticleSO_atgm.planes[0].elements.Add(eeeee);
                     }
 
-                    ReticleTree.Line middle_line = new ReticleTree.Line();
-                    middle_line.thickness.mrad = 0.1833f;
-                    middle_line.length.mrad = 7.0944f;
-                    middle_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                    middle_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
-                    middle_line.position = new ReticleTree.Position(0f, -5f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
-                    middle_line.rotation.mrad = 1570.8f;
-
-                    ReticleTree.Line middle_line2 = new ReticleTree.Line();
-                    middle_line2.thickness.mrad = 0.1833f;
-                    middle_line2.length.mrad = 7.0944f / 2f;
-                    middle_line2.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                    middle_line2.length.unit = AngularLength.AngularUnit.MIL_USSR;
-                    middle_line2.position = new ReticleTree.Position(-3f, -5f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
-
-                    ReticleTree.Line middle_line3 = new ReticleTree.Line();
-                    middle_line3.thickness.mrad = 0.1833f;
-                    middle_line3.length.mrad = 5.0944f / 2f;
-                    middle_line3.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                    middle_line3.length.unit = AngularLength.AngularUnit.MIL_USSR;
-                    middle_line3.position = new ReticleTree.Position(5f, -7.0944f / 2, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
-                    middle_line3.rotation.mrad = 1570.8f;
-
-                    middle_line.illumination = ReticleTree.Light.Type.NightIllumination;
-                    middle_line2.illumination = ReticleTree.Light.Type.NightIllumination;
-                    middle_line3.illumination = ReticleTree.Light.Type.NightIllumination;
-
-                    eeeee.elements.Add(middle_line);
-                    eeeee.elements.Add(middle_line2);
-                    eeeee.elements.Add(middle_line3);
-
-                    reticleSO_atgm.planes[0].elements.Add(eeeee);
-
+                    GameObject reticle_mesh_atgm = GameObject.Instantiate(weapon.FCS.transform.GetChild(0).GetChild(0).gameObject, weapon.FCS.transform.GetChild(0).transform);
+                    reticle_mesh_atgm.SetActive(false);
 
                     reticle_mesh_atgm.GetComponent<ReticleMesh>().reticleSO = reticleSO_atgm;
                     reticle_mesh_atgm.GetComponent<ReticleMesh>().reticle = reticle_cached_atgm;
@@ -402,6 +413,8 @@ namespace PactIncreasedLethality
                 ammo_9m117.SpiralPower = 25f;
                 ammo_9m117.SpiralAngularRate = 1800f;
                 ammo_9m117.ArmingDistance = 45f;
+                ammo_9m117.ImpactAudio = GHPC.Audio.ImpactAudioType.Missile;
+                ammo_9m117.ShortName = AmmoType.AmmoShortName.Missile;
 
                 ammo_codex_9m117 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
                 ammo_codex_9m117.AmmoType = ammo_9m117;
