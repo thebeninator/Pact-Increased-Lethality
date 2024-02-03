@@ -46,6 +46,9 @@ To regenerate the config:
   - 2-axis stabilizer w/ lead
   - Point-n-Shoot
 - Soviet crews (disabled by default)
+- Only load carousel (disabled by default)
+  - Reduces probability that penetrating hits will hit and detonate ammo
+  - Gets rid of ability to restock
  
 ![Screenshot_7](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/d5fb1292-9fcb-45e7-95ad-8c32a3924468)
 ![Screenshot_9](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/b14f4d40-2413-4b07-a71a-87c68979116a)
