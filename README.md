@@ -31,8 +31,8 @@ To regenerate the config:
 # T-72M/1 
 - New APFSDS rounds
   - 3BM22 (better penetration compared to 3BM15)
-  - 3BM26 (even better penetration)
-  - ???
+  - 3BM26 (slightly better penetration compared to 3BM15, effective against composites)
+  - 3BM42 (very effective against composites)
 - Thermal sight
   - Very blurry
   - Extremely limited FOV
