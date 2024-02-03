@@ -26,7 +26,6 @@ To regenerate the config:
   - Only gives range (you will need to set the range manually)
  
 ![Screenshot_3](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/9c494b20-3291-40f4-9be5-f75ac587caa4)
-
 ![Screenshot_8](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e1979d6a-327c-47e5-94a6-acf1d42c7d59)
 
 # T-72M/1 
@@ -42,9 +41,14 @@ To regenerate the config:
   - Consumes HEAT rounds
   - Poor performance against AP
   - Only applied to T-72M1s by default
+- Sosna-U (disabled by default)
+  - 4x-12x digital zoom (press MIDDLE MOUSE to instantly switch between 4x and 12x) 
+  - 2-axis stabilizer w/ lead
+  - Point-n-Shoot
  
 ![Screenshot_7](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/d5fb1292-9fcb-45e7-95ad-8c32a3924468)
 ![Screenshot_9](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/b14f4d40-2413-4b07-a71a-87c68979116a)
+![Screenshot_11](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/b2a5aa15-5d7b-4596-98fa-6aacd54e2626)
 
 # BMP-1
 - AGS-17D Coaxial
@@ -52,4 +56,8 @@ To regenerate the config:
   - VOG-17M HE, VOG-17M1 HEDP
 
 [ags17d.webm](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/41b2dcf4-98b4-4a02-8487-d5516e5e70c2)
+
+# BMP-2
+- 3UBR8 APDS-T
+  - Better penetration and ballistics compared to 3UBR6 APBC-T 
 
