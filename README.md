@@ -18,7 +18,7 @@ Correct installation of this mod:
  
 ![Screenshot_3](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/9c494b20-3291-40f4-9be5-f75ac587caa4)
 
-![Screenshot_5](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/96b72a99-279a-467c-8ece-35d7f7fb4460)
+![Screenshot_8](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e1979d6a-327c-47e5-94a6-acf1d42c7d59)
 
 # T-72M/1 
 - New APFSDS rounds
