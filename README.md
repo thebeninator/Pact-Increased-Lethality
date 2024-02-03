@@ -51,7 +51,7 @@ To regenerate the config:
   - Gets rid of ability to restock
  
 ![Screenshot_7](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/d5fb1292-9fcb-45e7-95ad-8c32a3924468)
-![Screenshot_9](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/b14f4d40-2413-4b07-a71a-87c68979116a)
+![Screenshot_12](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/33877b32-ca41-420b-881d-37e7dc78c886)
 ![Screenshot_11](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/b2a5aa15-5d7b-4596-98fa-6aacd54e2626)
 
 # BMP-1
