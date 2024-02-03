@@ -132,6 +132,9 @@ namespace PactIncreasedLethality
 
                 if (vic == null) continue;
                 if (vic.FriendlyName != "T-55A") continue;
+                if (vic_go.GetComponent<AlreadyConverted>() != null) continue;
+
+                vic_go.AddComponent<AlreadyConverted>();
 
                 LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
                 WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
@@ -179,7 +182,7 @@ namespace PactIncreasedLethality
                 computer.AimElement = weapon.FCS.AimTransform;
                 weapon.GuidanceUnit = computer;
 
-                if (day_optic.transform.Find("t55 range canvas(Clone)") || !has_lrf.Value)
+                if (!has_lrf.Value)
                 {
                     continue;
                 }
@@ -354,6 +357,8 @@ namespace PactIncreasedLethality
                         text.color = new Color(255f, 0f, 0f);
                         text.faceColor = new Color(255f, 0f, 0f);
                         text.outlineColor = new Color(100f, 0f, 0f, 0.5f);
+
+                        break;
                     }
                 }
             }
@@ -403,7 +408,7 @@ namespace PactIncreasedLethality
                 ammo_9m117.Name = "9M117 Bastion";
                 ammo_9m117.Mass = 18.8f;
                 ammo_9m117.Coeff = 0.25f;
-                ammo_9m117.MuzzleVelocity = 300f;
+                ammo_9m117.MuzzleVelocity = 400f;
                 ammo_9m117.RhaPenetration = 550f;
                 ammo_9m117.TntEquivalentKg = 4.77f;
                 ammo_9m117.Guidance = AmmoType.GuidanceType.Saclos;
@@ -437,7 +442,7 @@ namespace PactIncreasedLethality
                 ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m117;
             }
 
-            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Lowest);
+            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }
     }
 

@@ -8,6 +8,10 @@ using UnityEngine;
 
 namespace PactIncreasedLethality
 {
+    public class AlreadyConverted : MonoBehaviour { 
+    
+    }
+
     public class Util
     {
         public static void ShallowCopy(System.Object dest, System.Object src)

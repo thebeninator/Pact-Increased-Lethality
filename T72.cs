@@ -19,15 +19,43 @@ using GHPC;
 using TMPro;
 using HarmonyLib;
 using UnityEngine.UI;
+using GHPC.Camera;
+using GHPC.Effects.Voices;
+using BehaviorDesigner.Runtime.Tasks.Unity.UnityGameObject;
 
 namespace PactIncreasedLethality
 {
+    public class DigitalZoomSnapper : MonoBehaviour {
+        private float cd = 0f; 
+
+        void Update()
+        {
+            cd -= Time.deltaTime;
+
+            if (Input.GetKey(KeyCode.Mouse2) && cd <= 0f)
+            {
+                cd = 0.2f;
+
+                CameraManager camera_manager = PactIncreasedLethalityMod.camera_manager;
+                CameraSlot cam = this.GetComponent<UsableOptic>().slot;
+
+                cam.FovIndex = cam.FovIndex < cam.OtherFovs.Length ? cam.OtherFovs.Length : 0;
+
+                camera_manager.ZoomChanged();
+            }
+        }
+    }
+
     public class T72
     {
+        static GameObject range_readout;
         static GameObject thermal_canvas;
         static GameObject scanline_canvas;
         static ReticleSO reticleSO;
         static ReticleMesh.CachedReticle reticle_cached;
+
+        static ReticleSO reticleSO_sosna;
+        static ReticleMesh.CachedReticle reticle_cached_sosna;
 
         static AmmoClipCodexScriptable clip_codex_3bm22;
 
@@ -49,15 +77,24 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<string> t72m_ammo_type;
         static MelonPreferences_Entry<string> t72m1_ammo_type;
 
-
         static MelonPreferences_Entry<bool> thermals;
         static MelonPreferences_Entry<bool> thermals_boxing;
         static MelonPreferences_Entry<float> thermals_blur;
 
+        static MelonPreferences_Entry<bool> only_carousel;
+
         static MelonPreferences_Entry<bool> era_t72m1;
         static MelonPreferences_Entry<bool> era_t72m;
 
+        static MelonPreferences_Entry<bool> soviet_t72m;
+        static MelonPreferences_Entry<bool> soviet_t72m1;
+
+        static MelonPreferences_Entry<bool> super_fcs_t72m;
+        static MelonPreferences_Entry<bool> super_fcs_t72m1;
+
         static Dictionary<string, AmmoClipCodexScriptable> ap;
+
+        static GameObject soviet_crew_voice; 
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -65,10 +102,10 @@ namespace PactIncreasedLethality
             t72_patch.Description = "///////////////";
 
             t72m_ammo_type = cfg.CreateEntry<string>("AP Round (T-72M)", "3BM22");
-            t72m_ammo_type.Comment = "3BM15, 3BM22, 3BM26, ???";
+            t72m_ammo_type.Comment = "3BM15, 3BM22, 3BM26 (composite optimized), 3BM42 (composite optimized)";
 
             t72m1_ammo_type = cfg.CreateEntry<string>("AP Round (T-72M1)", "3BM22");
-            t72m1_ammo_type.Comment = "3BM15, 3BM22, 3BM26, ???";
+            t72m1_ammo_type.Comment = "3BM15, 3BM22, 3BM26 (composite optimized), 3BM42 (composite optimized)";
 
             thermals = cfg.CreateEntry<bool>("Has Thermals", true);
             thermals.Comment = "Replaces night vision sight with thermal sight";
@@ -84,6 +121,21 @@ namespace PactIncreasedLethality
 
             era_t72m = cfg.CreateEntry<bool>("Kontakt-1 ERA (T-72M)", false);
             era_t72m.Comment = "BRICK ME UP LADS (gill variants will not have side-skirt ERA)";
+
+            only_carousel = cfg.CreateEntry<bool>("Only load carousel", false);
+            only_carousel.Comment = "Only the carousel will be loaded with ammo; no restocking but reduced ammo cookoff probability";
+
+            soviet_t72m = cfg.CreateEntry<bool>("Soviet Crew (T-72M)", false);
+            soviet_t72m.Comment = "Also renames the tank to T-72 and removes NVA decals";
+
+            soviet_t72m1 = cfg.CreateEntry<bool>("Soviet Crew (T-72M1)", false);
+            soviet_t72m1.Comment = "Also renames the tank to T-72A and removes NVA decals";
+
+            super_fcs_t72m = cfg.CreateEntry<bool>("Super FCS (T-72M)", false);
+            super_fcs_t72m.Comment = "basically sosna-u lol (digital 4x-12x zoom, 2-axis stabilizer w/ lead, point-n-shoot)";
+
+            super_fcs_t72m1 = cfg.CreateEntry<bool>("Super FCS (T-72M1)", false);
+            super_fcs_t72m1.Comment = "basically sosna-u lol (digital 4x-12x zoom, 2-axis stabilizer w/ lead, point-n-shoot)";
         }
 
         public static IEnumerator Convert(GameState _) {
@@ -130,11 +182,51 @@ namespace PactIncreasedLethality
 
                 if (vic == null) continue;
                 if (!vic.FriendlyName.Contains("T-72")) continue;
+                if (vic_go.GetComponent<AlreadyConverted>() != null) continue;
 
-                if ((era_t72m1.Value && vic.FriendlyName == "T-72M1") || (vic.FriendlyName == "T-72M" && era_t72m.Value)) {
+                vic_go.AddComponent<AlreadyConverted>();
+
+                // SOVIET CREW 
+                if ((soviet_t72m1.Value && vic.UniqueName == "T72A") || (soviet_t72m.Value && vic.UniqueName == "T72M"))
+                {
+                    if (vic.FriendlyName == "T-72M1")
+                    {
+                        vic._friendlyName = "T-72A";
+                    }
+                    else if (vic.FriendlyName == "T-72M")
+                    {
+                        vic._friendlyName = "T-72";
+                    }
+
+                    vic.transform.Find("DE Tank Voice").gameObject.SetActive(false);
+                    GameObject crew_voice = GameObject.Instantiate(soviet_crew_voice, vic.transform);
+                    crew_voice.transform.localPosition = new Vector3(0, 0, 0);
+                    crew_voice.transform.localEulerAngles = new Vector3(0, 0, 0);
+                    CrewVoiceHandler handler = crew_voice.GetComponent<CrewVoiceHandler>();
+                    handler._chassis = vic._chassis as NwhChassis;
+                    handler._reloadType = CrewVoiceHandler.ReloaderType.AutoLoaderAZ;
+                    vic._crewVoiceHandler = handler;
+                    crew_voice.SetActive(true);
+
+
+                    if (vic.UniqueName == "T72A")
+                    {
+                        vic.AimablePlatforms[1].transform.parent.Find("T72_markings").GetChild(2).gameObject.SetActive(false);
+                        vic.AimablePlatforms[1].transform.parent.Find("T72_markings").GetChild(4).gameObject.SetActive(false);
+                    }
+                    else
+                    {
+                        vic.AimablePlatforms[1].transform.parent.Find("T72_markings").GetChild(2).gameObject.SetActive(false);
+                        vic.AimablePlatforms[1].transform.parent.Find("T72_markings").GetChild(3).gameObject.SetActive(false);
+                    }
+                }
+
+                if ((era_t72m1.Value && (vic.FriendlyName == "T-72M1" || vic.FriendlyName == "T-72A"))
+                    || (era_t72m.Value && (vic.FriendlyName == "T-72M" || vic.FriendlyName == "T-72")))
+                {
                     vic.transform.GetChild(0).GetChild(0).gameObject.SetActive(false);
                     vic._friendlyName += "V";
-                }     
+                }
 
                 vic.AimablePlatforms[1].transform.Find("optic cover parent").gameObject.SetActive(false);
 
@@ -142,28 +234,14 @@ namespace PactIncreasedLethality
                 FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
                 LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
                 UsableOptic night_optic = fcs.NightOptic;
-
-                // set night optic to thermal 
-                if (thermals.Value)
-                {
-                    night_optic.slot.VisionType = NightVisionType.Thermal;
-                    night_optic.slot.BaseBlur = thermals_blur.Value;
-
-                    PostProcessProfile post = night_optic.post.profile;
-                    ColorGrading color_grading = post.settings[1] as ColorGrading;
-                    color_grading.postExposure.value = 2f;
-                    color_grading.colorFilter.value = new Color(0.75f, 0.75f, 0.75f);
-                    color_grading.lift.value = new Vector4(0f, 0f, 0f, -1.2f);
-                    color_grading.lift.overrideState = true;
-                }
+                UsableOptic day_optic = Util.GetDayOptic(fcs);
 
                 string ammo_str = (vic.UniqueName == "T72M") ? t72m_ammo_type.Value : t72m1_ammo_type.Value;
-
                 try
                 {
                     AmmoClipCodexScriptable codex = ap[ammo_str];
                     loadout_manager.LoadedAmmoTypes[0] = codex;
-                    for (int i = 0; i <= 2; i++)
+                    for (int i = 0; i <= 4; i++)
                     {
                         GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
                         rack.ClipTypes[0] = codex.ClipType;
@@ -174,92 +252,338 @@ namespace PactIncreasedLethality
                     weapon.Feed.AmmoTypeInBreech = null;
                     weapon.Feed.Start();
                     loadout_manager.RegisterAllBallistics();
+
+                    if (only_carousel.Value) { 
+                        for (int i = 1; i <= 4; i++) Util.EmptyRack(loadout_manager.RackLoadouts[i].Rack);
+                    }
                 } catch (Exception) {
                     MelonLogger.Msg("Loading default AP round for " + vic.FriendlyName);
                 }
-                
-                // everything below is for creating the border & reticle for the thermal sight
-                if (night_optic.transform.Find("t72 thermal canvas(Clone)") || !thermals.Value)
-                {
-                    continue;
-                }
 
-                GameObject s = GameObject.Instantiate(scanline_canvas);
-                s.GetComponent<Reparent>().NewParent = night_optic.transform;
-                s.SetActive(true);
-
-                if (!thermals_boxing.Value)
+                // THERMALS
+                if (thermals.Value)
                 {
-                    // pos, rot, scale
-                    List<List<Vector3>> backdrop_locs = new List<List<Vector3>>() {
+                    // set night optic to thermal 
+                    night_optic.slot.VisionType = NightVisionType.Thermal;
+                    night_optic.slot.BaseBlur = thermals_blur.Value;
+
+                    PostProcessProfile post = night_optic.post.profile;
+                    ColorGrading color_grading = post.settings[1] as ColorGrading;
+                    color_grading.postExposure.value = 2f;
+                    color_grading.colorFilter.value = new Color(0.75f, 0.75f, 0.75f);
+                    color_grading.lift.value = new Vector4(0f, 0f, 0f, -1.2f);
+                    color_grading.lift.overrideState = true;
+
+                    GameObject s = GameObject.Instantiate(scanline_canvas);
+                    s.GetComponent<Reparent>().NewParent = night_optic.transform;
+                    s.SetActive(true);
+
+                    if (!thermals_boxing.Value)
+                    {
+                        // pos, rot, scale
+                        List<List<Vector3>> backdrop_locs = new List<List<Vector3>>() {
                         new List<Vector3> {new Vector3(0f, -318.7f, 0f), new Vector3(0f, 0f, 180f)},
                         new List<Vector3> {new Vector3(0f, 318.7f, 0f), new Vector3(0f, 0f, 0f)},
                         new List<Vector3> {new Vector3(330f, 0f, 0f), new Vector3(0f, 0f, 90f)},
                         new List<Vector3> {new Vector3(-330f, 0f, 0f), new Vector3(0f, 0f, 270f)}
                     };
 
-                    for (int i = 0; i <= 3; i++) 
-                    {
-                        GameObject t = GameObject.Instantiate(thermal_canvas);
-                        t.GetComponent<Reparent>().NewParent = night_optic.transform;
-                        t.transform.GetChild(0).localPosition = backdrop_locs[i][0];
-                        t.transform.GetChild(0).localEulerAngles = backdrop_locs[i][1];
-                        if (i == 2 || i == 3)
-                            t.GetComponent<CanvasScaler>().screenMatchMode = CanvasScaler.ScreenMatchMode.Shrink;
-                        t.SetActive(true);
+                        for (int i = 0; i <= 3; i++)
+                        {
+                            GameObject t = GameObject.Instantiate(thermal_canvas);
+                            t.GetComponent<Reparent>().NewParent = night_optic.transform;
+                            t.transform.GetChild(0).localPosition = backdrop_locs[i][0];
+                            t.transform.GetChild(0).localEulerAngles = backdrop_locs[i][1];
+                            if (i == 2 || i == 3)
+                                t.GetComponent<CanvasScaler>().screenMatchMode = CanvasScaler.ScreenMatchMode.Shrink;
+                            t.SetActive(true);
+                        }
                     }
+
+                    GameObject reticle_go = GameObject.Instantiate(night_optic.reticleMesh.gameObject);
+                    GameObject.Destroy(night_optic.reticleMesh.gameObject);
+                    reticle_go.AddComponent<Reparent>();
+                    reticle_go.GetComponent<Reparent>().NewParent = night_optic.transform;
+                    reticle_go.GetComponent<Reparent>().Awake();
+                    reticle_go.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+                    night_optic.reticleMesh = reticle_go.GetComponent<ReticleMesh>();
+
+                    // generate reticle for t72 thermal sight
+                    if (!reticleSO)
+                    {
+                        ReticleTree.Angular reticle = null;
+                        reticleSO = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55-NVS"].tree);
+                        reticleSO.name = "T72-TIS";
+
+                        Util.ShallowCopy(reticle_cached, ReticleMesh.cachedReticles["T55-NVS"]);
+                        reticle_cached.tree = reticleSO;
+
+                        reticle_cached.tree.lights = new List<ReticleTree.Light>() {
+                            new ReticleTree.Light()
+                        };
+
+                        reticle_cached.tree.lights[0].type = ReticleTree.Light.Type.Powered;
+                        reticle_cached.tree.lights[0].color = new RGB(1.1f, -0.35f, -0.35f, true);
+
+                        reticle = (reticleSO.planes[0].elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Angular;
+                        (reticleSO.planes[0].elements[0] as ReticleTree.Angular).align = ReticleTree.GroupBase.Alignment.Boresight;
+                        reticle.align = ReticleTree.GroupBase.Alignment.Boresight;
+                        reticle_cached.mesh = null;
+
+                        reticle.elements.RemoveAt(4);
+                        reticle.elements.RemoveAt(1);
+                        reticle.elements.RemoveAt(0);
+                        reticle.elements[0].rotation.mrad = 0;
+                        reticle.elements[0].position.x = 0;
+                        reticle.elements[0].position.y = 0;
+                        reticle.elements[1].position.y = 0;
+                        (reticle.elements[0] as ReticleTree.Line).length.mrad = 10.0944f;
+                        (reticle.elements[1] as ReticleTree.Line).length.mrad = 4.0944f;
+                    }
+
+                    night_optic.reticleMesh.reticleSO = reticleSO;
+                    night_optic.reticleMesh.reticle = reticle_cached;
+                    night_optic.reticleMesh.SMR = null;
+                    night_optic.reticleMesh.Load();
                 }
 
-                GameObject reticle_go = GameObject.Instantiate(night_optic.reticleMesh.gameObject);
-                GameObject.Destroy(night_optic.reticleMesh.gameObject);
-                reticle_go.AddComponent<Reparent>();
-                reticle_go.GetComponent<Reparent>().NewParent = night_optic.transform;
-                reticle_go.GetComponent<Reparent>().Awake();
-                reticle_go.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-                night_optic.reticleMesh = reticle_go.GetComponent<ReticleMesh>();
-
-                // generate reticle for t72 thermal sight
-                if (!reticleSO)
+                // SOSNA U
+                if ((super_fcs_t72m1.Value && vic.UniqueName == "T72A") || (super_fcs_t72m.Value && vic.UniqueName == "T72M"))
                 {
-                    ReticleTree.Angular reticle = null;
-                    reticleSO = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55-NVS"].tree);
-                    reticleSO.name = "T72-TIS";
+                    if (!ReticleMesh.cachedReticles.ContainsKey("T55"))
+                    {
+                        foreach (GameObject obj in Resources.FindObjectsOfTypeAll(typeof(GameObject)))
+                        {
+                            if (obj.name == "T55A")
+                            {
+                                obj.GetComponent<Vehicle>().GetComponent<WeaponsManager>().Weapons[0].FCS.AuthoritativeOptic.reticleMesh.Load();
+                                break;
+                            }
+                        }
+                    }
 
-                    Util.ShallowCopy(reticle_cached, ReticleMesh.cachedReticles["T55-NVS"]);
-                    reticle_cached.tree = reticleSO;
+                    if (!reticleSO_sosna)
+                    {
+                        reticleSO_sosna = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55"].tree);
+                        reticleSO_sosna.name = "sosna u";
 
-                    reticle_cached.tree.lights = new List<ReticleTree.Light>() {
-                        new ReticleTree.Light()
-                    };
+                        Util.ShallowCopy(reticle_cached_sosna, ReticleMesh.cachedReticles["T55"]);
+                        reticle_cached_sosna.tree = reticleSO_sosna;
 
-                    reticle_cached.tree.lights[0].type = ReticleTree.Light.Type.Powered;
-                    reticle_cached.tree.lights[0].color = new RGB(-255f, -255f, -255f, true);
+                        reticle_cached_sosna.tree.lights = new List<ReticleTree.Light>() {
+                            new ReticleTree.Light(),
+                        };
 
-                    reticle = (reticleSO.planes[0].elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Angular;
-                    reticle_cached.mesh = null;
+                        Util.ShallowCopy(reticle_cached_sosna.tree.lights[0], ReticleMesh.cachedReticles["T55"].tree.lights[0]);
+                        reticle_cached_sosna.tree.lights[0].type = ReticleTree.Light.Type.Powered;
+                        reticle_cached_sosna.tree.lights[0].color = new RGB(1.2f, -0.3f, -0.3f, true);
+                        reticle_cached_sosna.mesh = null;
 
-                    reticle.elements.RemoveAt(4);
-                    reticle.elements.RemoveAt(1);
-                    reticle.elements.RemoveAt(0);
-                    reticle.elements[0].rotation.mrad = 0;
-                    reticle.elements[0].position.x = 0;
-                    reticle.elements[0].position.y = -0.9328f;
-                    (reticle.elements[0] as ReticleTree.Line).length.mrad = 4.0944f;
-                    (reticle.elements[1] as ReticleTree.Line).length.mrad = 4.0944f;
+                        reticleSO_sosna.planes[0].elements = new List<ReticleTree.TransformElement>();
+                        ReticleTree.Angular eeeee = new ReticleTree.Angular(new Vector2(), null);
+                        eeeee.name = "Boresight";
+                        eeeee.align = ReticleTree.GroupBase.Alignment.Impact;
+
+                        for (int i = -1; i <= 1; i += 2)
+                        {
+                            ReticleTree.Line chev_line = new ReticleTree.Line();
+                            chev_line.thickness.mrad = 0.1833f;
+                            chev_line.length.mrad = 2.0944f;
+                            chev_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
+                            chev_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
+                            chev_line.rotation.mrad = i == 1 ? 5235.99f : 1047.2f;
+                            chev_line.position = new ReticleTree.Position(0.5f * i, -0.85f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+                            chev_line.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+
+                            ReticleTree.Line side = new ReticleTree.Line();
+                            side.thickness.mrad = 0.1833f;
+                            side.length.mrad = 5.0944f;
+                            side.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
+                            side.length.unit = AngularLength.AngularUnit.MIL_USSR;
+                            side.position = new ReticleTree.Position(5f * i, 0, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+                            side.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+
+                            side.illumination = ReticleTree.Light.Type.Powered;
+                            chev_line.illumination = ReticleTree.Light.Type.Powered;
+
+                            eeeee.elements.Add(chev_line);
+                            eeeee.elements.Add(side);
+                        }
+
+                        foreach (Vector2 pos in new Vector2[] { new Vector2(-1, 0), new Vector2(0, 1), new Vector2(1, 0), new Vector2(0, -1) })
+                        {
+                            ReticleTree.Line border_line = new ReticleTree.Line();
+                            border_line.thickness.mrad = 0.1833f;
+                            border_line.length.mrad = 2.0944f / 1.3f;
+                            border_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
+                            border_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
+
+                            if (Math.Abs(pos.x) == 1) { 
+                                border_line.rotation = 1570.8f;
+                            }
+
+                            border_line.position = new ReticleTree.Position(18f * pos.x, 18f * pos.y, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+                            border_line.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+                            border_line.illumination = ReticleTree.Light.Type.Powered;
+
+                            if (pos.y != -1)
+                                eeeee.elements.Add(border_line);
+
+                            ReticleTree.Line border_line2 = new ReticleTree.Line();
+                            Util.ShallowCopy(border_line2, border_line);
+                            border_line2.length.mrad = 2.0944f / 1.01f;
+                            border_line2.thickness.mrad = 0.1833f * 2f;
+                            border_line2.position = new ReticleTree.Position(33f * pos.x, 33f * pos.y, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+
+                            eeeee.elements.Add(border_line2);
+                        }
+
+                        ReticleTree.Line middle_line = new ReticleTree.Line();
+                        middle_line.thickness.mrad = 0.1833f;
+                        middle_line.length.mrad = 5.0944f;
+                        middle_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
+                        middle_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
+                        middle_line.position = new ReticleTree.Position(0f, -5f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+                        middle_line.rotation.mrad = 1570.8f;
+                        middle_line.illumination = ReticleTree.Light.Type.Powered;
+                        middle_line.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+
+                        ReticleTree.Line middle_line2 = new ReticleTree.Line();
+                        Util.ShallowCopy(middle_line2, middle_line);
+                        middle_line2.length.mrad = 5.0944f / 3f;
+                        middle_line2.position = new ReticleTree.Position(2f, -1.8f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+
+                        ReticleTree.Line middle_line3 = new ReticleTree.Line();
+                        Util.ShallowCopy(middle_line3, middle_line2);
+                        middle_line3.position = new ReticleTree.Position(-1.5f, -5.0944f / 3f / 2f - 1.3f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+                        middle_line3.rotation.mrad = 0f;
+
+                        eeeee.elements.Add(middle_line);
+                        eeeee.elements.Add(middle_line2);
+                        eeeee.elements.Add(middle_line3);
+
+                        reticleSO_sosna.planes[0].elements.Add(eeeee);
+                    }
+
+                    fcs._fixParallaxForVectorMode = true;
+                    fcs.LaserOrigin.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+                    fcs.SuperelevateWeapon = true;
+                    fcs.LaserAim = LaserAimMode.ImpactPoint;
+                    //fcs.SuperelevateFireGating = true;
+                    fcs.FireGateAngle = 0.8f;
+                    fcs.SuperleadWeapon = true;
+                    fcs.InertialCompensation = false;
+                    fcs.RecordTraverseRateBuffer = true;
+                    fcs.TraverseBufferSeconds = 0.5f;
+                    fcs._autoDumpViaPalmSwitches = true;
+                    fcs.UseDeltaD = false;
+                    fcs.ActiveDeltaD = false;
+                    fcs.RegisteredRangeLimits = new Vector2(200f, 4000f);
+                    fcs.CurrentRange = 200f;
+                    fcs.transform.localPosition = new Vector3(-0.603f, 0.6288f, -5.547f);
+
+                    vic.GetComponent<WeaponsManager>().Weapons[1].ExcludeFromFcsUpdates = false;
+                    vic.GetComponent<WeaponsManager>().Weapons[1].PreAimWeapon = WeaponSystemRole.Coaxial;
+
+                    night_optic.Alignment = OpticAlignment.BoresightStabilized;
+                    night_optic.RotateAzimuth = true;
+
+                    day_optic.slot.DefaultFov = 13f;
+                    day_optic.slot.SpriteType = CameraSpriteManager.SpriteType.NightVisionGoggles;
+
+                    List<float> fovs = new List<float>();
+                    for (float i = 12; i >= 4; i--)
+                    {
+                        fovs.Add(i);
+                    }
+                    day_optic.slot.OtherFovs = fovs.ToArray<float>();
+
+                    day_optic.gameObject.AddComponent<DigitalZoomSnapper>();
+                    day_optic.UseRotationForShake = true;
+                    day_optic.Alignment = OpticAlignment.FcsRange;
+                    day_optic.slot.VibrationShakeMultiplier = 0f;
+                    day_optic.slot.VibrationBlurScale = 0f;
+                    day_optic.RotateAzimuth = true;
+                    day_optic.reticleMesh.reticleSO = reticleSO_sosna;
+                    day_optic.reticleMesh.reticle = reticle_cached_sosna;
+                    day_optic.reticleMesh.SMR = null;
+                    day_optic.reticleMesh.Load();
+
+                    GameObject rangebox = GameObject.Instantiate(thermal_canvas);
+                    rangebox.GetComponent<Reparent>().NewParent = day_optic.transform;
+                    rangebox.GetComponent<Reparent>().Awake();
+                    rangebox.SetActive(true);
+                    rangebox.transform.localPosition = new Vector3(0f, 0f, 0f);
+                    rangebox.transform.GetChild(0).transform.localPosition = new Vector3(-2.1709f, -393.7738f, 0f);
+                    rangebox.transform.GetChild(0).transform.localEulerAngles = new Vector3(0f, 0f, 180f);
+                    rangebox.transform.GetChild(0).transform.localScale = new Vector3(0.1f, 1f, 1f);
+
+                    GameObject range = GameObject.Instantiate(range_readout);
+                    range.GetComponent<Reparent>().NewParent = rangebox.transform;
+                    range.GetComponent<Reparent>().Awake();
+                    range.SetActive(true);
+                    range.transform.localPosition = new Vector3(0f, 0f, 0f);
+                    range.transform.GetChild(1).transform.localPosition = new Vector3(-10f, -285.2727f, 0f);
+                    day_optic.RangeText = range.GetComponentInChildren<TMP_Text>();
+                    range.GetComponentInChildren<TMP_Text>().outlineWidth = 1f;
+                    day_optic.RangeTextDivideBy = 1;
+                    day_optic.RangeTextQuantize = 1;
+                    
+                    Transform ready_backing = range.transform.GetChild(0);
+                    Component.DestroyImmediate(ready_backing.gameObject.GetComponent<Image>());
+                    Image image = ready_backing.gameObject.AddComponent<Image>();
+                    image.color = new Color(0.15f, 0f, 0f);
+                    ready_backing.localScale = new Vector3(5f, 0.3f, 1f);
+                    ready_backing.localPosition = new Vector3(-2.1511f, -256.7888f, -0.0001f);
+
+                    GameObject ready = GameObject.Instantiate(ready_backing.gameObject, range.transform);
+                    Image image2 = ready.gameObject.GetComponent<Image>();
+                    image2.color = new Color(1f, 0f, 0f);
+
+                    ready.transform.localPosition = new Vector3(-2.1511f, -256.7888f, -0.0001f);
+
+                    day_optic.ReadyToFireObject = ready.gameObject;
                 }
-
-                night_optic.reticleMesh.reticleSO = reticleSO;
-                night_optic.reticleMesh.reticle = reticle_cached;
-                night_optic.reticleMesh.SMR = null;
-                night_optic.reticleMesh.Load();
             }
 
             yield break;
         }
 
         public static void Init() {
-
             if (!t72_patch.Value) return;
+
+            if (!range_readout)
+            {
+                foreach (GameObject obj in Resources.FindObjectsOfTypeAll(typeof(GameObject)))
+                {
+                    if (obj.name == "M1IP")
+                    {
+                        range_readout = GameObject.Instantiate(obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas").gameObject);
+                        GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
+                        //GameObject.Destroy(range_readout.transform.GetChild(0).gameObject);
+                        range_readout.AddComponent<Reparent>();
+                        range_readout.SetActive(false);
+                        range_readout.hideFlags = HideFlags.DontUnloadUnusedAsset;
+                        range_readout.name = "t72 range canvas";
+
+                        TextMeshProUGUI text = range_readout.GetComponentInChildren<TextMeshProUGUI>();
+                        text.color = new Color(255f, 0f, 0f);
+                        text.faceColor = new Color(255f, 0f, 0f);
+                        text.outlineColor = new Color(100f, 0f, 0f, 0.5f);
+
+                        break;
+                    }
+                }
+            }
+
+            if (soviet_crew_voice == null) {
+                foreach (CrewVoiceHandler obj in Resources.FindObjectsOfTypeAll(typeof(CrewVoiceHandler))) {
+                    if (obj.name == "RU Tank Voice") {
+                        soviet_crew_voice = obj.gameObject;
+                        break;
+                    }
+                }
+            }
 
             // thermal border
             if (thermal_canvas == null)
@@ -301,13 +625,44 @@ namespace PactIncreasedLethality
                     if (s.name == "clip_3BM22") {clip_codex_3bm22 = s; break; }
                 }
 
+                var composite_optimizations_3bm26 = new List<AmmoType.ArmorOptimization>() {};
+                var composite_optimizations_3bm42 = new List<AmmoType.ArmorOptimization>() { };
+
+                string[] composite_names = new string[] {
+                    "Abrams composite skirts",
+                    "Abrams special armor gen 1 hull front",
+                    "Abrams special armor gen 1 mantlet",
+                    "Abrams special armor gen 1 turret cheeks",
+                    "Abrams special armor gen 1 turret sides",
+                    "Abrams special armor gen 0 turret cheeks",
+                    "Corundum ball armor",
+                    "Kvartz"
+                };
+
+                foreach (ArmorCodexScriptable s in Resources.FindObjectsOfTypeAll<ArmorCodexScriptable>()) { 
+                    if (composite_names.Contains(s.name)) { 
+                        AmmoType.ArmorOptimization optimization_3bm26 = new AmmoType.ArmorOptimization();
+                        optimization_3bm26.Armor = s;
+                        optimization_3bm26.RhaRatio = 0.80f;
+                        composite_optimizations_3bm26.Add(optimization_3bm26);
+
+                        AmmoType.ArmorOptimization optimization_3bm42 = new AmmoType.ArmorOptimization();
+                        optimization_3bm42.Armor = s;
+                        optimization_3bm42.RhaRatio = 0.72f;
+                        composite_optimizations_3bm42.Add(optimization_3bm42);
+                    }
+
+                    if (composite_optimizations_3bm26.Count == composite_names.Length) break;       
+                }
+
                 ammo_3bm26 = new AmmoType();
                 Util.ShallowCopy(ammo_3bm26, ammo_3bm15);
                 ammo_3bm26.Name = "3BM26 APFSDS-T";
                 ammo_3bm26.Caliber = 125;
-                ammo_3bm26.RhaPenetration = 490f;
+                ammo_3bm26.RhaPenetration = 420f;
                 ammo_3bm26.Mass = 4.8f;
                 ammo_3bm26.MuzzleVelocity = 1720f;
+                ammo_3bm26.ArmorOptimizations = composite_optimizations_3bm26.ToArray<AmmoType.ArmorOptimization>();
 
                 ammo_codex_3bm26 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
                 ammo_codex_3bm26.AmmoType = ammo_3bm26;
@@ -333,9 +688,10 @@ namespace PactIncreasedLethality
                 Util.ShallowCopy(ammo_3bm42, ammo_3bm15);
                 ammo_3bm42.Name = "3BM42 APFSDS-T";
                 ammo_3bm42.Caliber = 125;
-                ammo_3bm42.RhaPenetration = 585f;
+                ammo_3bm42.RhaPenetration = 510f;
                 ammo_3bm42.Mass = 4.85f;
                 ammo_3bm42.MuzzleVelocity = 1700f;
+                ammo_3bm42.ArmorOptimizations = composite_optimizations_3bm42.ToArray<AmmoType.ArmorOptimization>();
 
                 ammo_codex_3bm42 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
                 ammo_codex_3bm42.AmmoType = ammo_3bm42;
@@ -365,7 +721,7 @@ namespace PactIncreasedLethality
                 };
             }
 
-            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Lowest);
+            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }
     }
 }

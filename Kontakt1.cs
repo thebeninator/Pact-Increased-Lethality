@@ -50,6 +50,9 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> sabot_eater;
         static MelonPreferences_Entry<bool> sphere_colliders;
 
+        public static ArmorCodexScriptable kontakt1_so = null;
+        public static ArmorType kontakt1_armour = new ArmorType();
+
         public static void Config(MelonPreferences_Category cfg)
         {
             sabot_eater = cfg.CreateEntry<bool>("Super Kontakt-1", false);
@@ -93,15 +96,34 @@ namespace PactIncreasedLethality
 
                 transform.gameObject.AddComponent<UniformArmor>();
                 UniformArmor armor = transform.gameObject.GetComponent<UniformArmor>();
-                armor.SetName("Kontakt-1");
-                armor.PrimaryHeatRha = 300f;
-                armor.PrimarySabotRha = sabot_eater.Value ? 100f : 30f;
+                string name = sabot_eater.Value ? "Kontakt-1 Super" : "Kontakt-1";
+                armor.SetName(name);
+                armor.PrimaryHeatRha = 20f;
+                armor.PrimarySabotRha = sabot_eater.Value ? 80f : 20f;
                 armor.SecondaryHeatRha = 0f;
                 armor.SecondarySabotRha = 0f;
-                armor._canShatterLongRods = true;
+                armor.ThicknessListed = UniformArmor.ThicknessMode.ActualThickness;
+                armor._canShatterLongRods = false;
                 armor._crushThicknessModifier = 1f;
                 armor._normalizesHits = true;
                 armor._isEra = true;
+
+                if (kontakt1_so == null)
+                {
+                    kontakt1_so = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
+                    kontakt1_so.name = "kontakt-1 armour";
+                    kontakt1_armour.RhaeMultiplierKe = sabot_eater.Value ? 1.3f : 0.5f;
+                    kontakt1_armour.RhaeMultiplierCe = 1.5f;
+                    kontakt1_armour.CanRicochet = false;
+                    kontakt1_armour.CrushThicknessModifier = 1f;
+                    kontakt1_armour.NormalizesHits = true;
+                    kontakt1_armour.CanShatterLongRods = false;
+                    kontakt1_armour.ThicknessSource = ArmorType.RhaSource.Multipliers;
+
+                    kontakt1_so.ArmorType = kontakt1_armour;
+                }
+
+                armor._armorType = kontakt1_so;
 
                 foreach (GameObject s in Resources.FindObjectsOfTypeAll<GameObject>())
                 {
