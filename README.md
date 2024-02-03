@@ -50,6 +50,8 @@ To regenerate the config:
   - Reduces probability that penetrating hits will hit and detonate ammo
   - Gets rid of ability to restock
  
+Demo vid: https://youtu.be/lpvLtdIQ-js
+
 ![Screenshot_7](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/d5fb1292-9fcb-45e7-95ad-8c32a3924468)
 ![Screenshot_12](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/33877b32-ca41-420b-881d-37e7dc78c886)
 ![Screenshot_11](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/b2a5aa15-5d7b-4596-98fa-6aacd54e2626)
