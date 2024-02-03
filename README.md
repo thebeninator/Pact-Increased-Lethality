@@ -45,6 +45,7 @@ To regenerate the config:
   - 4x-12x digital zoom (press MIDDLE MOUSE to instantly switch between 4x and 12x) 
   - 2-axis stabilizer w/ lead
   - Point-n-Shoot
+- Soviet crews (disabled by default)
  
 ![Screenshot_7](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/d5fb1292-9fcb-45e7-95ad-8c32a3924468)
 ![Screenshot_9](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/b14f4d40-2413-4b07-a71a-87c68979116a)
