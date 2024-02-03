@@ -6,6 +6,15 @@ Correct installation of this mod:
 
 ![image](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e31193eb-6cd2-4efa-a93c-f17528af5e9e)
 
+Current config looks like this:
+
+![Screenshot_10](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/42ecf3be-6a8a-41b7-ad44-c89d2a7520e7)
+
+To regenerate the config:
+1) Delete this mod's section
+2) Launch the game
+3) Quit the game using the main menu exit button
+
 # T-55
 - 3BK17M HEAT-FS-T
   - Better ballistics and negligibly better penetration compared to 3BK5M
