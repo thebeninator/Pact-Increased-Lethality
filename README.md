@@ -33,6 +33,7 @@ To regenerate the config:
   - 3BM22 (better penetration compared to 3BM15)
   - 3BM26 (slightly better penetration compared to 3BM15, effective against composites)
   - 3BM42 (very effective against composites)
+  - Option to randomize ammo selection
 - Thermal sight
   - Very blurry
   - Extremely limited FOV
@@ -65,5 +66,12 @@ Demo vid: https://youtu.be/lpvLtdIQ-js
 
 # BMP-2
 - 3UBR8 APDS-T
-  - Better penetration and ballistics compared to 3UBR6 APBC-T 
+  - Better penetration and ballistics compared to 3UBR6 APBC-T
+- 3UOF8 HEFI
+  - Tracerless, more explosive filler compared to 3UOR6
+  - Used in a mixed belt with 3UOR6
+- 9M113AS Konkurs
+  - Overfly-top-attack ATGM
+  - Dual warhead
 
+[Desktop 2024.02.10 - 14.36.30.05.DVR.webm](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e9d0899a-9e91-44e4-9877-e7d2a6786a36)
