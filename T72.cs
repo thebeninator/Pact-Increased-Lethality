@@ -22,30 +22,10 @@ using UnityEngine.UI;
 using GHPC.Camera;
 using GHPC.Effects.Voices;
 using BehaviorDesigner.Runtime.Tasks.Unity.UnityGameObject;
+using System.Reflection;
 
 namespace PactIncreasedLethality
 {
-    public class DigitalZoomSnapper : MonoBehaviour {
-        private float cd = 0f; 
-
-        void Update()
-        {
-            cd -= Time.deltaTime;
-
-            if (Input.GetKey(KeyCode.Mouse2) && cd <= 0f)
-            {
-                cd = 0.2f;
-
-                CameraManager camera_manager = PactIncreasedLethalityMod.camera_manager;
-                CameraSlot cam = this.GetComponent<UsableOptic>().slot;
-
-                cam.FovIndex = cam.FovIndex < cam.OtherFovs.Length ? cam.OtherFovs.Length : 0;
-
-                camera_manager.ZoomChanged();
-            }
-        }
-    }
-
     public class T72
     {
         static GameObject range_readout;
@@ -71,11 +51,21 @@ namespace PactIncreasedLethality
         static AmmoType ammo_3bm42;
         static GameObject ammo_3bm42_vis = null;
 
+        static AmmoClipCodexScriptable clip_codex_3of26_vt;
+        static AmmoType.AmmoClip clip_3of26_vt;
+        static AmmoCodexScriptable ammo_codex_3of26_vt;
+        static AmmoType ammo_3of26_vt;
+        static GameObject ammo_3of26_vt_vis = null;
+
         static AmmoType ammo_3bm15;
+        static AmmoType ammo_3of26;
 
         static MelonPreferences_Entry<bool> t72_patch;
         static MelonPreferences_Entry<string> t72m_ammo_type;
         static MelonPreferences_Entry<string> t72m1_ammo_type;
+
+        static MelonPreferences_Entry<bool> t72m_random_ammo;
+        static MelonPreferences_Entry<bool> t72m1_random_ammo;
 
         static MelonPreferences_Entry<bool> thermals;
         static MelonPreferences_Entry<bool> thermals_boxing;
@@ -94,7 +84,7 @@ namespace PactIncreasedLethality
 
         static Dictionary<string, AmmoClipCodexScriptable> ap;
 
-        static GameObject soviet_crew_voice; 
+        static GameObject soviet_crew_voice;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -107,6 +97,12 @@ namespace PactIncreasedLethality
             t72m1_ammo_type = cfg.CreateEntry<string>("AP Round (T-72M1)", "3BM22");
             t72m1_ammo_type.Comment = "3BM15, 3BM22, 3BM26 (composite optimized), 3BM42 (composite optimized)";
 
+            t72m_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-72M)", false);
+            t72m_random_ammo.Comment = "Randomizes ammo selection for T-72Ms (3BM22, 3BM26, 3BM42)";
+
+            t72m1_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-72M1)", false);
+            t72m1_random_ammo.Comment = "Randomizes ammo selection for T-72M1s (3BM22, 3BM26, 3BM42)";
+
             thermals = cfg.CreateEntry<bool>("Has Thermals", true);
             thermals.Comment = "Replaces night vision sight with thermal sight";
 
@@ -114,7 +110,7 @@ namespace PactIncreasedLethality
             thermals_boxing.Comment = "Removes the box border around the thermal sight";
 
             thermals_blur = cfg.CreateEntry<float>("Thermals Blur", 0.30f);
-            thermals_blur.Comment = "Default: 0.30 (higher = more blurry, lower = less blurry)"; 
+            thermals_blur.Comment = "Default: 0.30 (higher = more blurry, lower = less blurry)";
 
             era_t72m1 = cfg.CreateEntry<bool>("Kontakt-1 ERA (T-72M1)", true);
             era_t72m1.Comment = "BRICK ME UP LADS";
@@ -138,8 +134,10 @@ namespace PactIncreasedLethality
             super_fcs_t72m1.Comment = "basically sosna-u lol (digital 4x-12x zoom, 2-axis stabilizer w/ lead, point-n-shoot)";
         }
 
-        public static IEnumerator Convert(GameState _) {
-            foreach (GameObject armor_go in GameObject.FindGameObjectsWithTag("Penetrable")) {
+        public static IEnumerator Convert(GameState _)
+        {
+            foreach (GameObject armor_go in GameObject.FindGameObjectsWithTag("Penetrable"))
+            {
                 if (!era_t72m1.Value && !era_t72m.Value) break;
 
                 if (Kontakt1.kontakt_1_hull_array == null) continue;
@@ -161,7 +159,8 @@ namespace PactIncreasedLethality
                     hull_array.transform.localEulerAngles = new Vector3(0f, 90f, 0f);
                     hull_array.transform.localPosition = new Vector3(-0.8219f, 0.7075f, 2.4288f);
 
-                    if (t72m && parent.transform.name.ToLower().Contains("gill")) {
+                    if (t72m && parent.transform.name.ToLower().Contains("gill"))
+                    {
                         GameObject.Destroy(hull_array.transform.Find("left side skirt array").gameObject);
                         GameObject.Destroy(hull_array.transform.Find("right side skirt array").gameObject);
                     }
@@ -237,14 +236,23 @@ namespace PactIncreasedLethality
                 UsableOptic day_optic = Util.GetDayOptic(fcs);
 
                 string ammo_str = (vic.UniqueName == "T72M") ? t72m_ammo_type.Value : t72m1_ammo_type.Value;
+
+                if (t72m_random_ammo.Value && vic.UniqueName == "T72M")
+                    ammo_str = ap.ElementAt(UnityEngine.Random.Range(0, ap.Count)).Key;
+
+                if (t72m1_random_ammo.Value && vic.UniqueName == "T72A")
+                    ammo_str = ap.ElementAt(UnityEngine.Random.Range(0, ap.Count)).Key;
+
                 try
                 {
                     AmmoClipCodexScriptable codex = ap[ammo_str];
                     loadout_manager.LoadedAmmoTypes[0] = codex;
+                    //loadout_manager.LoadedAmmoTypes[2] = clip_codex_3of26_vt;
                     for (int i = 0; i <= 4; i++)
                     {
                         GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
                         rack.ClipTypes[0] = codex.ClipType;
+                        //rack.ClipTypes[2] = clip_codex_3of26_vt.ClipType;
                         Util.EmptyRack(rack);
                     }
 
@@ -253,11 +261,14 @@ namespace PactIncreasedLethality
                     weapon.Feed.Start();
                     loadout_manager.RegisterAllBallistics();
 
-                    if (only_carousel.Value) { 
+                    if (only_carousel.Value)
+                    {
                         for (int i = 1; i <= 4; i++) Util.EmptyRack(loadout_manager.RackLoadouts[i].Rack);
                     }
-                } catch (Exception) {
-                    MelonLogger.Msg("Loading default AP round for " + vic.FriendlyName);
+                }
+                catch (Exception)
+                {
+                    MelonLogger.Msg("Loading default 3BM15 for " + vic.FriendlyName);
                 }
 
                 // THERMALS
@@ -376,13 +387,18 @@ namespace PactIncreasedLethality
 
                         Util.ShallowCopy(reticle_cached_sosna.tree.lights[0], ReticleMesh.cachedReticles["T55"].tree.lights[0]);
                         reticle_cached_sosna.tree.lights[0].type = ReticleTree.Light.Type.Powered;
-                        reticle_cached_sosna.tree.lights[0].color = new RGB(1.2f, -0.3f, -0.3f, true);
+                        reticle_cached_sosna.tree.lights[0].color = new RGB(2f, -0.3f, -0.3f, true);
                         reticle_cached_sosna.mesh = null;
+
+                        ReticleTree.Angular impact = new ReticleTree.Angular(new Vector2(), null);
+                        impact.name = "Impact";
+                        impact.align = ReticleTree.GroupBase.Alignment.Impact;
 
                         reticleSO_sosna.planes[0].elements = new List<ReticleTree.TransformElement>();
                         ReticleTree.Angular eeeee = new ReticleTree.Angular(new Vector2(), null);
-                        eeeee.name = "Boresight";
-                        eeeee.align = ReticleTree.GroupBase.Alignment.Impact;
+                        eeeee.name = "Angular";
+                        eeeee.align = ReticleTree.GroupBase.Alignment.None;
+
 
                         for (int i = -1; i <= 1; i += 2)
                         {
@@ -392,7 +408,7 @@ namespace PactIncreasedLethality
                             chev_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
                             chev_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
                             chev_line.rotation.mrad = i == 1 ? 5235.99f : 1047.2f;
-                            chev_line.position = new ReticleTree.Position(0.5f * i, -0.85f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+                            chev_line.position = new ReticleTree.Position(0.48f * i, -0.90f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
                             chev_line.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
 
                             ReticleTree.Line side = new ReticleTree.Line();
@@ -418,7 +434,8 @@ namespace PactIncreasedLethality
                             border_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
                             border_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
 
-                            if (Math.Abs(pos.x) == 1) { 
+                            if (Math.Abs(pos.x) == 1)
+                            {
                                 border_line.rotation = 1570.8f;
                             }
 
@@ -431,7 +448,7 @@ namespace PactIncreasedLethality
 
                             ReticleTree.Line border_line2 = new ReticleTree.Line();
                             Util.ShallowCopy(border_line2, border_line);
-                            border_line2.length.mrad = 2.0944f / 1.01f;
+                            border_line2.length.mrad = 2.3944f;
                             border_line2.thickness.mrad = 0.1833f * 2f;
                             border_line2.position = new ReticleTree.Position(33f * pos.x, 33f * pos.y, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
 
@@ -462,15 +479,15 @@ namespace PactIncreasedLethality
                         eeeee.elements.Add(middle_line2);
                         eeeee.elements.Add(middle_line3);
 
-                        reticleSO_sosna.planes[0].elements.Add(eeeee);
+                        impact.elements.Add(eeeee);
+                        reticleSO_sosna.planes[0].elements.Add(impact);
                     }
 
                     fcs._fixParallaxForVectorMode = true;
-                    fcs.LaserOrigin.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
                     fcs.SuperelevateWeapon = true;
                     fcs.LaserAim = LaserAimMode.ImpactPoint;
-                    //fcs.SuperelevateFireGating = true;
-                    fcs.FireGateAngle = 0.8f;
+                    fcs.SuperelevateFireGating = false;
+                    fcs.FireGateAngle = 0.5f;
                     fcs.SuperleadWeapon = true;
                     fcs.InertialCompensation = false;
                     fcs.RecordTraverseRateBuffer = true;
@@ -478,9 +495,14 @@ namespace PactIncreasedLethality
                     fcs._autoDumpViaPalmSwitches = true;
                     fcs.UseDeltaD = false;
                     fcs.ActiveDeltaD = false;
+                    fcs.ImperfectDeltaD = false;
                     fcs.RegisteredRangeLimits = new Vector2(200f, 4000f);
                     fcs.CurrentRange = 200f;
-                    fcs.transform.localPosition = new Vector3(-0.603f, 0.6288f, -5.547f);
+                    fcs.GatedAimablePlatforms = fcs.Mounts;
+                    fcs.FireGateOverrideTransform = null;
+                    //fcs.transform.localPosition = new Vector3(-0.603f, 0.6288f, -5.547f);
+                    fcs.transform.localPosition = new Vector3(-0.803f, 0.32f, -5.547f);
+                    fcs.LaserOrigin = fcs.transform;
 
                     vic.GetComponent<WeaponsManager>().Weapons[1].ExcludeFromFcsUpdates = false;
                     vic.GetComponent<WeaponsManager>().Weapons[1].PreAimWeapon = WeaponSystemRole.Coaxial;
@@ -504,6 +526,7 @@ namespace PactIncreasedLethality
                     day_optic.slot.VibrationShakeMultiplier = 0f;
                     day_optic.slot.VibrationBlurScale = 0f;
                     day_optic.RotateAzimuth = true;
+                    day_optic.ForceHorizontalReticleAlign = true;
                     day_optic.reticleMesh.reticleSO = reticleSO_sosna;
                     day_optic.reticleMesh.reticle = reticle_cached_sosna;
                     day_optic.reticleMesh.SMR = null;
@@ -528,7 +551,7 @@ namespace PactIncreasedLethality
                     range.GetComponentInChildren<TMP_Text>().outlineWidth = 1f;
                     day_optic.RangeTextDivideBy = 1;
                     day_optic.RangeTextQuantize = 1;
-                    
+
                     Transform ready_backing = range.transform.GetChild(0);
                     Component.DestroyImmediate(ready_backing.gameObject.GetComponent<Image>());
                     Image image = ready_backing.gameObject.AddComponent<Image>();
@@ -549,7 +572,8 @@ namespace PactIncreasedLethality
             yield break;
         }
 
-        public static void Init() {
+        public static void Init()
+        {
             if (!t72_patch.Value) return;
 
             if (!range_readout)
@@ -576,9 +600,12 @@ namespace PactIncreasedLethality
                 }
             }
 
-            if (soviet_crew_voice == null) {
-                foreach (CrewVoiceHandler obj in Resources.FindObjectsOfTypeAll(typeof(CrewVoiceHandler))) {
-                    if (obj.name == "RU Tank Voice") {
+            if (soviet_crew_voice == null)
+            {
+                foreach (CrewVoiceHandler obj in Resources.FindObjectsOfTypeAll(typeof(CrewVoiceHandler)))
+                {
+                    if (obj.name == "RU Tank Voice")
+                    {
                         soviet_crew_voice = obj.gameObject;
                         break;
                     }
@@ -617,15 +644,18 @@ namespace PactIncreasedLethality
             {
                 foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
                 {
-                    if (s.AmmoType.Name == "3BM15 APFSDS-T") { ammo_3bm15 = s.AmmoType; break; }
+                    if (s.AmmoType.Name == "3BM15 APFSDS-T") { ammo_3bm15 = s.AmmoType; }
+                    if (s.AmmoType.Name == "3OF26 HEF-FS-T") { ammo_3of26 = s.AmmoType; }
+
+                    if (ammo_3bm15 != null && ammo_3of26 != null) break;
                 }
 
                 foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
                 {
-                    if (s.name == "clip_3BM22") {clip_codex_3bm22 = s; break; }
+                    if (s.name == "clip_3BM22") { clip_codex_3bm22 = s; break; }
                 }
 
-                var composite_optimizations_3bm26 = new List<AmmoType.ArmorOptimization>() {};
+                var composite_optimizations_3bm26 = new List<AmmoType.ArmorOptimization>() { };
                 var composite_optimizations_3bm42 = new List<AmmoType.ArmorOptimization>() { };
 
                 string[] composite_names = new string[] {
@@ -639,8 +669,10 @@ namespace PactIncreasedLethality
                     "Kvartz"
                 };
 
-                foreach (ArmorCodexScriptable s in Resources.FindObjectsOfTypeAll<ArmorCodexScriptable>()) { 
-                    if (composite_names.Contains(s.name)) { 
+                foreach (ArmorCodexScriptable s in Resources.FindObjectsOfTypeAll<ArmorCodexScriptable>())
+                {
+                    if (composite_names.Contains(s.name))
+                    {
                         AmmoType.ArmorOptimization optimization_3bm26 = new AmmoType.ArmorOptimization();
                         optimization_3bm26.Armor = s;
                         optimization_3bm26.RhaRatio = 0.80f;
@@ -648,21 +680,22 @@ namespace PactIncreasedLethality
 
                         AmmoType.ArmorOptimization optimization_3bm42 = new AmmoType.ArmorOptimization();
                         optimization_3bm42.Armor = s;
-                        optimization_3bm42.RhaRatio = 0.72f;
+                        optimization_3bm42.RhaRatio = 0.75f;
                         composite_optimizations_3bm42.Add(optimization_3bm42);
                     }
 
-                    if (composite_optimizations_3bm26.Count == composite_names.Length) break;       
+                    if (composite_optimizations_3bm26.Count == composite_names.Length) break;
                 }
 
                 ammo_3bm26 = new AmmoType();
                 Util.ShallowCopy(ammo_3bm26, ammo_3bm15);
                 ammo_3bm26.Name = "3BM26 APFSDS-T";
                 ammo_3bm26.Caliber = 125;
-                ammo_3bm26.RhaPenetration = 420f;
+                ammo_3bm26.RhaPenetration = 440f;
                 ammo_3bm26.Mass = 4.8f;
                 ammo_3bm26.MuzzleVelocity = 1720f;
                 ammo_3bm26.ArmorOptimizations = composite_optimizations_3bm26.ToArray<AmmoType.ArmorOptimization>();
+                ammo_3bm26.SpallMultiplier = 0.9f;
 
                 ammo_codex_3bm26 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
                 ammo_codex_3bm26.AmmoType = ammo_3bm26;
@@ -691,6 +724,7 @@ namespace PactIncreasedLethality
                 ammo_3bm42.RhaPenetration = 510f;
                 ammo_3bm42.Mass = 4.85f;
                 ammo_3bm42.MuzzleVelocity = 1700f;
+                ammo_3bm42.SpallMultiplier = 0.92f;
                 ammo_3bm42.ArmorOptimizations = composite_optimizations_3bm42.ToArray<AmmoType.ArmorOptimization>();
 
                 ammo_codex_3bm42 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
@@ -712,6 +746,36 @@ namespace PactIncreasedLethality
                 ammo_3bm42.VisualModel = ammo_3bm42_vis;
                 ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm42;
                 ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm42;
+
+                ammo_3of26_vt = new AmmoType();
+                Util.ShallowCopy(ammo_3of26_vt, ammo_3of26);
+                ammo_3of26_vt.Name = "3OF26M HE-T PF";
+                ammo_3of26_vt.MinSpallRha = 20f;
+                ammo_3of26_vt.MaxSpallRha = 60f;
+                //ammo_3of26_vt.MuzzleVelocity = 1360f;
+                ammo_3of26_vt.Coeff = ammo_3bm42.Coeff / 2f;
+
+                ammo_codex_3of26_vt = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+                ammo_codex_3of26_vt.AmmoType = ammo_3of26_vt;
+                ammo_codex_3of26_vt.name = "ammo_3of26_vt";
+
+                clip_3of26_vt = new AmmoType.AmmoClip();
+                clip_3of26_vt.Capacity = 1;
+                clip_3of26_vt.Name = "3OF26M HE-T PF";
+                clip_3of26_vt.MinimalPattern = new AmmoCodexScriptable[1];
+                clip_3of26_vt.MinimalPattern[0] = ammo_codex_3of26_vt;
+
+                clip_codex_3of26_vt = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+                clip_codex_3of26_vt.name = "clip_3of26_vt";
+                clip_codex_3of26_vt.ClipType = clip_3of26_vt;
+
+                ammo_3of26_vt_vis = GameObject.Instantiate(ammo_3of26.VisualModel);
+                ammo_3of26_vt_vis.name = "3OF26 VT visual";
+                ammo_3of26_vt.VisualModel = ammo_3of26_vt_vis;
+                ammo_3of26_vt.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3of26_vt;
+                ammo_3of26_vt.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3of26_vt;
+
+                ProximityFuse.AddProximityFuse(ammo_3of26_vt);
 
                 ap = new Dictionary<string, AmmoClipCodexScriptable>()
                 {

@@ -76,7 +76,8 @@ namespace PactIncreasedLethality
     public class BMP1
     {
         static MelonPreferences_Entry<bool> bmp1_patch;
-        static MelonPreferences_Entry<bool> ags_17;
+        static MelonPreferences_Entry<bool> ags_17_bmp1;
+        static MelonPreferences_Entry<bool> ags_17_bmp1p;
         static MelonPreferences_Entry<bool> vog17m1_hedp;
 
         static WeaponSystemCodexScriptable gun_ags17;
@@ -97,8 +98,11 @@ namespace PactIncreasedLethality
             bmp1_patch = cfg.CreateEntry<bool>("BMP-1 Patch", true);
             bmp1_patch.Description = "///////////////";
 
-            ags_17 = cfg.CreateEntry<bool>("AGS-17D Coax", true);
-            ags_17.Comment = "Replaces PKT coax with AGS-17D 30mm grenade launcher";
+            ags_17_bmp1 = cfg.CreateEntry<bool>("AGS-17D Coax (BMP-1)", true);
+            ags_17_bmp1.Comment = "Replaces PKT coax with AGS-17D 30mm grenade launcher";
+
+            ags_17_bmp1p = cfg.CreateEntry<bool>("AGS-17D Coax (BMP-1P)", true);
+            ags_17_bmp1p.Comment = "Replaces PKT coax with AGS-17D 30mm grenade launcher";
 
             vog17m1_hedp = cfg.CreateEntry<bool>("Use VOG-17M1 HEDP", false);
             vog17m1_hedp.Comment = "Fictional grenade for the AGS-17D. Behaves like a HEAT round";
@@ -111,9 +115,12 @@ namespace PactIncreasedLethality
                 Vehicle vic = vic_go.GetComponent<Vehicle>();
 
                 if (vic == null) continue;
-                if (!vic.FriendlyName.Contains("BMP-1")) continue;
 
-                if (!vic.FriendlyName.Contains("G") && ags_17.Value)
+                string name = vic.FriendlyName;
+
+                if (!name.Contains("BMP-1")) continue;
+
+                if (!name.Contains("G") && (ags_17_bmp1.Value && name == "BMP-1") || (ags_17_bmp1p.Value && name == "BMP-1P"))
                 {
                     LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
                     WeaponSystem coax = vic.GetComponent<WeaponsManager>().Weapons[2].Weapon;

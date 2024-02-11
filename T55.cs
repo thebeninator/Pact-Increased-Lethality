@@ -379,9 +379,11 @@ namespace PactIncreasedLethality
                 ammo_3bk17m.Name = "3BK17M HEAT-FS-T";
                 ammo_3bk17m.Mass = 10.0f;
                 ammo_3bk17m.Coeff = 0.25f;
-                ammo_3bk17m.MuzzleVelocity = 1085f;
+                //ammo_3bk17m.MuzzleVelocity = 1085f;
+                ammo_3bk17m.MuzzleVelocity = 400f;
                 ammo_3bk17m.RhaPenetration = 400f;
-                ammo_3bk17m.TntEquivalentKg = 0.25f;
+                //ammo_3bk17m.TntEquivalentKg = 0.25f;
+                ammo_3bk17m.TntEquivalentKg = 2f;
 
                 ammo_codex_3bk17m = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
                 ammo_codex_3bk17m.AmmoType = ammo_3bk17m;
@@ -415,6 +417,7 @@ namespace PactIncreasedLethality
                 ammo_9m117.TurnSpeed = 0.18f;
                 ammo_9m117.ShotVisual = ammo_9m111.ShotVisual;
                 ammo_9m117.RangedFuseTime = 12.5f;
+                ammo_9m117.Category = AmmoType.AmmoCategory.ShapedCharge;
                 ammo_9m117.SpiralPower = 25f;
                 ammo_9m117.SpiralAngularRate = 1800f;
                 ammo_9m117.ArmingDistance = 45f;

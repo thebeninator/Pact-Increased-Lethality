@@ -17,7 +17,7 @@ using GHPC.Audio;
 using GHPC.Player;
 using GHPC.Camera;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.2.5", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.3.5", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -66,6 +66,8 @@ namespace PactIncreasedLethality
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Medium);
             Kontakt1.Init();
+            ProximityFuse.Init();
+            EFP.Init();
             T72.Init();
             BMP2.Init();
             T55.Init();
