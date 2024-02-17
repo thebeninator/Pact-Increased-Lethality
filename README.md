@@ -8,7 +8,7 @@ Correct installation of this mod:
 
 Current config looks like this:
 
-![Screenshot_10](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/42ecf3be-6a8a-41b7-ad44-c89d2a7520e7)
+![Screenshot_10](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/564ca7ab-111c-4cda-8e23-aa2ab9939112)
 
 To regenerate the config:
 1) Delete this mod's section
