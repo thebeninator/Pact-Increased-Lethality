@@ -96,7 +96,7 @@ namespace PactIncreasedLethality
         public static void Config(MelonPreferences_Category cfg)
         {
             bmp1_patch = cfg.CreateEntry<bool>("BMP-1 Patch", true);
-            bmp1_patch.Description = "///////////////";
+            bmp1_patch.Description = "//////////////////////////////////////////////////////////////////////////////////////////";
 
             ags_17_bmp1 = cfg.CreateEntry<bool>("AGS-17D Coax (BMP-1)", true);
             ags_17_bmp1.Comment = "Replaces PKT coax with AGS-17D 30mm grenade launcher";

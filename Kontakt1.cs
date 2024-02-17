@@ -56,7 +56,7 @@ namespace PactIncreasedLethality
         public static void Config(MelonPreferences_Category cfg)
         {
             sabot_eater = cfg.CreateEntry<bool>("Super Kontakt-1", false);
-            sabot_eater.Description = "///////////////";
+            sabot_eater.Description = "//////////////////////////////////////////////////////////////////////////////////////////";
             sabot_eater.Comment = "Drastically increases Kontakt-1's ability to stop AP rounds";
 
             sphere_colliders = cfg.CreateEntry<bool>("Spherical Colliders", false);

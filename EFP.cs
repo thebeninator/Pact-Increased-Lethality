@@ -57,10 +57,10 @@ namespace PactIncreasedLethality
             RaycastHit hit;
             Vector3 pos = live_round.transform.position;
 
-            if (Physics.Raycast(pos, Vector3.down, out hit, 1.5f, 1 << 8))
+            if (Physics.Raycast(pos, Vector3.down, out hit, 1.8f, 1 << 8))
             {
                 if (hit.collider.CompareTag("Penetrable"))
-                    Invoke("Detonate", 0.8f / (live_round.CurrentSpeed + hit.distance));
+                    Invoke("Detonate", 0.85f / (live_round.CurrentSpeed + hit.distance));
                 
             }
         }
@@ -112,8 +112,8 @@ namespace PactIncreasedLethality
                         .GetComponent<GHPC.Weapons.LiveRound>();
 
                     component.Info = penetrator;
-                    component.CurrentSpeed = 400f;
-                    component.MaxSpeed = 400f;
+                    component.CurrentSpeed = 1500f;
+                    component.MaxSpeed = 1500f;
                     component.IsSpall = false;
                     component.Shooter = __instance.Shooter;
                     component.transform.position = __instance.transform.position;
@@ -129,11 +129,11 @@ namespace PactIncreasedLethality
                             .GetComponent<GHPC.Weapons.LiveRound>();
 
                         component2.Info = penetrator;
-                        component2.CurrentSpeed = 400f;
-                        component2.MaxSpeed = 400f;
+                        component2.CurrentSpeed = 1500f;
+                        component2.MaxSpeed = 1500f;
                         component2.IsSpall = false;
                         component2.Shooter = __instance.Shooter;
-                        component2.transform.position = __instance.transform.position - __instance.transform.forward * 0.35f;
+                        component2.transform.position = __instance.transform.position - __instance.transform.forward * 0.15f;
                         component2.transform.forward = Vector3.down;
 
                         component2.Init(null, null);

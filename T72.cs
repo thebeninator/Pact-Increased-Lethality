@@ -38,6 +38,7 @@ namespace PactIncreasedLethality
         static ReticleMesh.CachedReticle reticle_cached_sosna;
 
         static AmmoClipCodexScriptable clip_codex_3bm22;
+        static AmmoClipCodexScriptable clip_codex_3bm32;
 
         static AmmoClipCodexScriptable clip_codex_3bm26;
         static AmmoType.AmmoClip clip_3bm26;
@@ -82,29 +83,45 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> super_fcs_t72m;
         static MelonPreferences_Entry<bool> super_fcs_t72m1;
 
+        static MelonPreferences_Entry<List<string>> empty_ammo_t72m;
+        static MelonPreferences_Entry<List<string>> empty_ammo_t72m1;
+
         static Dictionary<string, AmmoClipCodexScriptable> ap;
+        static Dictionary<string, int> ammo_racks = new Dictionary<string, int>() {
+            ["Hull Wet"] = 1,
+            ["Hull Rear"] = 2,
+            ["Hull Front"] = 3,
+            ["Turret Spare"] = 4
+        };
 
         static GameObject soviet_crew_voice;
 
         public static void Config(MelonPreferences_Category cfg)
         {
+            var racks = new List<string>()
+            {
+                "Hull Wet", 
+                "Hull Rear",
+                "Hull Front",
+                "Turret Spare",
+            }; 
+
             t72_patch = cfg.CreateEntry<bool>("T-72 Patch", true);
-            t72_patch.Description = "///////////////";
+            t72_patch.Description = "//////////////////////////////////////////////////////////////////////////////////////////";
 
             t72m_ammo_type = cfg.CreateEntry<string>("AP Round (T-72M)", "3BM22");
-            t72m_ammo_type.Comment = "3BM15, 3BM22, 3BM26 (composite optimized), 3BM42 (composite optimized)";
+            t72m_ammo_type.Comment = "3BM15, 3BM22, 3BM32, 3BM26 (composite optimized), 3BM42 (composite optimized)";
 
-            t72m1_ammo_type = cfg.CreateEntry<string>("AP Round (T-72M1)", "3BM22");
-            t72m1_ammo_type.Comment = "3BM15, 3BM22, 3BM26 (composite optimized), 3BM42 (composite optimized)";
+            t72m1_ammo_type = cfg.CreateEntry<string>("AP Round (T-72M1)", "3BM32");
 
             t72m_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-72M)", false);
-            t72m_random_ammo.Comment = "Randomizes ammo selection for T-72Ms (3BM22, 3BM26, 3BM42)";
+            t72m_random_ammo.Comment = "Randomizes ammo selection for T-72Ms (3BM22, 3BM26, 3BM32, 3BM42)";
 
             t72m1_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-72M1)", false);
-            t72m1_random_ammo.Comment = "Randomizes ammo selection for T-72M1s (3BM22, 3BM26, 3BM42)";
 
             thermals = cfg.CreateEntry<bool>("Has Thermals", true);
             thermals.Comment = "Replaces night vision sight with thermal sight";
+            thermals.Description = " ";
 
             thermals_boxing = cfg.CreateEntry<bool>("Disable Thermal Boxing", false);
             thermals_boxing.Comment = "Removes the box border around the thermal sight";
@@ -114,24 +131,31 @@ namespace PactIncreasedLethality
 
             era_t72m1 = cfg.CreateEntry<bool>("Kontakt-1 ERA (T-72M1)", true);
             era_t72m1.Comment = "BRICK ME UP LADS";
+            era_t72m1.Description = " ";
 
             era_t72m = cfg.CreateEntry<bool>("Kontakt-1 ERA (T-72M)", false);
             era_t72m.Comment = "BRICK ME UP LADS (gill variants will not have side-skirt ERA)";
 
-            only_carousel = cfg.CreateEntry<bool>("Only load carousel", false);
-            only_carousel.Comment = "Only the carousel will be loaded with ammo; no restocking but reduced ammo cookoff probability";
+            only_carousel = cfg.CreateEntry<bool>("Reduced Ammo Load", false);
+            only_carousel.Comment = "Allows you to specify which ammo racks should be emptied (except carousel)";
+            only_carousel.Description = " ";
+
+            empty_ammo_t72m = cfg.CreateEntry<List<string>>("Empty Ammo Racks (T-72M)", racks);
+            empty_ammo_t72m1 = cfg.CreateEntry<List<string>>("Empty Ammo Racks (T-72M1)", racks);
+            empty_ammo_t72m.Comment = "Hull Wet, Hull Rear, Hull Front, Turret Spare";
 
             soviet_t72m = cfg.CreateEntry<bool>("Soviet Crew (T-72M)", false);
             soviet_t72m.Comment = "Also renames the tank to T-72 and removes NVA decals";
+            soviet_t72m.Description = " ";
 
             soviet_t72m1 = cfg.CreateEntry<bool>("Soviet Crew (T-72M1)", false);
             soviet_t72m1.Comment = "Also renames the tank to T-72A and removes NVA decals";
 
             super_fcs_t72m = cfg.CreateEntry<bool>("Super FCS (T-72M)", false);
             super_fcs_t72m.Comment = "basically sosna-u lol (digital 4x-12x zoom, 2-axis stabilizer w/ lead, point-n-shoot)";
+            super_fcs_t72m.Description = " ";
 
             super_fcs_t72m1 = cfg.CreateEntry<bool>("Super FCS (T-72M1)", false);
-            super_fcs_t72m1.Comment = "basically sosna-u lol (digital 4x-12x zoom, 2-axis stabilizer w/ lead, point-n-shoot)";
         }
 
         public static IEnumerator Convert(GameState _)
@@ -236,12 +260,13 @@ namespace PactIncreasedLethality
                 UsableOptic day_optic = Util.GetDayOptic(fcs);
 
                 string ammo_str = (vic.UniqueName == "T72M") ? t72m_ammo_type.Value : t72m1_ammo_type.Value;
+                int rand = UnityEngine.Random.Range(0, ap.Count);
 
                 if (t72m_random_ammo.Value && vic.UniqueName == "T72M")
-                    ammo_str = ap.ElementAt(UnityEngine.Random.Range(0, ap.Count)).Key;
+                    ammo_str = ap.ElementAt(rand).Key;
 
                 if (t72m1_random_ammo.Value && vic.UniqueName == "T72A")
-                    ammo_str = ap.ElementAt(UnityEngine.Random.Range(0, ap.Count)).Key;
+                    ammo_str = ap.ElementAt(rand).Key;
 
                 try
                 {
@@ -263,7 +288,12 @@ namespace PactIncreasedLethality
 
                     if (only_carousel.Value)
                     {
-                        for (int i = 1; i <= 4; i++) Util.EmptyRack(loadout_manager.RackLoadouts[i].Rack);
+                        var to_empty = vic.UniqueName == "T72M" ? empty_ammo_t72m.Value : empty_ammo_t72m1.Value;
+
+                        foreach (string rack in to_empty) {
+                            int idx = ammo_racks[rack];
+                            Util.EmptyRack(loadout_manager.RackLoadouts[idx].Rack);
+                        }
                     }
                 }
                 catch (Exception)
@@ -522,6 +552,8 @@ namespace PactIncreasedLethality
 
                     day_optic.gameObject.AddComponent<DigitalZoomSnapper>();
                     day_optic.UseRotationForShake = true;
+                    day_optic.CantCorrect = true;
+                    day_optic.CantCorrectMaxSpeed = 5f;
                     day_optic.Alignment = OpticAlignment.FcsRange;
                     day_optic.slot.VibrationShakeMultiplier = 0f;
                     day_optic.slot.VibrationBlurScale = 0f;
@@ -652,14 +684,16 @@ namespace PactIncreasedLethality
 
                 foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
                 {
-                    if (s.name == "clip_3BM22") { clip_codex_3bm22 = s; break; }
+                    if (s.name == "clip_3BM22") { clip_codex_3bm22 = s; }
+                    if (s.name == "clip_3BM32") { clip_codex_3bm32 = s; }
+
+                    if (clip_codex_3bm22 != null && clip_codex_3bm32 != null) break;
                 }
 
                 var composite_optimizations_3bm26 = new List<AmmoType.ArmorOptimization>() { };
                 var composite_optimizations_3bm42 = new List<AmmoType.ArmorOptimization>() { };
 
                 string[] composite_names = new string[] {
-                    "Abrams composite skirts",
                     "Abrams special armor gen 1 hull front",
                     "Abrams special armor gen 1 mantlet",
                     "Abrams special armor gen 1 turret cheeks",
@@ -671,7 +705,7 @@ namespace PactIncreasedLethality
 
                 foreach (ArmorCodexScriptable s in Resources.FindObjectsOfTypeAll<ArmorCodexScriptable>())
                 {
-                    if (composite_names.Contains(s.name))
+                    if (composite_names.Contains(s.name) || (s.name.Contains("Abrams") && s.name.Contains("composite")))
                     {
                         AmmoType.ArmorOptimization optimization_3bm26 = new AmmoType.ArmorOptimization();
                         optimization_3bm26.Armor = s;
@@ -680,7 +714,7 @@ namespace PactIncreasedLethality
 
                         AmmoType.ArmorOptimization optimization_3bm42 = new AmmoType.ArmorOptimization();
                         optimization_3bm42.Armor = s;
-                        optimization_3bm42.RhaRatio = 0.75f;
+                        optimization_3bm42.RhaRatio = 0.78f;
                         composite_optimizations_3bm42.Add(optimization_3bm42);
                     }
 
@@ -721,10 +755,10 @@ namespace PactIncreasedLethality
                 Util.ShallowCopy(ammo_3bm42, ammo_3bm15);
                 ammo_3bm42.Name = "3BM42 APFSDS-T";
                 ammo_3bm42.Caliber = 125;
-                ammo_3bm42.RhaPenetration = 510f;
+                ammo_3bm42.RhaPenetration = 520f;
                 ammo_3bm42.Mass = 4.85f;
                 ammo_3bm42.MuzzleVelocity = 1700f;
-                ammo_3bm42.SpallMultiplier = 0.92f;
+                ammo_3bm42.SpallMultiplier = 0.95f;
                 ammo_3bm42.ArmorOptimizations = composite_optimizations_3bm42.ToArray<AmmoType.ArmorOptimization>();
 
                 ammo_codex_3bm42 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
@@ -781,6 +815,7 @@ namespace PactIncreasedLethality
                 {
                     ["3BM22"] = clip_codex_3bm22,
                     ["3BM26"] = clip_codex_3bm26,
+                    ["3BM32"] = clip_codex_3bm32,
                     ["3BM42"] = clip_codex_3bm42,
                 };
             }

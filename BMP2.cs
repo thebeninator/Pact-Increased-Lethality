@@ -51,14 +51,14 @@ namespace PactIncreasedLethality
         public static void Config(MelonPreferences_Category cfg)
         {
             bmp2_patch = cfg.CreateEntry<bool>("BMP-2 Patch", true);
-            bmp2_patch.Description = "///////////////";
+            bmp2_patch.Description = "//////////////////////////////////////////////////////////////////////////////////////////";
             use_3ubr8 = cfg.CreateEntry<bool>("Use 3UBR8", true);
             use_3ubr8.Comment = "Replaces 3UBR6; has improved penetration and better ballistics";
 
             use_3uof8 = cfg.CreateEntry<bool>("Use 3UOF8", true);
             use_3uof8.Comment = "Mixed belt of 3UOR6 and 3UOF8 (1:2); 3UOF8 has more explosive filler but no tracer";
 
-            use_9m113as = cfg.CreateEntry<bool>("Use 9M113AS", true);
+            use_9m113as = cfg.CreateEntry<bool>("Use 9M113AS", false);
             use_9m113as.Comment = "Fictional overfly-top-attack ATGM with dual warhead; aim above target";
         }
 
