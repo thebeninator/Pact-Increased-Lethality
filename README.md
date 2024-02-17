@@ -32,6 +32,7 @@ To regenerate the config:
 - New APFSDS rounds
   - 3BM22 (better penetration compared to 3BM15)
   - 3BM26 (slightly better penetration compared to 3BM15, effective against composites)
+  - 3BM32
   - 3BM42 (very effective against composites)
   - Option to randomize ammo selection
 - Thermal sight
@@ -47,9 +48,8 @@ To regenerate the config:
   - 2-axis stabilizer w/ lead
   - Point-n-Shoot
 - Soviet crews (disabled by default)
-- Only load carousel (disabled by default)
+- Select which ammo racks to load (disabled by default)
   - Reduces probability that penetrating hits will hit and detonate ammo
-  - Gets rid of ability to restock
  
 Demo vid: https://youtu.be/lpvLtdIQ-js
 
