@@ -219,10 +219,11 @@ namespace PactIncreasedLethality
                 AmmoType ammo_9m113_efp = new AmmoType();
                 ammo_9m113_efp.Name = "9M113AS Konkurs EFP";
                 ammo_9m113_efp.Category = AmmoType.AmmoCategory.Explosive;
-                ammo_9m113_efp.RhaPenetration = 500f;
+                ammo_9m113_efp.RhaPenetration = 300f;
+                ammo_9m113_efp.Normalize = true;
                 ammo_9m113_efp.Mass = 3f;
                 ammo_9m113_efp.TntEquivalentKg = 0.9f;
-                ammo_9m113_efp.ImpactFuseTime = 0.0001f;
+                ammo_9m113_efp.ImpactFuseTime = 0.005f;
                 ammo_9m113_efp.SectionalArea = ammo_9m113_as.SectionalArea / 1.5f;
 
                 EFP.AddEFP(ammo_9m113_as, ammo_9m113_efp, true);

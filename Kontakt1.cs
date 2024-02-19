@@ -112,7 +112,7 @@ namespace PactIncreasedLethality
                 {
                     kontakt1_so = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
                     kontakt1_so.name = "kontakt-1 armour";
-                    kontakt1_armour.RhaeMultiplierKe = sabot_eater.Value ? 1.3f : 0.5f;
+                    kontakt1_armour.RhaeMultiplierKe = sabot_eater.Value ? 1.2f : 0.5f;
                     kontakt1_armour.RhaeMultiplierCe = 1.75f;
                     kontakt1_armour.CanRicochet = false;
                     kontakt1_armour.CrushThicknessModifier = 1f;
