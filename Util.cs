@@ -42,7 +42,6 @@ namespace PactIncreasedLethality
             {
                 return fcs.MainOptic;
             }
-
         }
 
         public static void EmptyRack(GHPC.Weapons.AmmoRack rack)
