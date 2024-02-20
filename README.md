@@ -75,3 +75,7 @@ Demo vid: https://youtu.be/lpvLtdIQ-js
   - Dual EFP warhead
 
 [Desktop 2024.02.10 - 14.36.30.05.DVR.webm](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e9d0899a-9e91-44e4-9877-e7d2a6786a36)
+
+# T-64A
+- Super engine & transmission
+  - Equivalent to the M1 Abrams
