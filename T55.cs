@@ -186,11 +186,12 @@ namespace PactIncreasedLethality
                 {
                     continue;
                 }
-
+                
                 GameObject t = GameObject.Instantiate(range_readout);
                 t.GetComponent<Reparent>().NewParent = Util.GetDayOptic(fcs).transform;
                 t.transform.GetChild(0).transform.localPosition = new Vector3(-284.1897f, -5.5217f, 0.1f);
                 t.SetActive(true);
+                
                 if (use_9m117.Value)
                 {
                     if (!reticleSO_atgm)
@@ -329,7 +330,7 @@ namespace PactIncreasedLethality
                 day_optic.reticleMesh.reticleSO = reticleSO;
                 day_optic.reticleMesh.reticle = reticle_cached;
                 day_optic.reticleMesh.SMR = null;
-                day_optic.reticleMesh.Load();
+                day_optic.reticleMesh.Load();                   
             }
 
             yield break;

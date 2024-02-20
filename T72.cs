@@ -159,7 +159,7 @@ namespace PactIncreasedLethality
         }
 
         public static IEnumerator Convert(GameState _)
-        {
+        {  
             foreach (GameObject armor_go in GameObject.FindGameObjectsWithTag("Penetrable"))
             {
                 if (!era_t72m1.Value && !era_t72m.Value) break;
@@ -169,6 +169,9 @@ namespace PactIncreasedLethality
                 if (!armor_go.GetComponent<LateFollow>()) continue;
 
                 IUnit parent = armor_go.GetComponent<LateFollow>().ParentUnit;
+
+                if (parent == null) continue;
+
                 string name = parent.FriendlyName;
 
                 bool t72m = era_t72m.Value && name == "T-72M";
@@ -198,6 +201,7 @@ namespace PactIncreasedLethality
                     turret_array.transform.localPosition = new Vector3(0.0199f, 2.1973f, -0.8363f);
                 }
             }
+            
 
             foreach (GameObject vic_go in PactIncreasedLethalityMod.vic_gos)
             {
@@ -402,7 +406,7 @@ namespace PactIncreasedLethality
                             }
                         }
                     }
-
+                    
                     if (!reticleSO_sosna)
                     {
                         reticleSO_sosna = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55"].tree);
