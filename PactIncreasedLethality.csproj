@@ -92,6 +92,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="APFSDS_125mm.cs" />
     <Compile Include="BMP1.cs" />
     <Compile Include="BMP2.cs" />
     <Compile Include="DigitalZoomSnapper.cs" />

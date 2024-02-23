@@ -40,26 +40,11 @@ namespace PactIncreasedLethality
         static AmmoClipCodexScriptable clip_codex_3bm22;
         static AmmoClipCodexScriptable clip_codex_3bm32;
 
-        static AmmoClipCodexScriptable clip_codex_3bm26;
-        static AmmoType.AmmoClip clip_3bm26;
-        static AmmoCodexScriptable ammo_codex_3bm26;
-        static AmmoType ammo_3bm26;
-        static GameObject ammo_3bm26_vis = null;
-
-        static AmmoClipCodexScriptable clip_codex_3bm42;
-        static AmmoType.AmmoClip clip_3bm42;
-        static AmmoCodexScriptable ammo_codex_3bm42;
-        static AmmoType ammo_3bm42;
-        static GameObject ammo_3bm42_vis = null;
-
         static AmmoClipCodexScriptable clip_codex_3of26_vt;
         static AmmoType.AmmoClip clip_3of26_vt;
         static AmmoCodexScriptable ammo_codex_3of26_vt;
         static AmmoType ammo_3of26_vt;
         static GameObject ammo_3of26_vt_vis = null;
-
-        static AmmoType ammo_3bm15;
-        static AmmoType ammo_3of26;
 
         static MelonPreferences_Entry<bool> t72_patch;
         static MelonPreferences_Entry<string> t72m_ammo_type;
@@ -159,7 +144,17 @@ namespace PactIncreasedLethality
         }
 
         public static IEnumerator Convert(GameState _)
-        {  
+        {
+            if (ap == null)
+                ap = new Dictionary<string, AmmoClipCodexScriptable>()
+                {
+                    ["3BM22"] = APFSDS_125mm.clip_codex_3bm22,
+                    ["3BM26"] = APFSDS_125mm.clip_codex_3bm26,
+                    ["3BM32"] = APFSDS_125mm.clip_codex_3bm32,
+                    ["3BM42"] = APFSDS_125mm.clip_codex_3bm42,
+                };
+
+
             foreach (GameObject armor_go in GameObject.FindGameObjectsWithTag("Penetrable"))
             {
                 if (!era_t72m1.Value && !era_t72m.Value) break;
@@ -431,7 +426,7 @@ namespace PactIncreasedLethality
                         reticleSO_sosna.planes[0].elements = new List<ReticleTree.TransformElement>();
                         ReticleTree.Angular eeeee = new ReticleTree.Angular(new Vector2(), null);
                         eeeee.name = "Angular";
-                        eeeee.align = ReticleTree.GroupBase.Alignment.None;
+                        eeeee.align = ReticleTree.GroupBase.Alignment.Impact;
 
 
                         for (int i = -1; i <= 1; i += 2)
@@ -676,154 +671,7 @@ namespace PactIncreasedLethality
                 }
             }
 
-            if (ammo_3bm26 == null)
-            {
-                foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
-                {
-                    if (s.AmmoType.Name == "3BM15 APFSDS-T") { ammo_3bm15 = s.AmmoType; }
-                    if (s.AmmoType.Name == "3OF26 HEF-FS-T") { ammo_3of26 = s.AmmoType; }
-
-                    if (ammo_3bm15 != null && ammo_3of26 != null) break;
-                }
-
-                foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
-                {
-                    if (s.name == "clip_3BM22") { clip_codex_3bm22 = s; }
-                    if (s.name == "clip_3BM32") { clip_codex_3bm32 = s; }
-
-                    if (clip_codex_3bm22 != null && clip_codex_3bm32 != null) break;
-                }
-
-                var composite_optimizations_3bm26 = new List<AmmoType.ArmorOptimization>() { };
-                var composite_optimizations_3bm42 = new List<AmmoType.ArmorOptimization>() { };
-
-                string[] composite_names = new string[] {
-                    "Abrams special armor gen 1 hull front",
-                    "Abrams special armor gen 1 mantlet",
-                    "Abrams special armor gen 1 turret cheeks",
-                    "Abrams special armor gen 1 turret sides",
-                    "Abrams special armor gen 0 turret cheeks",
-                    "Corundum ball armor",
-                    "Kvartz"
-                };
-
-                foreach (ArmorCodexScriptable s in Resources.FindObjectsOfTypeAll<ArmorCodexScriptable>())
-                {
-                    if (composite_names.Contains(s.name) || (s.name.Contains("Abrams") && s.name.Contains("composite")))
-                    {
-                        AmmoType.ArmorOptimization optimization_3bm26 = new AmmoType.ArmorOptimization();
-                        optimization_3bm26.Armor = s;
-                        optimization_3bm26.RhaRatio = 0.80f;
-                        composite_optimizations_3bm26.Add(optimization_3bm26);
-
-                        AmmoType.ArmorOptimization optimization_3bm42 = new AmmoType.ArmorOptimization();
-                        optimization_3bm42.Armor = s;
-                        optimization_3bm42.RhaRatio = 0.78f;
-                        composite_optimizations_3bm42.Add(optimization_3bm42);
-                    }
-
-                    if (composite_optimizations_3bm26.Count == composite_names.Length) break;
-                }
-
-                ammo_3bm26 = new AmmoType();
-                Util.ShallowCopy(ammo_3bm26, ammo_3bm15);
-                ammo_3bm26.Name = "3BM26 APFSDS-T";
-                ammo_3bm26.Caliber = 125;
-                ammo_3bm26.RhaPenetration = 440f;
-                ammo_3bm26.Mass = 4.8f;
-                ammo_3bm26.MuzzleVelocity = 1720f;
-                ammo_3bm26.ArmorOptimizations = composite_optimizations_3bm26.ToArray<AmmoType.ArmorOptimization>();
-                ammo_3bm26.SpallMultiplier = 0.9f;
-
-                ammo_codex_3bm26 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_3bm26.AmmoType = ammo_3bm26;
-                ammo_codex_3bm26.name = "ammo_3bm26";
-
-                clip_3bm26 = new AmmoType.AmmoClip();
-                clip_3bm26.Capacity = 1;
-                clip_3bm26.Name = "3BM26 APFSDS-T";
-                clip_3bm26.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_3bm26.MinimalPattern[0] = ammo_codex_3bm26;
-
-                clip_codex_3bm26 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_3bm26.name = "clip_3bm26";
-                clip_codex_3bm26.ClipType = clip_3bm26;
-
-                ammo_3bm26_vis = GameObject.Instantiate(ammo_3bm15.VisualModel);
-                ammo_3bm26_vis.name = "3bm26 visual";
-                ammo_3bm26.VisualModel = ammo_3bm26_vis;
-                ammo_3bm26.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm26;
-                ammo_3bm26.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm26;
-
-                ammo_3bm42 = new AmmoType();
-                Util.ShallowCopy(ammo_3bm42, ammo_3bm15);
-                ammo_3bm42.Name = "3BM42 APFSDS-T";
-                ammo_3bm42.Caliber = 125;
-                ammo_3bm42.RhaPenetration = 520f;
-                ammo_3bm42.Mass = 4.85f;
-                ammo_3bm42.MuzzleVelocity = 1700f;
-                ammo_3bm42.SpallMultiplier = 0.95f;
-                ammo_3bm42.ArmorOptimizations = composite_optimizations_3bm42.ToArray<AmmoType.ArmorOptimization>();
-
-                ammo_codex_3bm42 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_3bm42.AmmoType = ammo_3bm42;
-                ammo_codex_3bm42.name = "ammo_3bm42";
-
-                clip_3bm42 = new AmmoType.AmmoClip();
-                clip_3bm42.Capacity = 1;
-                clip_3bm42.Name = "3BM42 APFSDS-T";
-                clip_3bm42.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_3bm42.MinimalPattern[0] = ammo_codex_3bm42;
-
-                clip_codex_3bm42 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_3bm42.name = "clip_3bm42";
-                clip_codex_3bm42.ClipType = clip_3bm42;
-
-                ammo_3bm42_vis = GameObject.Instantiate(ammo_3bm15.VisualModel);
-                ammo_3bm42_vis.name = "3bm42 visual";
-                ammo_3bm42.VisualModel = ammo_3bm42_vis;
-                ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm42;
-                ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm42;
-
-                ammo_3of26_vt = new AmmoType();
-                Util.ShallowCopy(ammo_3of26_vt, ammo_3of26);
-                ammo_3of26_vt.Name = "3OF26M HE-T PF";
-                ammo_3of26_vt.MinSpallRha = 20f;
-                ammo_3of26_vt.MaxSpallRha = 60f;
-                //ammo_3of26_vt.MuzzleVelocity = 1360f;
-                ammo_3of26_vt.Coeff = ammo_3bm42.Coeff / 2f;
-
-                ammo_codex_3of26_vt = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_3of26_vt.AmmoType = ammo_3of26_vt;
-                ammo_codex_3of26_vt.name = "ammo_3of26_vt";
-
-                clip_3of26_vt = new AmmoType.AmmoClip();
-                clip_3of26_vt.Capacity = 1;
-                clip_3of26_vt.Name = "3OF26M HE-T PF";
-                clip_3of26_vt.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_3of26_vt.MinimalPattern[0] = ammo_codex_3of26_vt;
-
-                clip_codex_3of26_vt = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_3of26_vt.name = "clip_3of26_vt";
-                clip_codex_3of26_vt.ClipType = clip_3of26_vt;
-
-                ammo_3of26_vt_vis = GameObject.Instantiate(ammo_3of26.VisualModel);
-                ammo_3of26_vt_vis.name = "3OF26 VT visual";
-                ammo_3of26_vt.VisualModel = ammo_3of26_vt_vis;
-                ammo_3of26_vt.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3of26_vt;
-                ammo_3of26_vt.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3of26_vt;
-
-                ProximityFuse.AddProximityFuse(ammo_3of26_vt);
-
-                ap = new Dictionary<string, AmmoClipCodexScriptable>()
-                {
-                    ["3BM22"] = clip_codex_3bm22,
-                    ["3BM26"] = clip_codex_3bm26,
-                    ["3BM32"] = clip_codex_3bm32,
-                    ["3BM42"] = clip_codex_3bm42,
-                };
-            }
-
+            APFSDS_125mm.Init();
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }
     }
