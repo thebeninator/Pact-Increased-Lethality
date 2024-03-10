@@ -153,8 +153,7 @@ namespace PactIncreasedLethality
                     ["3BM32"] = APFSDS_125mm.clip_codex_3bm32,
                     ["3BM42"] = APFSDS_125mm.clip_codex_3bm42,
                 };
-
-
+            
             foreach (GameObject armor_go in GameObject.FindGameObjectsWithTag("Penetrable"))
             {
                 if (!era_t72m1.Value && !era_t72m.Value) break;
@@ -197,7 +196,6 @@ namespace PactIncreasedLethality
                 }
             }
             
-
             foreach (GameObject vic_go in PactIncreasedLethalityMod.vic_gos)
             {
                 Vehicle vic = vic_go.GetComponent<Vehicle>();
@@ -392,11 +390,11 @@ namespace PactIncreasedLethality
                 {
                     if (!ReticleMesh.cachedReticles.ContainsKey("T55"))
                     {
-                        foreach (GameObject obj in Resources.FindObjectsOfTypeAll(typeof(GameObject)))
+                        foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
                         {
-                            if (obj.name == "T55A")
+                            if (obj.gameObject.name == "T55A")
                             {
-                                obj.GetComponent<Vehicle>().GetComponent<WeaponsManager>().Weapons[0].FCS.AuthoritativeOptic.reticleMesh.Load();
+                                obj.WeaponsManager.Weapons[0].FCS.AuthoritativeOptic.reticleMesh.Load();
                                 break;
                             }
                         }
@@ -609,9 +607,9 @@ namespace PactIncreasedLethality
 
             if (!range_readout)
             {
-                foreach (GameObject obj in Resources.FindObjectsOfTypeAll(typeof(GameObject)))
+                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
                 {
-                    if (obj.name == "M1IP")
+                    if (obj.gameObject.name == "M1IP")
                     {
                         range_readout = GameObject.Instantiate(obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas").gameObject);
                         GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
@@ -672,7 +670,7 @@ namespace PactIncreasedLethality
             }
 
             APFSDS_125mm.Init();
-            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
+            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Lowest);
         }
     }
 }

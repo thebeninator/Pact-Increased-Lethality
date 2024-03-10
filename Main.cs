@@ -16,8 +16,11 @@ using GHPC;
 using GHPC.Audio;
 using GHPC.Player;
 using GHPC.Camera;
+using static PactIncreasedLethality.BMP2;
+using FMODUnity;
+using FMOD;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.4.0", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.5.0", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -44,14 +47,28 @@ namespace PactIncreasedLethality
             T55.Config(cfg);
             T72.Config(cfg);
             T64.Config(cfg);
+            T62.Config(cfg);
             BMP1.Config(cfg);
             BMP2.Config(cfg);
             Kontakt1.Config(cfg);
+            Drozd.Config(cfg);
+
+            var corSystem = FMODUnity.RuntimeManager.CoreSystem;
+
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot.wav"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound);
+            BMP2.ReplaceSound.sound.set3DMinMaxDistance(35f, 1300f);
+
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound_exterior);
+            BMP2.ReplaceSound.sound_exterior.set3DMinMaxDistance(35f, 1300f);
         }
 
         public override void OnLateUpdate()
         {
             T55.OnLateUpdate();
+        }
+
+        public override void OnUpdate() {
+            BMP2.Update();
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -67,6 +84,7 @@ namespace PactIncreasedLethality
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Medium);
             Kontakt1.Init();
+            Drozd.Init();
             ProximityFuse.Init();
             EFP.Init();
             T72.Init();
@@ -74,6 +92,7 @@ namespace PactIncreasedLethality
             T55.Init();
             BMP1.Init();
             T64.Init();
+            T62.Init();
         }
     }
 }

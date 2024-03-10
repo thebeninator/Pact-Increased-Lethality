@@ -57,6 +57,7 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> use_9m117;
         static MelonPreferences_Entry<bool> better_stab;
         static MelonPreferences_Entry<bool> has_lrf;
+        static MelonPreferences_Entry<bool> has_drozd;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -69,6 +70,9 @@ namespace PactIncreasedLethality
             better_stab.Comment = "Less reticle blur, shake while on the move";
             has_lrf = cfg.CreateEntry<bool>("Laser Rangefinder", true);
             has_lrf.Comment = "Only gives range: user will need to set range manually";
+
+            has_drozd = cfg.CreateEntry<bool>("Drozd APS (T-55)", true);
+            has_drozd.Comment = "Intercepts incoming projectiles; covers the frontal arc of the tank relative to where the turret is facing";
         }
 
         public static void OnLateUpdate() {
@@ -142,7 +146,10 @@ namespace PactIncreasedLethality
                 FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
 
                 if (has_lrf.Value)
+                {
+                    weapon.FCS.gameObject.AddComponent<LimitedLRF>();
                     fcs.MaxLaserRange = 6000f;
+                }
 
                 UsableOptic day_optic = Util.GetDayOptic(fcs);
 
@@ -191,6 +198,8 @@ namespace PactIncreasedLethality
                 t.GetComponent<Reparent>().NewParent = Util.GetDayOptic(fcs).transform;
                 t.transform.GetChild(0).transform.localPosition = new Vector3(-284.1897f, -5.5217f, 0.1f);
                 t.SetActive(true);
+
+                weapon.FCS.GetComponent<LimitedLRF>().canvas = t.transform;
                 
                 if (use_9m117.Value)
                 {
@@ -330,7 +339,47 @@ namespace PactIncreasedLethality
                 day_optic.reticleMesh.reticleSO = reticleSO;
                 day_optic.reticleMesh.reticle = reticle_cached;
                 day_optic.reticleMesh.SMR = null;
-                day_optic.reticleMesh.Load();                   
+                day_optic.reticleMesh.Load();
+
+                if (has_drozd.Value)
+                {
+                    List<DrozdLauncher> launchers = new List<DrozdLauncher>();
+
+                    Vector3[] launcher_positions = new Vector3[] {
+                        new Vector3(-1.2953f, -0.0083f, 0.1166f),
+                        new Vector3(-1.3443f, 0.2091f, 0.0169f),
+                        new Vector3(1.2153f, -0.0083f, 0.1166f),
+                        new Vector3(1.2943f, 0.2091f, 0.0169f),
+                    };
+
+                    Vector3[] launcher_rots = new Vector3[] {
+                        new Vector3(0f, 0f, 0f),
+                        new Vector3(0f, -13.5494f, 0f),
+                        new Vector3(0f, 0f, 0f),
+                        new Vector3(0f, 13.5494f, 0f)
+                    };
+
+                    for (var i = 0; i < launcher_positions.Length; i++)
+                    {
+                        GameObject launcher = GameObject.Instantiate(DrozdLauncher.drozd_launcher_visual, vic.transform.Find("T55A_skeleton/HULL/Turret"));
+                        launcher.transform.localPosition = launcher_positions[i];
+                        launcher.transform.localEulerAngles = launcher_rots[i];
+
+                        if (i > 1)
+                        {
+                            launcher.transform.localScale = Vector3.Scale(launcher.transform.localScale, new Vector3(-1f, 1f, 1f));
+                        }
+
+                        launchers.Add(launcher.GetComponent<DrozdLauncher>());
+                    }
+
+                    Drozd.AttachDrozd(
+                        vic.transform.Find("T55A_skeleton/HULL/Turret"), vic, new Vector3(0f, 0f, 8f),
+                        launchers.GetRange(0, 2).ToArray(), launchers.GetRange(2, 2).ToArray()
+                    );
+
+                    vic._friendlyName += "D";
+                }
             }
 
             yield break;
@@ -342,7 +391,7 @@ namespace PactIncreasedLethality
             
             if (!range_readout)
             {
-                foreach (GameObject obj in Resources.FindObjectsOfTypeAll(typeof(GameObject)))
+                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
                 {
                     if (obj.name == "M1IP")
                     {
@@ -447,42 +496,6 @@ namespace PactIncreasedLethality
             }
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
-        }
-    }
-
-    // hijack lase method to prevent it from ranging the gun itself 
-    [HarmonyPatch(typeof(GHPC.Weapons.FireControlSystem), "DoLase")]
-    public static class T55Lase
-    {
-        private static bool Prefix(GHPC.Weapons.FireControlSystem __instance)
-        {
-            if (__instance.gameObject.GetComponentInParent<Vehicle>().FriendlyName != "T-55A") {
-                return true;
-            }
-
-            __instance._laseQueued = false;
-
-            float num = -1f;
-            int layerMask = 1 << CodeUtils.LAYER_MASK_VISIBILITYONLY;
-
-            RaycastHit raycastHit;
-            if (Physics.Raycast(__instance.LaserOrigin.position, __instance.LaserOrigin.forward, out raycastHit, __instance.MaxLaserRange, layerMask) && raycastHit.collider.tag == "Smoke")
-            {
-                num = raycastHit.distance;
-            }
-            if (Physics.Raycast(__instance.LaserOrigin.position, __instance.LaserOrigin.forward, out raycastHit, __instance.MaxLaserRange, ConstantsAndInfoManager.Instance.LaserRangefinderLayerMask.value) && (raycastHit.distance < num || num == -1f))
-            {
-                num = raycastHit.distance;
-            }
-
-            if (num != -1f)
-            {
-                var range_readout = Util.GetDayOptic(__instance).transform.Find("t55 range canvas(Clone)");
-                var text = range_readout.gameObject.GetComponentInChildren<TextMeshProUGUI>();
-                text.text = ((int)MathUtil.RoundFloatToMultipleOf(num, 5)).ToString("0000");
-            }
-
-            return false;
         }
     }
 }
