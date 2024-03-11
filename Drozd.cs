@@ -143,7 +143,11 @@ namespace PactIncreasedLethality
                         failure = failures[UnityEngine.Random.Range(0, 4)];
                     }
 
-                    if (failure == "ignore") return true;       
+                    if (failure == "ignore")
+                    {
+                        __instance.Story.builder.AppendLine("Not detected by APS radar");
+                        return true;
+                    }
                     
                     LauncherArray launcher_array = Math.Sign(angle_of_impact) == -1 ? drozd.l_launchers : drozd.r_launchers;
 
@@ -169,6 +173,9 @@ namespace PactIncreasedLethality
                         __instance.createExplosion(false, 0f, Vector3.zero, 0.03f, 45);
 
                         return false;
+                    }
+                    else {
+                        __instance.Story.builder.AppendLine("Failed to be destroyed by APS");
                     }
                 }
 
@@ -226,7 +233,10 @@ namespace PactIncreasedLethality
                 bradley_launcher_mat = Material.Instantiate(rig_renderer.sharedMaterial);
                 bradley_launcher_mesh = Mesh.Instantiate(rig_renderer.sharedMesh);
 
-                fx = s.transform.Find("Gun Scripts/Launcher M2 TOW/muzzle effects L").gameObject;
+                fx = GameObject.Instantiate(s.transform.Find("Gun Scripts/Launcher M2 TOW/muzzle effects L").gameObject);
+                GameObject.Destroy(fx.transform.GetChild(0).GetChild(6).gameObject);
+                GameObject.Destroy(fx.transform.GetChild(1).GetChild(8).gameObject);
+
                 drozd_rocket = s.transform.Find("placeholder missile R/lp_rocket").gameObject;
 
                 break;
@@ -237,6 +247,7 @@ namespace PactIncreasedLethality
             SkinnedMeshRenderer rend = drozd_launcher_visual.AddComponent<SkinnedMeshRenderer>();
             rend.sharedMaterial = bradley_launcher_mat;
             rend.sharedMesh = bradley_launcher_mesh;
+            rend.rootBone = launcher_ref;
 
             Transform[] bones = new Transform[53];
             for (int i = 0; i < 53; i++)
@@ -252,10 +263,7 @@ namespace PactIncreasedLethality
                 new Vector4(0f, 1f, 0f, 0f),
                 new Vector4(0.7522f, -1.8705f, -2.6309f, 1f)
             );
-
             rend.sharedMesh.bindposes = binds;
-
-            rend.rootBone = launcher_ref;
 
             drozd_launcher_visual.transform.localScale = new Vector3(0.7039f, 0.7039f, 0.7f);
 

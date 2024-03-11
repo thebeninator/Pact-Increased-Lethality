@@ -458,13 +458,13 @@ namespace PactIncreasedLethality
                 ammo_9m117.Name = "9M117 Bastion";
                 ammo_9m117.Mass = 18.8f;
                 ammo_9m117.Coeff = 0.25f;
-                ammo_9m117.MuzzleVelocity = 400f;
+                ammo_9m117.MuzzleVelocity = 350f;
                 ammo_9m117.RhaPenetration = 550f;
                 ammo_9m117.TntEquivalentKg = 4.77f;
                 ammo_9m117.ImpactFuseTime = ammo_9m111.ImpactFuseTime;
                 ammo_9m117.RhaToFuse = ammo_9m111.RhaToFuse;
                 ammo_9m117.Guidance = AmmoType.GuidanceType.Saclos;
-                ammo_9m117.TurnSpeed = 0.18f;
+                ammo_9m117.TurnSpeed = 0.25f;
                 ammo_9m117.ShotVisual = ammo_9m111.ShotVisual;
                 ammo_9m117.RangedFuseTime = 12.5f;
                 ammo_9m117.Category = AmmoType.AmmoCategory.ShapedCharge;

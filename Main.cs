@@ -20,7 +20,7 @@ using static PactIncreasedLethality.BMP2;
 using FMODUnity;
 using FMOD;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.5.0", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.5.1", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
