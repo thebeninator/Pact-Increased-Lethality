@@ -11,7 +11,6 @@ namespace PactIncreasedLethality
     public class APFSDS_125mm
     {
         static AmmoType ammo_3bm15;
-
         public static AmmoClipCodexScriptable clip_codex_3bm26;
         public static AmmoType.AmmoClip clip_3bm26;
         public static AmmoCodexScriptable ammo_codex_3bm26;
@@ -111,10 +110,13 @@ namespace PactIncreasedLethality
                 ammo_3bm42.Name = "3BM42 APFSDS-T";
                 ammo_3bm42.Coeff = ammo_3bm42.Coeff / 2f;
                 ammo_3bm42.Caliber = 125;
-                ammo_3bm42.RhaPenetration = 520f;
+                ammo_3bm42.RhaPenetration = 540f;
                 ammo_3bm42.Mass = 4.85f;
                 ammo_3bm42.MuzzleVelocity = 1700f;
-                ammo_3bm42.SpallMultiplier = 0.95f;
+                ammo_3bm42.SpallMultiplier = 1f;
+                ammo_3bm42.MaxSpallRha = 24f;
+                ammo_3bm42.MinSpallRha = 6f;
+
                 ammo_3bm42.ArmorOptimizations = composite_optimizations_3bm42.ToArray<AmmoType.ArmorOptimization>();
 
                 ammo_codex_3bm42 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();

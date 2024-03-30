@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,12 +8,21 @@ using UnityEngine;
 
 namespace PactIncreasedLethality
 {
-    public class AlreadyConverted : MonoBehaviour { 
-    
+    public class AlreadyConverted : MonoBehaviour
+    {
+
     }
 
     public class Util
     {
+        public static string[] menu_screens = new string[] {
+            "MainMenu2_Scene",
+            "MainMenu2-1_Scene",
+            "LOADER_MENU",
+            "LOADER_INITIAL",
+            "t64_menu"
+        };
+
         public static void ShallowCopy(System.Object dest, System.Object src)
         {
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;

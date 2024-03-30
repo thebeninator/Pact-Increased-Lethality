@@ -46,7 +46,7 @@ namespace PactIncreasedLethality
             {
                 Transform range_readout = __instance.GetComponent<LimitedLRF>().canvas;
                 var text = range_readout.gameObject.GetComponentInChildren<TextMeshProUGUI>();
-                text.text = ((int)MathUtil.RoundFloatToMultipleOf(num, 5)).ToString("0000");
+                text.text = ((int)MathUtil.RoundFloatToMultipleOf(num, 50)).ToString("0000");
             }
 
             return false;

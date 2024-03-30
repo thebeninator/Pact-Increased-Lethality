@@ -29,7 +29,8 @@ namespace PactIncreasedLethality
             public static FMOD.Sound sound;
 
             public static List<Channel> channels = new List<Channel>() { };
-            public static void Cleanup() {
+            public static void Cleanup()
+            {
                 if (channels.Count > 2)
                 {
                     channels[0].stop();
@@ -111,7 +112,7 @@ namespace PactIncreasedLethality
         static AmmoCodexScriptable ammo_codex_9m113_as;
         static AmmoType ammo_9m113_as;
 
-        static AmmoType ammo_9m113; 
+        static AmmoType ammo_9m113;
 
         static AmmoType ammo_3ubr6;
         static AmmoClipCodexScriptable clip_codex_3ubr6;
@@ -171,15 +172,16 @@ namespace PactIncreasedLethality
             zsu_conversion_chance.Comment = "Integer; default: 30%";
         }
 
-        public static void Update() {
+        public static void Update()
         {
-            if (!zsu_conversion.Value) return;
-            if (PactIncreasedLethalityMod.player_manager == null) return;
-            ReplaceSound.Cleanup();
+            {
+                if (!zsu_conversion.Value) return;
+                if (PactIncreasedLethalityMod.player_manager == null) return;
+                ReplaceSound.Cleanup();
+            }
         }
-    }
 
-    public static IEnumerator Convert(GameState _)
+        public static IEnumerator Convert(GameState _)
         {
             foreach (GameObject vic_go in PactIncreasedLethalityMod.vic_gos)
             {
@@ -194,7 +196,7 @@ namespace PactIncreasedLethality
                 vic.gameObject.AddComponent<AlreadyConverted>();
 
                 int rand = UnityEngine.Random.Range(1, 100);
-                bool is_zsu = zsu_conversion.Value &&  rand <= zsu_conversion_chance.Value;
+                bool is_zsu = zsu_conversion.Value && rand <= zsu_conversion_chance.Value;
 
                 if (is_zsu)
                 {
@@ -254,7 +256,7 @@ namespace PactIncreasedLethality
                     loadout_manager._weaponsManager.Weapons = new WeaponSystemInfo[] { loadout_manager._weaponsManager.Weapons[0] };
                     (vic.CrewManager.GetCrewBrain(CrewPosition.Gunner) as GunnerBrain).Weapons.RemoveRange(1, 2);
                     vic.transform.Find("BMP2_rig/HULL/TURRET/konkurs_azimuth").gameObject.SetActive(false);
-                    vic.transform.Find("BMP2_rig/HULL/TURRET/konkurs_azimuth").localScale = new Vector3(0f, 0f, 0f); 
+                    vic.transform.Find("BMP2_rig/HULL/TURRET/konkurs_azimuth").localScale = new Vector3(0f, 0f, 0f);
 
                     UsableOptic day_optic = Util.GetDayOptic(weapon.FCS);
                     vic.AimablePlatforms[1].LocalEulerLimits.x = -5f;
@@ -300,7 +302,8 @@ namespace PactIncreasedLethality
                 AmmoClipCodexScriptable ap = use_3ubr8.Value ? clip_codex_3ubr8 : clip_codex_3ubr6;
                 AmmoClipCodexScriptable he = use_3uof8.Value ? clip_codex_3uof8 : clip_codex_3uor6;
 
-                if (is_zsu) {
+                if (is_zsu)
+                {
                     he = clip_codex_bzt;
                     ap = clip_codex_ofz;
                 }
@@ -318,7 +321,8 @@ namespace PactIncreasedLethality
                 weapon.Feed.Start();
                 loadout_manager.RegisterAllBallistics();
 
-                if (use_9m113as.Value) {
+                if (use_9m113as.Value)
+                {
                     WeaponSystem atgm = vic.GetComponent<WeaponsManager>().Weapons[1].Weapon;
                     GHPC.Weapons.AmmoRack atgm_rack = atgm.Feed.ReadyRack;
 
@@ -399,20 +403,22 @@ namespace PactIncreasedLethality
                 weapon_2a7m.name = "gun_2a7m";
                 weapon_2a7m.CaliberMm = 23;
                 weapon_2a7m.FriendlyName = "23mm guns 2A7M";
-                weapon_2a7m.Type = WeaponSystemCodexScriptable.WeaponType.Autocannon;                         
+                weapon_2a7m.Type = WeaponSystemCodexScriptable.WeaponType.Autocannon;
             }
 
             if (ammo_3ubr8 == null)
             {
                 foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
                 {
-                    if (s.AmmoType.Name == "3UBR6 APBC-T") { 
+                    if (s.AmmoType.Name == "3UBR6 APBC-T")
+                    {
                         ammo_3ubr6 = s.AmmoType;
                     }
 
-                    if (s.AmmoType.Name == "3UOR6 HE-T") { 
+                    if (s.AmmoType.Name == "3UOR6 HE-T")
+                    {
                         ammo_3uor6 = s.AmmoType;
-                        ammo_codex_3uor6 = s; 
+                        ammo_codex_3uor6 = s;
                     }
 
                     if (s.AmmoType.Name == "9M113 Konkurs")
@@ -420,7 +426,7 @@ namespace PactIncreasedLethality
                         ammo_9m113 = s.AmmoType;
                     }
 
-                    if (ammo_3ubr6 != null && ammo_3uor6 != null && ammo_9m113 != null) break; 
+                    if (ammo_3ubr6 != null && ammo_3uor6 != null && ammo_9m113 != null) break;
                 }
 
                 foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
@@ -515,7 +521,7 @@ namespace PactIncreasedLethality
                 EFP.AddEFP(ammo_9m113_as, ammo_9m113_efp, true);
 
                 ////////////////////
-                
+
                 ammo_apds = new AmmoType();
                 Util.ShallowCopy(ammo_apds, ammo_3ubr6);
                 ammo_apds.Name = "23mm APDS-T";
@@ -604,5 +610,5 @@ namespace PactIncreasedLethality
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Lowest);
         }
-    }    
+    }
 }

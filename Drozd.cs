@@ -15,6 +15,8 @@ using FMOD;
 using GHPC.Equipment;
 using GHPC.Effects;
 using GHPC.Audio;
+using System.Reflection;
+using System.Dynamic;
 
 namespace PactIncreasedLethality
 {
@@ -39,6 +41,8 @@ namespace PactIncreasedLethality
         static float MIN_ENGAGEMENT_ANGLE = 3f;
         static float MAX_ENGAGEMENT_ANGLE = 22f;
         static float INTERCEPTION_COOLDOWN = 2f;
+        static string[] FAILURES = new string[4] { "ignore", "ignore", "miss", "miss" };
+
         static GameObject drozd_go;
 
         static MelonPreferences_Entry<bool> high_velocity;
@@ -133,14 +137,14 @@ namespace PactIncreasedLethality
 
                 if ((hit_front_face || hit_side_face) && Math.Abs(angle_of_impact) >= MIN_ENGAGEMENT_ANGLE && Math.Abs(angle_of_impact) <= MAX_ENGAGEMENT_ANGLE)
                 {
-                    string[] failures = new string[4] { "ignore", "miss", "miss", "miss" };
                     string failure = "";
+                    LauncherArray launcher_array = Math.Sign(angle_of_impact) == -1 ? drozd.l_launchers : drozd.r_launchers;
 
                     int rand = UnityEngine.Random.Range(1, 100);
-                    if ((__instance.CurrentSpeed > MAX_ENGAGEMENT_SPEED && rand > intercept_chance_high.Value) || 
-                        (__instance.CurrentSpeed <= MAX_ENGAGEMENT_SPEED && rand > intercept_chance_low_med.Value)) 
+                    if ((__instance.CurrentSpeed > MAX_ENGAGEMENT_SPEED && rand > intercept_chance_high.Value) ||
+                        (__instance.CurrentSpeed <= MAX_ENGAGEMENT_SPEED && rand > intercept_chance_low_med.Value))
                     {
-                        failure = failures[UnityEngine.Random.Range(0, 4)];
+                        failure = FAILURES[UnityEngine.Random.Range(0, 4)];
                     }
 
                     if (failure == "ignore")
@@ -148,48 +152,59 @@ namespace PactIncreasedLethality
                         __instance.Story.builder.AppendLine("Not detected by APS radar");
                         return true;
                     }
-                    
-                    LauncherArray launcher_array = Math.Sign(angle_of_impact) == -1 ? drozd.l_launchers : drozd.r_launchers;
 
                     if (launcher_array.IsEmpty) return true;
-
-                    if (launcher_array.current_launcher.IsEmpty) {
-                        launcher_array.current_launcher_index++; 
-                    }
-
+                    if (launcher_array.current_launcher.IsEmpty) launcher_array.current_launcher_index++;
+                    
                     launcher_array.current_launcher.FireCurrentRocket();
-                    ParticleEffectsManager.Instance.CreateEffectOfType(ParticleEffectsManager.EffectVisualType.MainGunImpactHighExplosive, impact_point, null);
-                    ImpactSFXManager.Instance.PlaySimpleImpactAudio(ImpactAudioType.Missile, impact_point);
+                    ParticleEffectsManager.Instance.CreateEffectOfType(ParticleEffectsManager.EffectVisualType.MainGunImpactHighExplosive, __instance._lastFramePosition, null);
+                    ImpactSFXManager.Instance.PlaySimpleImpactAudio(ImpactAudioType.Missile, __instance._lastFramePosition);
                     drozd.cd = INTERCEPTION_COOLDOWN;
 
-                    if (failure != "miss")
+                    if (failure == "miss")
                     {
-                        __instance.Story.builder.AppendLine("Intercepted by APS");
-                        __instance._parentUnit = drozd.unit;
-                        __instance._frameData.VehicleStruck = drozd.unit;
-                        __instance.ShotInfo.Distance = Vector3.Distance((Vector3)__args[3], __instance.Shooter.transform.position);
-                        __instance.reportShotTraceFrame();
-                        __instance.Detonate();
-                        __instance.createExplosion(false, 0f, Vector3.zero, 0.03f, 45);
+                        __instance.Story.builder.AppendLine("Degraded by APS");
 
-                        return false;
-                    }
-                    else {
-                        __instance.Story.builder.AppendLine("Failed to be destroyed by APS");
-                    }
+                        if (__instance._isPureAp)
+                        {
+                            // hoping the GC takes care of the copy lol 
+                            __instance.Info = AmmoType.CopyOf(__instance.Info);
+                            __instance.Info.RhaPenetration /= 1.8f;
+                        }
+                        else {
+                            __instance.Info = AmmoType.CopyOf(__instance.Info);
+                            __instance.Info.RhaPenetration /= 2f;
+                            __instance.Info.TntEquivalentKg /= 1.3f;
+                            __instance.Info.ShatterOnRicochet = true;
+                            __instance.Info.CertainRicochetAngle = 20f;
+                        }
+
+                        return true;
+                     }
+
+                    __instance.Story.builder.AppendLine("Intercepted by APS");
+                    __instance._parentUnit = drozd.unit;
+                    __instance._frameData.VehicleStruck = drozd.unit;
+                    __instance.ShotInfo.Distance = Vector3.Distance(impact_point, __instance.Shooter.transform.position);
+                    __instance.reportShotTraceFrame();
+                    //__instance._fuzeCompleted = true;
+                    __instance.Detonate();
+                    __instance.createExplosion(false, 0f, Vector3.zero, 0.03f, 55);
+
+                    return false;
+
                 }
 
                 return true;
             }
         }
     }
-
     public class DrozdLauncher : MonoBehaviour
     {
         public static GameObject drozd_launcher_visual;
         static Material bradley_launcher_mat;
         static Mesh bradley_launcher_mesh;
-        static GameObject fx; 
+        static GameObject fx;
         static GameObject drozd_rocket;
 
         public int current_rocket_idx = 0;

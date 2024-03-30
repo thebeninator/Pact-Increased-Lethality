@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib.Tools;
 using static HarmonyLib.Tools.Logger;
+using FMOD;
 
 namespace PactIncreasedLethality
 {
@@ -47,6 +48,7 @@ namespace PactIncreasedLethality
         public static GameObject kontakt_1_turret_array;
         private static Texture concrete_tex;
         private static Texture concrete_tex_normal;
+        private static GameObject detonate_fx;
         static MelonPreferences_Entry<bool> sabot_eater;
         static MelonPreferences_Entry<bool> sphere_colliders;
 
@@ -68,12 +70,10 @@ namespace PactIncreasedLethality
             {
                 foreach (Texture t in Resources.FindObjectsOfTypeAll<Texture>())
                 {
-                    if (t.name == "GHPC_ConcretePanels_Diffuse") { concrete_tex = t; break; }
-                }
+                    if (t.name == "GHPC_ConcretePanels_Diffuse") concrete_tex = t;
+                    if (t.name == "GHPC_ConcretePanels_Normal") concrete_tex_normal = t;
 
-                foreach (Texture t in Resources.FindObjectsOfTypeAll<Texture>())
-                {
-                    if (t.name == "GHPC_ConcretePanels_Normal") { concrete_tex_normal = t; break; }
+                    if (concrete_tex && concrete_tex_normal) break; 
                 }
             }
         }
@@ -99,7 +99,7 @@ namespace PactIncreasedLethality
                 string name = sabot_eater.Value ? "Kontakt-1 Super" : "Kontakt-1";
                 armor.SetName(name);
                 armor.PrimaryHeatRha = 20f;
-                armor.PrimarySabotRha = sabot_eater.Value ? 80f : 20f;
+                armor.PrimarySabotRha = sabot_eater.Value ? 40f : 20f;
                 armor.SecondaryHeatRha = 0f;
                 armor.SecondarySabotRha = 0f;
                 armor.ThicknessListed = UniformArmor.ThicknessMode.ActualThickness;
@@ -108,11 +108,13 @@ namespace PactIncreasedLethality
                 armor._normalizesHits = true;
                 armor._isEra = true;
 
+                armor.DetonateEffect = detonate_fx;
+
                 if (kontakt1_so == null)
                 {
                     kontakt1_so = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
                     kontakt1_so.name = "kontakt-1 armour";
-                    kontakt1_armour.RhaeMultiplierKe = sabot_eater.Value ? 1.2f : 0.5f;
+                    kontakt1_armour.RhaeMultiplierKe = sabot_eater.Value ? 1.3f : 0.5f;
                     kontakt1_armour.RhaeMultiplierCe = 1.75f;
                     kontakt1_armour.CanRicochet = false;
                     kontakt1_armour.CrushThicknessModifier = 1f;
@@ -124,11 +126,6 @@ namespace PactIncreasedLethality
                 }
 
                 armor._armorType = kontakt1_so;
-
-                foreach (GameObject s in Resources.FindObjectsOfTypeAll<GameObject>())
-                {
-                    if (s.name == "Autocannon HE Armor Impact") { armor.DetonateEffect = s; break; }
-                }
 
                 armor.UndetonatedObjects = new GameObject[] { armor.gameObject };
 
@@ -150,6 +147,11 @@ namespace PactIncreasedLethality
         public static void Init() {
             if (kontakt_1_hull_array == null)
             {
+                foreach (GameObject s in Resources.FindObjectsOfTypeAll<GameObject>())
+                {
+                    if (s.name == "Autocannon HE Armor Impact") { detonate_fx = s; break; }
+                }
+
                 var kontakt_bundle_hull = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/kontakt1", "hull"));
                 var kontakt_bundle_turret = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/kontakt1", "turret"));
 

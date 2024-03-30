@@ -16,11 +16,10 @@ using GHPC;
 using GHPC.Audio;
 using GHPC.Player;
 using GHPC.Camera;
-using static PactIncreasedLethality.BMP2;
 using FMODUnity;
 using FMOD;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.5.1", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.6.1", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -48,10 +47,12 @@ namespace PactIncreasedLethality
             T72.Config(cfg);
             T64.Config(cfg);
             T62.Config(cfg);
+            T80.Config(cfg);
             BMP1.Config(cfg);
             BMP2.Config(cfg);
             Kontakt1.Config(cfg);
             Drozd.Config(cfg);
+            PactThermal.Config(cfg);
 
             var corSystem = FMODUnity.RuntimeManager.CoreSystem;
 
@@ -75,7 +76,7 @@ namespace PactIncreasedLethality
         {
             Kontakt1.LoadTex();
 
-            if (sceneName == "MainMenu2_Scene" || sceneName == "LOADER_MENU" || sceneName == "LOADER_INITIAL" || sceneName == "t64_menu") return;
+            if (Util.menu_screens.Contains(sceneName)) return;
 
             game_manager = GameObject.Find("_APP_GHPC_");
             audio_settings_manager = game_manager.GetComponent<AudioSettingsManager>();
@@ -83,7 +84,12 @@ namespace PactIncreasedLethality
             camera_manager = game_manager.GetComponent<CameraManager>();
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Medium);
+
             Kontakt1.Init();
+            Kontakt5.Init();
+            APFSDS_125mm.Init();
+            PactThermal.Init();
+            Sosna.Init();
             Drozd.Init();
             ProximityFuse.Init();
             EFP.Init();
@@ -93,6 +99,7 @@ namespace PactIncreasedLethality
             BMP1.Init();
             T64.Init();
             T62.Init();
+            T80.Init();
         }
     }
 }

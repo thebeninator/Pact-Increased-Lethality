@@ -23,23 +23,16 @@ using GHPC.Camera;
 using GHPC.Effects.Voices;
 using BehaviorDesigner.Runtime.Tasks.Unity.UnityGameObject;
 using System.Reflection;
+using MelonLoader.Utils;
+using System.IO;
+using Thermals;
+using FMOD;
+using NWH.VehiclePhysics;
 
 namespace PactIncreasedLethality
 {
     public class T72
     {
-        static GameObject range_readout;
-        static GameObject thermal_canvas;
-        static GameObject scanline_canvas;
-        static ReticleSO reticleSO;
-        static ReticleMesh.CachedReticle reticle_cached;
-
-        static ReticleSO reticleSO_sosna;
-        static ReticleMesh.CachedReticle reticle_cached_sosna;
-
-        static AmmoClipCodexScriptable clip_codex_3bm22;
-        static AmmoClipCodexScriptable clip_codex_3bm32;
-
         static AmmoClipCodexScriptable clip_codex_3of26_vt;
         static AmmoType.AmmoClip clip_3of26_vt;
         static AmmoCodexScriptable ammo_codex_3of26_vt;
@@ -54,10 +47,12 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> t72m1_random_ammo;
 
         static MelonPreferences_Entry<bool> thermals;
-        static MelonPreferences_Entry<bool> thermals_boxing;
-        static MelonPreferences_Entry<float> thermals_blur;
+        static MelonPreferences_Entry<string> thermals_quality;
 
         static MelonPreferences_Entry<bool> only_carousel;
+
+        static MelonPreferences_Entry<bool> k5_t72m1;
+        static MelonPreferences_Entry<bool> k5_t72m;
 
         static MelonPreferences_Entry<bool> era_t72m1;
         static MelonPreferences_Entry<bool> era_t72m;
@@ -80,6 +75,12 @@ namespace PactIncreasedLethality
         };
 
         static GameObject soviet_crew_voice;
+        static Mesh b3_turret_cleaned_mesh;
+        static Mesh turret_cleaned_mesh;
+        static Mesh hull_cleaned_mesh;
+        static Material t72m1_material;
+
+        static GameObject t72m1_composite_cheeks;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -104,19 +105,20 @@ namespace PactIncreasedLethality
 
             t72m1_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-72M1)", false);
 
-            thermals = cfg.CreateEntry<bool>("Has Thermals", true);
+            thermals = cfg.CreateEntry<bool>("Has Thermals (T-72)", true);
             thermals.Comment = "Replaces night vision sight with thermal sight";
             thermals.Description = " ";
+            thermals_quality = cfg.CreateEntry<string>("Thermals Quality (T-72)", "Low");
+            thermals_quality.Comment = "Low, High";
 
-            thermals_boxing = cfg.CreateEntry<bool>("Disable Thermal Boxing", false);
-            thermals_boxing.Comment = "Removes the box border around the thermal sight";
+            k5_t72m1 = cfg.CreateEntry<bool>("Kontakt-5 ERA (T-72M1)", false);
+            k5_t72m1.Comment = "    B           I           G           brick";
+            k5_t72m1.Description = " ";
 
-            thermals_blur = cfg.CreateEntry<float>("Thermals Blur", 0.30f);
-            thermals_blur.Comment = "Default: 0.30 (higher = more blurry, lower = less blurry)";
+            k5_t72m = cfg.CreateEntry<bool>("Kontakt-5 ERA (T-72M)", false);
 
             era_t72m1 = cfg.CreateEntry<bool>("Kontakt-1 ERA (T-72M1)", true);
             era_t72m1.Comment = "BRICK ME UP LADS";
-            era_t72m1.Description = " ";
 
             era_t72m = cfg.CreateEntry<bool>("Kontakt-1 ERA (T-72M)", false);
             era_t72m.Comment = "BRICK ME UP LADS (gill variants will not have side-skirt ERA)";
@@ -153,49 +155,7 @@ namespace PactIncreasedLethality
                     ["3BM32"] = APFSDS_125mm.clip_codex_3bm32,
                     ["3BM42"] = APFSDS_125mm.clip_codex_3bm42,
                 };
-            
-            foreach (GameObject armor_go in GameObject.FindGameObjectsWithTag("Penetrable"))
-            {
-                if (!era_t72m1.Value && !era_t72m.Value) break;
-
-                if (Kontakt1.kontakt_1_hull_array == null) continue;
-                if (Kontakt1.kontakt_1_turret_array == null) continue;
-                if (!armor_go.GetComponent<LateFollow>()) continue;
-
-                IUnit parent = armor_go.GetComponent<LateFollow>().ParentUnit;
-
-                if (parent == null) continue;
-
-                string name = parent.FriendlyName;
-
-                bool t72m = era_t72m.Value && name == "T-72M";
-                bool t72m1 = era_t72m1.Value && name == "T-72M1";
-
-                if (!t72m && !t72m1) continue;
-
-                if (armor_go.name == "T-72 HULL COLLIDERS")
-                {
-                    if (armor_go.transform.Find("ARMOR/hull era array(Clone)")) continue;
-                    GameObject hull_array = GameObject.Instantiate(Kontakt1.kontakt_1_hull_array, armor_go.transform.Find("ARMOR"));
-                    hull_array.transform.localEulerAngles = new Vector3(0f, 90f, 0f);
-                    hull_array.transform.localPosition = new Vector3(-0.8219f, 0.7075f, 2.4288f);
-
-                    if (t72m && parent.transform.name.ToLower().Contains("gill"))
-                    {
-                        GameObject.Destroy(hull_array.transform.Find("left side skirt array").gameObject);
-                        GameObject.Destroy(hull_array.transform.Find("right side skirt array").gameObject);
-                    }
-                }
-
-                if (armor_go.name == "T-72 TURRET COLLIDERS")
-                {
-                    if (armor_go.transform.Find("ARMOR/turret era array(Clone)")) continue;
-                    GameObject turret_array = GameObject.Instantiate(Kontakt1.kontakt_1_turret_array, armor_go.transform.Find("ARMOR"));
-                    turret_array.transform.localEulerAngles = new Vector3(0f, 90f, 0f);
-                    turret_array.transform.localPosition = new Vector3(0.0199f, 2.1973f, -0.8363f);
-                }
-            }
-            
+                        
             foreach (GameObject vic_go in PactIncreasedLethalityMod.vic_gos)
             {
                 Vehicle vic = vic_go.GetComponent<Vehicle>();
@@ -209,15 +169,8 @@ namespace PactIncreasedLethality
                 // SOVIET CREW 
                 if ((soviet_t72m1.Value && vic.UniqueName == "T72A") || (soviet_t72m.Value && vic.UniqueName == "T72M"))
                 {
-                    if (vic.FriendlyName == "T-72M1")
-                    {
-                        vic._friendlyName = "T-72A";
-                    }
-                    else if (vic.FriendlyName == "T-72M")
-                    {
-                        vic._friendlyName = "T-72";
-                    }
-
+                    vic._friendlyName = vic.FriendlyName == "T-72M1" ? "T-72A" : "T-72"; 
+ 
                     vic.transform.Find("DE Tank Voice").gameObject.SetActive(false);
                     GameObject crew_voice = GameObject.Instantiate(soviet_crew_voice, vic.transform);
                     crew_voice.transform.localPosition = new Vector3(0, 0, 0);
@@ -227,25 +180,42 @@ namespace PactIncreasedLethality
                     handler._reloadType = CrewVoiceHandler.ReloaderType.AutoLoaderAZ;
                     vic._crewVoiceHandler = handler;
                     crew_voice.SetActive(true);
-
-
+                    
                     if (vic.UniqueName == "T72A")
                     {
-                        vic.AimablePlatforms[1].transform.parent.Find("T72_markings").GetChild(2).gameObject.SetActive(false);
-                        vic.AimablePlatforms[1].transform.parent.Find("T72_markings").GetChild(4).gameObject.SetActive(false);
+                        vic.AimablePlatforms[1].transform.parent.Find("T72_markings").Find("roundels_72M1").gameObject.SetActive(false);
                     }
                     else
                     {
-                        vic.AimablePlatforms[1].transform.parent.Find("T72_markings").GetChild(2).gameObject.SetActive(false);
-                        vic.AimablePlatforms[1].transform.parent.Find("T72_markings").GetChild(3).gameObject.SetActive(false);
-                    }
+                        vic.AimablePlatforms[1].transform.parent.Find("T72_markings").Find("roundels_72M").gameObject.SetActive(false);
+                    }                
                 }
 
                 if ((era_t72m1.Value && (vic.FriendlyName == "T-72M1" || vic.FriendlyName == "T-72A"))
                     || (era_t72m.Value && (vic.FriendlyName == "T-72M" || vic.FriendlyName == "T-72")))
-                {
+                {         
+                    var hull_late_followers = vic.GetComponent<LateFollowTarget>()._lateFollowers;
+                    var turret_late_followers = vic.AimablePlatforms.Where(o => o.name == "---TURRET SCRIPTS---").First().transform.parent.GetComponent<LateFollowTarget>()._lateFollowers;
+
+                    GameObject hull_array = GameObject.Instantiate(Kontakt1.kontakt_1_hull_array,
+                        hull_late_followers.Where(o => o.name == "T-72 HULL COLLIDERS").First().transform.Find("ARMOR"));
+                    hull_array.transform.localEulerAngles = new Vector3(0f, 90f, 0f);
+                    hull_array.transform.localPosition = new Vector3(-0.8219f, 0.7075f, 2.4288f);
+
+                    GameObject turret_array = GameObject.Instantiate(Kontakt1.kontakt_1_turret_array,
+                        turret_late_followers.Where(o => o.name == "T-72 TURRET COLLIDERS").First().transform.Find("ARMOR"));
+                    turret_array.transform.localEulerAngles = new Vector3(0f, 90f, 0f);
+                    turret_array.transform.localPosition = new Vector3(0.0199f, 2.1973f, -0.8363f);
+
+                    if (vic.FriendlyName == "T-72M" && vic.transform.name.ToLower().Contains("gill"))
+                    {
+                        GameObject.Destroy(hull_array.transform.Find("left side skirt array").gameObject);
+                        GameObject.Destroy(hull_array.transform.Find("right side skirt array").gameObject);
+                    }
+
                     vic.transform.GetChild(0).GetChild(0).gameObject.SetActive(false);
                     vic._friendlyName += "V";
+                    
                 }
 
                 vic.AimablePlatforms[1].transform.Find("optic cover parent").gameObject.SetActive(false);
@@ -298,303 +268,150 @@ namespace PactIncreasedLethality
                     MelonLogger.Msg("Loading default 3BM15 for " + vic.FriendlyName);
                 }
 
-                // THERMALS
                 if (thermals.Value)
                 {
-                    // set night optic to thermal 
-                    night_optic.slot.VisionType = NightVisionType.Thermal;
-                    night_optic.slot.BaseBlur = thermals_blur.Value;
-
-                    PostProcessProfile post = night_optic.post.profile;
-                    ColorGrading color_grading = post.settings[1] as ColorGrading;
-                    color_grading.postExposure.value = 2f;
-                    color_grading.colorFilter.value = new Color(0.75f, 0.75f, 0.75f);
-                    color_grading.lift.value = new Vector4(0f, 0f, 0f, -1.2f);
-                    color_grading.lift.overrideState = true;
-
-                    GameObject s = GameObject.Instantiate(scanline_canvas);
-                    s.GetComponent<Reparent>().NewParent = night_optic.transform;
-                    s.SetActive(true);
-
-                    if (!thermals_boxing.Value)
-                    {
-                        // pos, rot, scale
-                        List<List<Vector3>> backdrop_locs = new List<List<Vector3>>() {
-                        new List<Vector3> {new Vector3(0f, -318.7f, 0f), new Vector3(0f, 0f, 180f)},
-                        new List<Vector3> {new Vector3(0f, 318.7f, 0f), new Vector3(0f, 0f, 0f)},
-                        new List<Vector3> {new Vector3(330f, 0f, 0f), new Vector3(0f, 0f, 90f)},
-                        new List<Vector3> {new Vector3(-330f, 0f, 0f), new Vector3(0f, 0f, 270f)}
-                    };
-
-                        for (int i = 0; i <= 3; i++)
-                        {
-                            GameObject t = GameObject.Instantiate(thermal_canvas);
-                            t.GetComponent<Reparent>().NewParent = night_optic.transform;
-                            t.transform.GetChild(0).localPosition = backdrop_locs[i][0];
-                            t.transform.GetChild(0).localEulerAngles = backdrop_locs[i][1];
-                            if (i == 2 || i == 3)
-                                t.GetComponent<CanvasScaler>().screenMatchMode = CanvasScaler.ScreenMatchMode.Shrink;
-                            t.SetActive(true);
-                        }
-                    }
-
-                    GameObject reticle_go = GameObject.Instantiate(night_optic.reticleMesh.gameObject);
-                    GameObject.Destroy(night_optic.reticleMesh.gameObject);
-                    reticle_go.AddComponent<Reparent>();
-                    reticle_go.GetComponent<Reparent>().NewParent = night_optic.transform;
-                    reticle_go.GetComponent<Reparent>().Awake();
-                    reticle_go.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-                    night_optic.reticleMesh = reticle_go.GetComponent<ReticleMesh>();
-
-                    // generate reticle for t72 thermal sight
-                    if (!reticleSO)
-                    {
-                        ReticleTree.Angular reticle = null;
-                        reticleSO = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55-NVS"].tree);
-                        reticleSO.name = "T72-TIS";
-
-                        Util.ShallowCopy(reticle_cached, ReticleMesh.cachedReticles["T55-NVS"]);
-                        reticle_cached.tree = reticleSO;
-
-                        reticle_cached.tree.lights = new List<ReticleTree.Light>() {
-                            new ReticleTree.Light()
-                        };
-
-                        reticle_cached.tree.lights[0].type = ReticleTree.Light.Type.Powered;
-                        reticle_cached.tree.lights[0].color = new RGB(1.1f, -0.35f, -0.35f, true);
-
-                        reticle = (reticleSO.planes[0].elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Angular;
-                        (reticleSO.planes[0].elements[0] as ReticleTree.Angular).align = ReticleTree.GroupBase.Alignment.Boresight;
-                        reticle.align = ReticleTree.GroupBase.Alignment.Boresight;
-                        reticle_cached.mesh = null;
-
-                        reticle.elements.RemoveAt(4);
-                        reticle.elements.RemoveAt(1);
-                        reticle.elements.RemoveAt(0);
-                        reticle.elements[0].rotation.mrad = 0;
-                        reticle.elements[0].position.x = 0;
-                        reticle.elements[0].position.y = 0;
-                        reticle.elements[1].position.y = 0;
-                        (reticle.elements[0] as ReticleTree.Line).length.mrad = 10.0944f;
-                        (reticle.elements[1] as ReticleTree.Line).length.mrad = 4.0944f;
-                    }
-
-                    night_optic.reticleMesh.reticleSO = reticleSO;
-                    night_optic.reticleMesh.reticle = reticle_cached;
-                    night_optic.reticleMesh.SMR = null;
-                    night_optic.reticleMesh.Load();
+                    PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower());
+                    vic.InfraredSpotlights.Clear();
                 }
 
-                // SOSNA U
                 if ((super_fcs_t72m1.Value && vic.UniqueName == "T72A") || (super_fcs_t72m.Value && vic.UniqueName == "T72M"))
                 {
-                    if (!ReticleMesh.cachedReticles.ContainsKey("T55"))
-                    {
-                        foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                        {
-                            if (obj.gameObject.name == "T55A")
-                            {
-                                obj.WeaponsManager.Weapons[0].FCS.AuthoritativeOptic.reticleMesh.Load();
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (!reticleSO_sosna)
-                    {
-                        reticleSO_sosna = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55"].tree);
-                        reticleSO_sosna.name = "sosna u";
-
-                        Util.ShallowCopy(reticle_cached_sosna, ReticleMesh.cachedReticles["T55"]);
-                        reticle_cached_sosna.tree = reticleSO_sosna;
-
-                        reticle_cached_sosna.tree.lights = new List<ReticleTree.Light>() {
-                            new ReticleTree.Light(),
-                        };
-
-                        Util.ShallowCopy(reticle_cached_sosna.tree.lights[0], ReticleMesh.cachedReticles["T55"].tree.lights[0]);
-                        reticle_cached_sosna.tree.lights[0].type = ReticleTree.Light.Type.Powered;
-                        reticle_cached_sosna.tree.lights[0].color = new RGB(2f, -0.3f, -0.3f, true);
-                        reticle_cached_sosna.mesh = null;
-
-                        ReticleTree.Angular impact = new ReticleTree.Angular(new Vector2(), null);
-                        impact.name = "Impact";
-                        impact.align = ReticleTree.GroupBase.Alignment.Impact;
-
-                        reticleSO_sosna.planes[0].elements = new List<ReticleTree.TransformElement>();
-                        ReticleTree.Angular eeeee = new ReticleTree.Angular(new Vector2(), null);
-                        eeeee.name = "Angular";
-                        eeeee.align = ReticleTree.GroupBase.Alignment.Impact;
-
-
-                        for (int i = -1; i <= 1; i += 2)
-                        {
-                            ReticleTree.Line chev_line = new ReticleTree.Line();
-                            chev_line.thickness.mrad = 0.1833f;
-                            chev_line.length.mrad = 2.0944f;
-                            chev_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                            chev_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
-                            chev_line.rotation.mrad = i == 1 ? 5235.99f : 1047.2f;
-                            chev_line.position = new ReticleTree.Position(0.48f * i, -0.90f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
-                            chev_line.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
-
-                            ReticleTree.Line side = new ReticleTree.Line();
-                            side.thickness.mrad = 0.1833f;
-                            side.length.mrad = 5.0944f;
-                            side.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                            side.length.unit = AngularLength.AngularUnit.MIL_USSR;
-                            side.position = new ReticleTree.Position(5f * i, 0, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
-                            side.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
-
-                            side.illumination = ReticleTree.Light.Type.Powered;
-                            chev_line.illumination = ReticleTree.Light.Type.Powered;
-
-                            eeeee.elements.Add(chev_line);
-                            eeeee.elements.Add(side);
-                        }
-
-                        foreach (Vector2 pos in new Vector2[] { new Vector2(-1, 0), new Vector2(0, 1), new Vector2(1, 0), new Vector2(0, -1) })
-                        {
-                            ReticleTree.Line border_line = new ReticleTree.Line();
-                            border_line.thickness.mrad = 0.1833f;
-                            border_line.length.mrad = 2.0944f / 1.3f;
-                            border_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                            border_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
-
-                            if (Math.Abs(pos.x) == 1)
-                            {
-                                border_line.rotation = 1570.8f;
-                            }
-
-                            border_line.position = new ReticleTree.Position(18f * pos.x, 18f * pos.y, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
-                            border_line.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
-                            border_line.illumination = ReticleTree.Light.Type.Powered;
-
-                            if (pos.y != -1)
-                                eeeee.elements.Add(border_line);
-
-                            ReticleTree.Line border_line2 = new ReticleTree.Line();
-                            Util.ShallowCopy(border_line2, border_line);
-                            border_line2.length.mrad = 2.3944f;
-                            border_line2.thickness.mrad = 0.1833f * 2f;
-                            border_line2.position = new ReticleTree.Position(33f * pos.x, 33f * pos.y, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
-
-                            eeeee.elements.Add(border_line2);
-                        }
-
-                        ReticleTree.Line middle_line = new ReticleTree.Line();
-                        middle_line.thickness.mrad = 0.1833f;
-                        middle_line.length.mrad = 5.0944f;
-                        middle_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                        middle_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
-                        middle_line.position = new ReticleTree.Position(0f, -5f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
-                        middle_line.rotation.mrad = 1570.8f;
-                        middle_line.illumination = ReticleTree.Light.Type.Powered;
-                        middle_line.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
-
-                        ReticleTree.Line middle_line2 = new ReticleTree.Line();
-                        Util.ShallowCopy(middle_line2, middle_line);
-                        middle_line2.length.mrad = 5.0944f / 3f;
-                        middle_line2.position = new ReticleTree.Position(2f, -1.8f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
-
-                        ReticleTree.Line middle_line3 = new ReticleTree.Line();
-                        Util.ShallowCopy(middle_line3, middle_line2);
-                        middle_line3.position = new ReticleTree.Position(-1.5f, -5.0944f / 3f / 2f - 1.3f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
-                        middle_line3.rotation.mrad = 0f;
-
-                        eeeee.elements.Add(middle_line);
-                        eeeee.elements.Add(middle_line2);
-                        eeeee.elements.Add(middle_line3);
-
-                        impact.elements.Add(eeeee);
-                        reticleSO_sosna.planes[0].elements.Add(impact);
-                    }
-
-                    fcs._fixParallaxForVectorMode = true;
-                    fcs.SuperelevateWeapon = true;
-                    fcs.LaserAim = LaserAimMode.ImpactPoint;
-                    fcs.SuperelevateFireGating = false;
-                    fcs.FireGateAngle = 0.5f;
-                    fcs.SuperleadWeapon = true;
-                    fcs.InertialCompensation = false;
-                    fcs.RecordTraverseRateBuffer = true;
-                    fcs.TraverseBufferSeconds = 0.5f;
-                    fcs._autoDumpViaPalmSwitches = true;
-                    fcs.UseDeltaD = false;
-                    fcs.ActiveDeltaD = false;
-                    fcs.ImperfectDeltaD = false;
-                    fcs.RegisteredRangeLimits = new Vector2(200f, 4000f);
-                    fcs.CurrentRange = 200f;
-                    fcs.GatedAimablePlatforms = fcs.Mounts;
-                    fcs.FireGateOverrideTransform = null;
-                    //fcs.transform.localPosition = new Vector3(-0.603f, 0.6288f, -5.547f);
                     fcs.transform.localPosition = new Vector3(-0.803f, 0.32f, -5.547f);
-                    fcs.LaserOrigin = fcs.transform;
+                    Sosna.Add(day_optic, night_optic, vic.WeaponsManager.Weapons[1]);
+                }
 
-                    vic.GetComponent<WeaponsManager>().Weapons[1].ExcludeFromFcsUpdates = false;
-                    vic.GetComponent<WeaponsManager>().Weapons[1].PreAimWeapon = WeaponSystemRole.Coaxial;
+                if (vic.UniqueName == "T72A" && k5_t72m1.Value)
+                {
+                    Transform turret = vic.transform.Find("---MESH---/HULL/TURRET");
+                    Transform turret_rend = turret.Find("T72M1_turret");
+                    turret_rend.GetComponent<MeshFilter>().sharedMesh = thermals.Value ? b3_turret_cleaned_mesh : turret_cleaned_mesh;
+                    //turret_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0, 0, 0, 0);
+                    turret_rend.gameObject.AddComponent<HeatSource>();
 
-                    night_optic.Alignment = OpticAlignment.BoresightStabilized;
-                    night_optic.RotateAzimuth = true;
-
-                    day_optic.slot.DefaultFov = 13f;
-                    day_optic.slot.SpriteType = CameraSpriteManager.SpriteType.NightVisionGoggles;
-
-                    List<float> fovs = new List<float>();
-                    for (float i = 12; i >= 4; i--)
+                    if (thermals.Value)
                     {
-                        fovs.Add(i);
+                        turret.Find("LUNA").localScale = Vector3.zero;
                     }
-                    day_optic.slot.OtherFovs = fovs.ToArray<float>();
 
-                    day_optic.gameObject.AddComponent<DigitalZoomSnapper>();
-                    day_optic.UseRotationForShake = true;
-                    day_optic.CantCorrect = true;
-                    day_optic.CantCorrectMaxSpeed = 5f;
-                    day_optic.Alignment = OpticAlignment.FcsRange;
-                    day_optic.slot.VibrationShakeMultiplier = 0f;
-                    day_optic.slot.VibrationBlurScale = 0f;
-                    day_optic.RotateAzimuth = true;
-                    day_optic.ForceHorizontalReticleAlign = true;
-                    day_optic.reticleMesh.reticleSO = reticleSO_sosna;
-                    day_optic.reticleMesh.reticle = reticle_cached_sosna;
-                    day_optic.reticleMesh.SMR = null;
-                    day_optic.reticleMesh.Load();
+                    turret.Find("smoke rack").localScale = Vector3.zero;
+                    vic.transform.Find("---MESH---/equipment").gameObject.SetActive(false);
 
-                    GameObject rangebox = GameObject.Instantiate(thermal_canvas);
-                    rangebox.GetComponent<Reparent>().NewParent = day_optic.transform;
-                    rangebox.GetComponent<Reparent>().Awake();
-                    rangebox.SetActive(true);
-                    rangebox.transform.localPosition = new Vector3(0f, 0f, 0f);
-                    rangebox.transform.GetChild(0).transform.localPosition = new Vector3(-2.1709f, -393.7738f, 0f);
-                    rangebox.transform.GetChild(0).transform.localEulerAngles = new Vector3(0f, 0f, 180f);
-                    rangebox.transform.GetChild(0).transform.localScale = new Vector3(0.1f, 1f, 1f);
+                    GameObject kontakt_5_turret = GameObject.Instantiate(thermals.Value ? Kontakt5.t72b3_kontakt_5_turret_array : Kontakt5.t72_kontakt_5_turret_array);
+                    turret_rend.gameObject.AddComponent<LateFollowTarget>();
+                    LateFollow k5_turret_follow = kontakt_5_turret.AddComponent<LateFollow>();
+                    k5_turret_follow.FollowTarget = turret_rend;
+                    k5_turret_follow.enabled = true;
+                    k5_turret_follow.Awake();
+                    k5_turret_follow._localPosShift = new Vector3(-0.085f, 0.078f, 0.118f);
+                    k5_turret_follow._localRotShift = Quaternion.Euler(00f, 90f, 0f);
 
-                    GameObject range = GameObject.Instantiate(range_readout);
-                    range.GetComponent<Reparent>().NewParent = rangebox.transform;
-                    range.GetComponent<Reparent>().Awake();
-                    range.SetActive(true);
-                    range.transform.localPosition = new Vector3(0f, 0f, 0f);
-                    range.transform.GetChild(1).transform.localPosition = new Vector3(-10f, -285.2727f, 0f);
-                    day_optic.RangeText = range.GetComponentInChildren<TMP_Text>();
-                    range.GetComponentInChildren<TMP_Text>().outlineWidth = 1f;
-                    day_optic.RangeTextDivideBy = 1;
-                    day_optic.RangeTextQuantize = 1;
+                    GameObject kontakt_5_roof = GameObject.Instantiate(Kontakt5.t72_kontakt_5_roof_array);
+                    LateFollow k5_roof_follow = kontakt_5_roof.AddComponent<LateFollow>();
+                    k5_roof_follow.FollowTarget = turret_rend;
+                    k5_roof_follow.enabled = true;
+                    k5_roof_follow.Awake();
+                    k5_roof_follow._localPosShift = new Vector3(-0.06f, 0.108f, -0.02f);
+                    k5_roof_follow._localRotShift = Quaternion.Euler(0f, 90f, 0f);
 
-                    Transform ready_backing = range.transform.GetChild(0);
-                    Component.DestroyImmediate(ready_backing.gameObject.GetComponent<Image>());
-                    Image image = ready_backing.gameObject.AddComponent<Image>();
-                    image.color = new Color(0.15f, 0f, 0f);
-                    ready_backing.localScale = new Vector3(5f, 0.3f, 1f);
-                    ready_backing.localPosition = new Vector3(-2.1511f, -256.7888f, -0.0001f);
+                    Transform hull_rend = vic.transform.Find("T72M1_mesh (1)/T72M1_hull");
+                    hull_rend.GetComponent<MeshFilter>().sharedMesh = hull_cleaned_mesh;
+                    hull_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0, 0, 0, 0);
+                    hull_rend.gameObject.AddComponent<HeatSource>();
 
-                    GameObject ready = GameObject.Instantiate(ready_backing.gameObject, range.transform);
-                    Image image2 = ready.gameObject.GetComponent<Image>();
-                    image2.color = new Color(1f, 0f, 0f);
+                    GameObject kontakt_5_hull = GameObject.Instantiate(Kontakt5.t80_kontakt_5_hull_array);
+                    vic.transform.Find("---MESH---/HULL/").gameObject.AddComponent<LateFollowTarget>();
+                    LateFollow k5_hull_follow = kontakt_5_hull.AddComponent<LateFollow>();
+                    k5_hull_follow.FollowTarget = vic.transform.Find("---MESH---/HULL");
+                    k5_hull_follow.enabled = true;
+                    k5_hull_follow.Awake();
+                    k5_hull_follow._localPosShift = new Vector3(-0.75f, -0.0756f, 2.55f);
+                    k5_hull_follow._localRotShift = Quaternion.Euler(0f, 180f, 0f);
 
-                    ready.transform.localPosition = new Vector3(-2.1511f, -256.7888f, -0.0001f);
+                    for (int i = 1; i >= -1; i -= 2)
+                    {
+                        GameObject kontakt_5_side_hull = GameObject.Instantiate(Kontakt5.kontakt_5_side_hull_array);
+                        kontakt_5_side_hull.transform.localScale = new Vector3(1f, 1f, i);
+                        LateFollow k5_side_follow = kontakt_5_side_hull.AddComponent<LateFollow>();
+                        k5_side_follow.FollowTarget = vic.transform.Find("---MESH---/HULL");
+                        k5_side_follow.enabled = true;
+                        k5_side_follow.Awake();
+                        k5_side_follow._localPosShift = new Vector3(1.8f * i, 0.01f, 2.43f);
+                        k5_side_follow._localRotShift = Quaternion.Euler(0f, 90f, 0f);
+                    }
 
-                    day_optic.ReadyToFireObject = ready.gameObject;
+                    vic._friendlyName = thermals.Value && super_fcs_t72m1.Value ? "T-72B3" : "T-72BA"; 
+                }
+
+                if (vic.UniqueName == "T72M" && k5_t72m.Value)
+                {
+                    vic.transform.Find("T72M_skirt_hull").gameObject.SetActive(true);
+                    vic.transform.Find("T72M_gills_rig 1").gameObject.SetActive(false);
+                    vic.transform.Find("T72M_gills_hull").gameObject.SetActive(false);
+
+                    Transform turret = vic.transform.Find("T72M_skirts_rig/HULL/TURRET");
+                    Transform turret_rend = turret.Find("T72M_turret");
+                    GameObject.Instantiate(t72m1_composite_cheeks, turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform.Find("ARMOR"));
+                    turret_rend.GetChild(0).GetComponent<MeshFilter>().sharedMesh = turret_cleaned_mesh;
+                    turret_rend.GetChild(0).GetComponent<MeshRenderer>().materials = new Material[] { t72m1_material };
+                    turret_rend.GetChild(0).gameObject.AddComponent<HeatSource>();
+
+                    turret.Find("Smoke Transforms").localScale = Vector3.zero;
+                    vic.transform.Find("T72M_skirts_rig/equipment").gameObject.SetActive(false);
+
+                    GameObject kontakt_5_turret = GameObject.Instantiate(Kontakt5.t72_kontakt_5_turret_array);
+                    turret_rend.gameObject.AddComponent<LateFollowTarget>();
+                    LateFollow k5_turret_follow = kontakt_5_turret.AddComponent<LateFollow>();
+                    k5_turret_follow.FollowTarget = turret_rend;
+                    k5_turret_follow.enabled = true;
+                    k5_turret_follow.Awake();
+                    k5_turret_follow._localPosShift = new Vector3(-0.085f, 0.078f, 0.118f);
+                    k5_turret_follow._localRotShift = Quaternion.Euler(0f, 90f, 0f);
+
+                    GameObject kontakt_5_roof = GameObject.Instantiate(Kontakt5.t72_kontakt_5_roof_array);
+                    LateFollow k5_roof_follow = kontakt_5_roof.AddComponent<LateFollow>();
+                    k5_roof_follow.FollowTarget = turret_rend;
+                    k5_roof_follow.enabled = true;
+                    k5_roof_follow.Awake();
+                    k5_roof_follow._localPosShift = new Vector3(-0.06f, 0.108f, -0.02f);
+                    k5_roof_follow._localRotShift = Quaternion.Euler(0f, 90f, 0f);
+
+                    Transform hull_rend = vic.transform.Find("T72M_skirt_hull/T72M_skirt_hull/T72M_skirt_hull_LOD0");
+                    hull_rend.localEulerAngles = new Vector3(0f, 90f, 0f);
+                    hull_rend.localScale = new Vector3(10f, 10f, 10f);
+                    hull_rend.localPosition = new Vector3(0f, 0.9471f, -1.3261f);
+                    vic.transform.Find("T72M_skirt_hull/T72M_skirt_hull").localPosition = Vector3.zero;
+                    vic.transform.Find("T72M_skirt_hull/T72M_skirt_hull").localScale = new Vector3(1f, 1f, 1f);
+                    vic.transform.Find("T72M_skirt_hull/T72M_skirt_hull").localEulerAngles = Vector3.zero;
+
+                    hull_rend.GetComponent<MeshFilter>().sharedMesh = hull_cleaned_mesh;
+                    Material[] hull_mat = (Material[])hull_rend.GetComponent<MeshRenderer>().materials.Clone();
+                    hull_mat[0] = t72m1_material;
+                    hull_rend.GetComponent<MeshRenderer>().materials = hull_mat;
+                    hull_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0f, 0f, 0f, 0f);
+                    hull_rend.GetComponent<MeshRenderer>().materials[2].color = new Color(0f, 0f, 0f, 0f);
+                    hull_rend.gameObject.AddComponent<HeatSource>();
+
+                    GameObject kontakt_5_hull = GameObject.Instantiate(Kontakt5.t80_kontakt_5_hull_array);
+                    vic.transform.Find("T72M_skirts_rig/HULL/").gameObject.AddComponent<LateFollowTarget>();
+                    LateFollow k5_hull_follow = kontakt_5_hull.AddComponent<LateFollow>();
+                    k5_hull_follow.FollowTarget = vic.transform.Find("T72M_skirts_rig/HULL");
+                    k5_hull_follow.enabled = true;
+                    k5_hull_follow.Awake();
+                    k5_hull_follow._localPosShift = new Vector3(-0.75f, -0.0756f, 2.55f);
+                    k5_hull_follow._localRotShift = Quaternion.Euler(0f, 180f, 0f);
+
+                    for (int i = 1; i >= -1; i -= 2) {
+                        GameObject kontakt_5_side_hull = GameObject.Instantiate(Kontakt5.kontakt_5_side_hull_array);
+                        kontakt_5_side_hull.transform.localScale = new Vector3(1f, 1f, i);
+                        LateFollow k5_side_follow = kontakt_5_side_hull.AddComponent<LateFollow>();
+                        k5_side_follow.FollowTarget = vic.transform.Find("T72M_skirts_rig/HULL");
+                        k5_side_follow.enabled = true;
+                        k5_side_follow.Awake();
+                        k5_side_follow._localPosShift = new Vector3(1.8f * i, 0.01f, 2.43f);
+                        k5_side_follow._localRotShift = Quaternion.Euler(0f, 90f, 0f);
+                    }
+
+                    vic._friendlyName = "T-72BA";
                 }
             }
 
@@ -605,72 +422,46 @@ namespace PactIncreasedLethality
         {
             if (!t72_patch.Value) return;
 
-            if (!range_readout)
-            {
-                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                {
-                    if (obj.gameObject.name == "M1IP")
-                    {
-                        range_readout = GameObject.Instantiate(obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas").gameObject);
-                        GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
-                        //GameObject.Destroy(range_readout.transform.GetChild(0).gameObject);
-                        range_readout.AddComponent<Reparent>();
-                        range_readout.SetActive(false);
-                        range_readout.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                        range_readout.name = "t72 range canvas";
-
-                        TextMeshProUGUI text = range_readout.GetComponentInChildren<TextMeshProUGUI>();
-                        text.color = new Color(255f, 0f, 0f);
-                        text.faceColor = new Color(255f, 0f, 0f);
-                        text.outlineColor = new Color(100f, 0f, 0f, 0.5f);
-
-                        break;
-                    }
-                }
-            }
-
             if (soviet_crew_voice == null)
             {
                 foreach (CrewVoiceHandler obj in Resources.FindObjectsOfTypeAll(typeof(CrewVoiceHandler)))
                 {
-                    if (obj.name == "RU Tank Voice")
-                    {
-                        soviet_crew_voice = obj.gameObject;
-                        break;
-                    }
+                    if (obj.name != "RU Tank Voice") continue;
+                    soviet_crew_voice = obj.gameObject;
+                    break;
                 }
             }
 
-            // thermal border
-            if (thermal_canvas == null)
+            if (t72m1_material == null)
             {
-                foreach (GameObject obj in Resources.FindObjectsOfTypeAll(typeof(GameObject)))
+                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
                 {
-                    if (obj.name == "M2 Bradley")
+                    if (obj.gameObject.name == "T72M1")
                     {
-                        thermal_canvas = GameObject.Instantiate(obj.transform.Find("FCS and sights/GPS Optic/M2 Bradley GPS canvas").gameObject);
-                        GameObject.Destroy(thermal_canvas.transform.GetChild(2).gameObject);
-                        thermal_canvas.AddComponent<Reparent>();
-                        thermal_canvas.SetActive(false);
-                        thermal_canvas.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                        thermal_canvas.name = "t72 thermal canvas";
+                        t72m1_material = obj.transform.Find("T72M1_mesh (1)/T72M1_turret").GetComponent<MeshRenderer>().materials[0];
+                        t72m1_composite_cheeks = obj.transform.Find("T-72 TURRET COLLIDERS/ARMOR/Composite Armor Array").gameObject;
                     }
-
-                    if (obj.name == "M60A3")
-                    {
-                        scanline_canvas = GameObject.Instantiate(obj.transform.Find("Turret Scripts/Sights/FLIR/Canvas Scanlines").gameObject);
-                        scanline_canvas.AddComponent<Reparent>();
-                        scanline_canvas.SetActive(false);
-                        scanline_canvas.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                        scanline_canvas.name = "t72 scanline canvas";
-                    }
-
-                    if (scanline_canvas != null && thermal_canvas != null) break;
                 }
             }
 
-            APFSDS_125mm.Init();
-            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Lowest);
+
+            if (turret_cleaned_mesh == null)
+            {
+                var blyat_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72_turret_cleaned"));
+                turret_cleaned_mesh = blyat_bundle.LoadAsset<Mesh>("t72m1turret_front_cleaned.asset");
+                turret_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                var blyat_bundle3 = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72b3_turret_cleaned"));
+                b3_turret_cleaned_mesh = blyat_bundle3.LoadAsset<Mesh>("t72b3_turret.asset");
+                b3_turret_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                var blyat2_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72_hull_cleaned"));
+                hull_cleaned_mesh = blyat2_bundle.LoadAsset<Mesh>("T72M1_hull.asset");
+                hull_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            }
+
+            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }
     }
 }

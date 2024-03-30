@@ -18,6 +18,8 @@ using TMPro;
 using UnityEngine;
 using NWH;
 using NWH.VehiclePhysics;
+using static UnityEngine.GraphicsBuffer;
+using GHPC.UI.Tips;
 
 namespace PactIncreasedLethality
 {
@@ -30,6 +32,9 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<string> t64_ammo_type;
         static MelonPreferences_Entry<bool> t64_random_ammo;
         static MelonPreferences_Entry<bool> has_drozd;
+        static MelonPreferences_Entry<bool> has_lrf;
+        static MelonPreferences_Entry<bool> thermals;
+        static MelonPreferences_Entry<string> thermals_quality;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -38,11 +43,19 @@ namespace PactIncreasedLethality
             super_engine = cfg.CreateEntry<bool>("Super Engine/Transmission", true);
             super_engine.Comment = "vrrrrrrrrrrooooooooom";
 
+            has_lrf = cfg.CreateEntry<bool>("Laser Rangefinder (T-64A)", true);
+            has_lrf.Comment = "Replaces the coincidence rangefinder with a laser rangefinder";
+
             t64_ammo_type = cfg.CreateEntry<string>("AP Round (T-64A)", "3BM32");
             t64_ammo_type.Comment = "3BM32, 3BM26 (composite optimized), 3BM42 (composite optimized)";
 
             t64_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-64A)", false);
             t64_random_ammo.Comment = "Randomizes ammo selection for T-64As (3BM26, 3BM32, 3BM42)";
+
+            thermals = cfg.CreateEntry<bool>("Has Thermals (T-64A)", false);
+            thermals.Comment = "Replaces night vision sight with thermal sight";
+            thermals_quality = cfg.CreateEntry<string>("Thermals Quality (T-64A)", "High");
+            thermals_quality.Comment = "Low, High";
 
             has_drozd = cfg.CreateEntry<bool>("Drozd APS (T-64A)", false);
             has_drozd.Comment = "Intercepts incoming projectiles; covers the frontal arc of the tank relative to where the turret is facing";
@@ -73,6 +86,35 @@ namespace PactIncreasedLethality
 
                 int rand = UnityEngine.Random.Range(0, ap.Count);
                 string ammo_str = t64_random_ammo.Value ? ammo_str = ap.ElementAt(rand).Key : t64_ammo_type.Value;
+
+                if (has_lrf.Value)
+                {
+                    if (!ReticleMesh.cachedReticles.ContainsKey("T72"))
+                    {
+                        foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
+                        {
+                            if (obj.gameObject.name == "T72M1")
+                            {
+                                obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
+                                break;
+                            }
+                        }
+                    }
+
+                    FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
+                    UsableOptic day_optic = Util.GetDayOptic(fcs);
+
+                    GameObject.Destroy(fcs.OpticalRangefinder.gameObject);
+                    day_optic.slot.ExclusiveItems = new GameObject[] { };
+
+                    fcs.LaserAim = LaserAimMode.ImpactPoint;
+                    fcs.MaxLaserRange = 4000f;
+
+                    day_optic.reticleMesh.reticleSO = ReticleMesh.cachedReticles["T72"].tree;
+                    day_optic.reticleMesh.reticle = ReticleMesh.cachedReticles["T72"];
+                    day_optic.reticleMesh.SMR = null;
+                    day_optic.reticleMesh.Load();
+                }
 
                 try
                 {
@@ -109,9 +151,9 @@ namespace PactIncreasedLethality
                     this_vic_controller.engine.Start();
                     this_vic_controller.transmission.Initialize(this_vic_controller);
 
-                    chassis._maxForwardSpeed = 20f;
-                    chassis._maxReverseSpeed = 11.176f;
-                    chassis._originalEnginePower = 1400.99f;
+                    chassis._maxForwardSpeed = 22f;
+                    chassis._maxReverseSpeed = 15.176f;
+                    chassis._originalEnginePower = 1430.99f;
                 }
 
                 if (has_drozd.Value)
@@ -153,6 +195,14 @@ namespace PactIncreasedLethality
 
                     vic._friendlyName += "D";
                 }
+
+                vic.AimablePlatforms[1].transform.Find("optic cover parent").gameObject.SetActive(false);
+
+                if (thermals.Value)
+                {
+                    PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower());
+                    vic.InfraredSpotlights.Clear();
+                }
             }
 
             yield break;
@@ -164,17 +214,15 @@ namespace PactIncreasedLethality
 
             if (abrams_vic_controller == null)
             {
-                foreach (GameObject obj in Resources.FindObjectsOfTypeAll(typeof(GameObject)))
+                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
                 {
-                    if (obj.name == "M1IP")
+                    if (obj.gameObject.name == "M1IP")
                     {
                         abrams_vic_controller = obj.GetComponent<VehicleController>();
                         break;
                     }
                 }
             }
-
-            APFSDS_125mm.Init();
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }
