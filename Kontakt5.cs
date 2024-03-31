@@ -154,6 +154,7 @@ namespace PactIncreasedLethality
                 ERA_Setup(t72_kontakt_5_roof_array.GetComponentsInChildren<Transform>());
 
                 ERA_Setup(kontakt_5_side_hull_array.GetComponentsInChildren<Transform>());
+                ERA_Setup(kontakt_5_side_hull_array_ext.GetComponentsInChildren<Transform>());
             }
         }
     }

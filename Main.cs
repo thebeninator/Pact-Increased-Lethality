@@ -19,7 +19,7 @@ using GHPC.Camera;
 using FMODUnity;
 using FMOD;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.6.1", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.6.1A", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality

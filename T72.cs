@@ -345,8 +345,11 @@ namespace PactIncreasedLethality
                 if (vic.UniqueName == "T72M" && k5_t72m.Value)
                 {
                     vic.transform.Find("T72M_skirt_hull").gameObject.SetActive(true);
-                    vic.transform.Find("T72M_gills_rig 1").gameObject.SetActive(false);
-                    vic.transform.Find("T72M_gills_hull").gameObject.SetActive(false);
+                    if (vic.transform.Find("T72M_gills_rig 1") != null)
+                    {
+                        vic.transform.Find("T72M_gills_rig 1").gameObject.SetActive(false);
+                        vic.transform.Find("T72M_gills_hull").gameObject.SetActive(false);
+                    }
 
                     Transform turret = vic.transform.Find("T72M_skirts_rig/HULL/TURRET");
                     Transform turret_rend = turret.Find("T72M_turret");
