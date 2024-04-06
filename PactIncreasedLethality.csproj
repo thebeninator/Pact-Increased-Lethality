@@ -47,6 +47,10 @@
     <Reference Include="MelonLoader">
       <HintPath>..\..\..\Desktop\GHPC MODDED\MelonLoader\net35\MelonLoader.dll</HintPath>
     </Reference>
+    <Reference Include="Rewired_Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\Rewired_Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -92,6 +96,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AMMO_30MM.cs" />
     <Compile Include="APFSDS_125mm.cs" />
     <Compile Include="BMP1.cs" />
     <Compile Include="BMP2.cs" />

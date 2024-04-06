@@ -36,6 +36,8 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> thermals;
         static MelonPreferences_Entry<string> thermals_quality;
 
+        static GameObject square;
+
         public static void Config(MelonPreferences_Category cfg)
         {
             t64_patch = cfg.CreateEntry<bool>("T-64 Patch", true);
@@ -86,6 +88,8 @@ namespace PactIncreasedLethality
 
                 int rand = UnityEngine.Random.Range(0, ap.Count);
                 string ammo_str = t64_random_ammo.Value ? ammo_str = ap.ElementAt(rand).Key : t64_ammo_type.Value;
+
+                GameObject s = GameObject.Instantiate(square, vic.transform.Find("---T64A_MESH---/HULL/TURRET/Main gun/---MAIN GUN SCRIPTS---/2A46/TPD-2-49 gunner's sight/GPS"));
 
                 if (has_lrf.Value)
                 {
@@ -201,7 +205,7 @@ namespace PactIncreasedLethality
                 if (thermals.Value)
                 {
                     PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower());
-                    vic.InfraredSpotlights.Clear();
+                    Component.Destroy(vic.InfraredSpotlights[0].GetComponent<Light>());
                 }
             }
 
@@ -218,6 +222,7 @@ namespace PactIncreasedLethality
                 {
                     if (obj.gameObject.name == "M1IP")
                     {
+                        square = obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas/ready indicator").gameObject;
                         abrams_vic_controller = obj.GetComponent<VehicleController>();
                         break;
                     }

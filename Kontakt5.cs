@@ -20,7 +20,8 @@ namespace PactIncreasedLethality
     {
         public class OnDestroy : MonoBehaviour
         {
-            private bool done = false; 
+            private bool done = false;
+            private bool completely_destroyed = false; 
 
             void Update()
             {
@@ -30,9 +31,10 @@ namespace PactIncreasedLethality
                 ParticleEffectsManager.Instance.CreateEffectOfType(ParticleEffectsManager.EffectVisualType.AutocannonImpactExplosive, transform.position, null);
 
                 int rand = UnityEngine.Random.Range(0, 2);
-                if (rand == 1)
+                if (rand == 1 && !completely_destroyed)
                 {
                     GetComponent<UniformArmor>()._isDetonated = false;
+                    completely_destroyed = true;
                 }
                 else {
                     done = true;

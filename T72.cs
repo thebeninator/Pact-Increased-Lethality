@@ -33,15 +33,13 @@ namespace PactIncreasedLethality
 {
     public class T72
     {
-        static AmmoClipCodexScriptable clip_codex_3of26_vt;
-        static AmmoType.AmmoClip clip_3of26_vt;
-        static AmmoCodexScriptable ammo_codex_3of26_vt;
-        static AmmoType ammo_3of26_vt;
-        static GameObject ammo_3of26_vt_vis = null;
-
         static MelonPreferences_Entry<bool> t72_patch;
         static MelonPreferences_Entry<string> t72m_ammo_type;
         static MelonPreferences_Entry<string> t72m1_ammo_type;
+
+        static MelonPreferences_Entry<string> t72m_heat_type;
+        static MelonPreferences_Entry<string> t72m1_heat_type;
+
 
         static MelonPreferences_Entry<bool> t72m_random_ammo;
         static MelonPreferences_Entry<bool> t72m1_random_ammo;
@@ -65,6 +63,12 @@ namespace PactIncreasedLethality
 
         static MelonPreferences_Entry<List<string>> empty_ammo_t72m;
         static MelonPreferences_Entry<List<string>> empty_ammo_t72m1;
+
+        static MelonPreferences_Entry<bool> super_engine;
+
+        static VehicleController abrams_vic_controller;
+
+        static AmmoClipCodexScriptable clip_codex_3bk18m;
 
         static Dictionary<string, AmmoClipCodexScriptable> ap;
         static Dictionary<string, int> ammo_racks = new Dictionary<string, int>() {
@@ -105,6 +109,10 @@ namespace PactIncreasedLethality
 
             t72m1_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-72M1)", false);
 
+            t72m_heat_type = cfg.CreateEntry<string>("HEAT Round (T-72M)", "3BK18M");
+            t72m_heat_type.Comment = "3BK14M, 3BK18M";
+            t72m1_heat_type = cfg.CreateEntry<string>("HEAT Round (T-72M1)", "3BK18M");
+
             thermals = cfg.CreateEntry<bool>("Has Thermals (T-72)", true);
             thermals.Comment = "Replaces night vision sight with thermal sight";
             thermals.Description = " ";
@@ -143,6 +151,10 @@ namespace PactIncreasedLethality
             super_fcs_t72m.Description = " ";
 
             super_fcs_t72m1 = cfg.CreateEntry<bool>("Super FCS (T-72M1)", false);
+
+            super_engine = cfg.CreateEntry<bool>("Super Engine/Transmission (T-72)", true);
+            super_engine.Comment = "vrrrrrrrrrrooooooooom";
+            super_engine.Description = " ";
         }
 
         public static IEnumerator Convert(GameState _)
@@ -155,10 +167,10 @@ namespace PactIncreasedLethality
                     ["3BM32"] = APFSDS_125mm.clip_codex_3bm32,
                     ["3BM42"] = APFSDS_125mm.clip_codex_3bm42,
                 };
-                        
-            foreach (GameObject vic_go in PactIncreasedLethalityMod.vic_gos)
+
+            foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
             {
-                Vehicle vic = vic_go.GetComponent<Vehicle>();
+                GameObject vic_go = vic.gameObject;
 
                 if (vic == null) continue;
                 if (!vic.FriendlyName.Contains("T-72")) continue;
@@ -235,16 +247,24 @@ namespace PactIncreasedLethality
                 if (t72m1_random_ammo.Value && vic.UniqueName == "T72A")
                     ammo_str = ap.ElementAt(rand).Key;
 
+                string heat_str = (vic.UniqueName == "T72M") ? t72m_heat_type.Value : t72m1_heat_type.Value;
+
                 try
                 {
                     AmmoClipCodexScriptable codex = ap[ammo_str];
                     loadout_manager.LoadedAmmoTypes[0] = codex;
+
+                    if (heat_str == "3BK18M")
+                        loadout_manager.LoadedAmmoTypes[1] = clip_codex_3bk18m;
+
                     //loadout_manager.LoadedAmmoTypes[2] = clip_codex_3of26_vt;
                     for (int i = 0; i <= 4; i++)
                     {
                         GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
                         rack.ClipTypes[0] = codex.ClipType;
-                        //rack.ClipTypes[2] = clip_codex_3of26_vt.ClipType;
+                        if (heat_str == "3BK18M")
+                            rack.ClipTypes[1] = clip_codex_3bk18m.ClipType;
+
                         Util.EmptyRack(rack);
                     }
 
@@ -271,7 +291,7 @@ namespace PactIncreasedLethality
                 if (thermals.Value)
                 {
                     PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower());
-                    vic.InfraredSpotlights.Clear();
+                    Component.Destroy(vic.InfraredSpotlights[0].GetComponent<Light>());
                 }
 
                 if ((super_fcs_t72m1.Value && vic.UniqueName == "T72A") || (super_fcs_t72m.Value && vic.UniqueName == "T72M"))
@@ -288,7 +308,7 @@ namespace PactIncreasedLethality
                     //turret_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0, 0, 0, 0);
                     turret_rend.gameObject.AddComponent<HeatSource>();
 
-                    if (thermals.Value)
+                    if (thermals.Value && super_fcs_t72m1.Value)
                     {
                         turret.Find("LUNA").localScale = Vector3.zero;
                     }
@@ -296,7 +316,7 @@ namespace PactIncreasedLethality
                     turret.Find("smoke rack").localScale = Vector3.zero;
                     vic.transform.Find("---MESH---/equipment").gameObject.SetActive(false);
 
-                    GameObject kontakt_5_turret = GameObject.Instantiate(thermals.Value ? Kontakt5.t72b3_kontakt_5_turret_array : Kontakt5.t72_kontakt_5_turret_array);
+                    GameObject kontakt_5_turret = GameObject.Instantiate((thermals.Value && super_fcs_t72m1.Value) ? Kontakt5.t72b3_kontakt_5_turret_array : Kontakt5.t72_kontakt_5_turret_array);
                     turret_rend.gameObject.AddComponent<LateFollowTarget>();
                     LateFollow k5_turret_follow = kontakt_5_turret.AddComponent<LateFollow>();
                     k5_turret_follow.FollowTarget = turret_rend;
@@ -416,6 +436,37 @@ namespace PactIncreasedLethality
 
                     vic._friendlyName = "T-72BA";
                 }
+
+                /*
+                weapon.Feed.ReloadDuringMissileTracking = true;
+                weapon.FireWhileGuidingMissile = false;
+                GameObject guidance_computer_obj = GameObject.Instantiate(new GameObject("guidance computer"), vic.AimablePlatforms.Where(o => o.name == "---TURRET SCRIPTS---").First().transform.parent);
+                MissileGuidanceUnit computer = guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
+
+                computer.AimElement = fcs.AimTransform;
+                weapon.GuidanceUnit = computer;
+
+                fcs.gameObject.AddComponent<FireForget.FireForgetTracker>();
+                */
+
+                if (super_engine.Value)
+                {
+                    VehicleController this_vic_controller = vic_go.GetComponent<VehicleController>();
+                    NwhChassis chassis = vic_go.GetComponent<NwhChassis>();
+
+                    Util.ShallowCopy(this_vic_controller.engine, abrams_vic_controller.engine);
+                    Util.ShallowCopy(this_vic_controller.transmission, abrams_vic_controller.transmission);
+
+                    this_vic_controller.engine.vc = vic_go.GetComponent<VehicleController>();
+                    this_vic_controller.transmission.vc = vic_go.GetComponent<VehicleController>();
+                    this_vic_controller.engine.Initialize(this_vic_controller);
+                    this_vic_controller.engine.Start();
+                    this_vic_controller.transmission.Initialize(this_vic_controller);
+
+                    chassis._maxForwardSpeed = 25f;
+                    chassis._maxReverseSpeed = 7.176f;
+                    chassis._originalEnginePower = 1500.99f;
+                }
             }
 
             yield break;
@@ -424,6 +475,23 @@ namespace PactIncreasedLethality
         public static void Init()
         {
             if (!t72_patch.Value) return;
+
+            if (abrams_vic_controller == null)
+            {
+                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
+                {
+                    if (obj.gameObject.name == "M1IP")
+                    {
+                        abrams_vic_controller = obj.GetComponent<VehicleController>();
+                        break;
+                    }
+                }
+            }
+
+            foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
+            {
+                if (s.name == "clip_3BK18M") { clip_codex_3bk18m = s; break; }
+            }
 
             if (soviet_crew_voice == null)
             {
@@ -446,7 +514,6 @@ namespace PactIncreasedLethality
                     }
                 }
             }
-
 
             if (turret_cleaned_mesh == null)
             {

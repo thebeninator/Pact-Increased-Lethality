@@ -138,6 +138,50 @@ namespace PactIncreasedLethality
                 ammo_3bm42.VisualModel = ammo_3bm42_vis;
                 ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm42;
                 ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm42;
+                /*
+                ammo_9m119_super = new AmmoType();
+                Util.ShallowCopy(ammo_9m119_super, ammo_9m111);
+                ammo_9m119_super.Name = "blyat";
+                ammo_9m119_super.Caliber = 125;
+                ammo_9m119_super.TntEquivalentKg = 3f;
+                ammo_9m119_super.SpallMultiplier = 1.5f;
+                ammo_9m119_super.ClimbAngle = 40f;
+                ammo_9m119_super.TurnSpeed = 2.5f;
+                ammo_9m119_super.DiveAngle = 55f;
+                ammo_9m119_super.LoiterAltitude = 1000f;
+                ammo_9m119_super.AimPointMarch = 0.05f;
+                ammo_9m119_super.MaxSpallRha = 55f;
+                ammo_9m119_super.MinSpallRha = 20f;
+                ammo_9m119_super.RangedFuseTime = 20f;
+                ammo_9m119_super.UseTracer = false;
+                ammo_9m119_super.EdgeSetback = 0.5f;
+                ammo_9m119_super.NoisePowerX = 0f;
+                ammo_9m119_super.NoisePowerY = 0f;
+                ammo_9m119_super.SpiralAngularRate = 0f;
+                ammo_9m119_super.Guidance = AmmoType.GuidanceType.Laser;
+
+                ammo_codex_9m119_super = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+                ammo_codex_9m119_super.AmmoType = ammo_9m119_super;
+                ammo_codex_9m119_super.name = "ammo_9m119_super";
+
+                clip_9m119_super = new AmmoType.AmmoClip();
+                clip_9m119_super.Capacity = 1;
+                clip_9m119_super.Name = "blyat";
+                clip_9m119_super.MinimalPattern = new AmmoCodexScriptable[1];
+                clip_9m119_super.MinimalPattern[0] = ammo_codex_9m119_super;
+
+                clip_codex_9m119_super = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+                clip_codex_9m119_super.name = "clip_9m119_super";
+                clip_codex_9m119_super.ClipType = clip_9m119_super;
+
+                ammo_9m119_super_vis = GameObject.Instantiate(ammo_3of26.VisualModel);
+                ammo_9m119_super_vis.name = "9m119_super visual";
+                ammo_9m119_super.VisualModel = ammo_9m119_super_vis;
+                ammo_9m119_super.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m119_super;
+                ammo_9m119_super.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m119_super;
+
+                FireForget.AddFireForgetAmmo(ammo_9m119_super);
+                */
             }
         }
     }

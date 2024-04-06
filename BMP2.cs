@@ -27,6 +27,7 @@ namespace PactIncreasedLethality
         {
             public static FMOD.Sound sound_exterior;
             public static FMOD.Sound sound;
+            public static FMOD.Sound sound_alt;
 
             public static List<Channel> channels = new List<Channel>() { };
             public static void Cleanup()
@@ -47,7 +48,7 @@ namespace PactIncreasedLethality
 
             public static bool Prefix(WeaponAudio __instance)
             {
-                if (__instance.SingleShotMode && __instance.SingleShotEventPaths[0] == "event:/Weapons/autocannon_2a42_single")
+                if (__instance.SingleShotMode && __instance.SingleShotEventPaths[0].Contains("event:/Weapons/autocannon_2a42_single"))
                 {
                     var corSystem = RuntimeManager.CoreSystem;
 
@@ -72,7 +73,8 @@ namespace PactIncreasedLethality
                     channelGroup.setMode(MODE._3D_WORLDRELATIVE);
 
                     FMOD.Channel channel;
-                    FMOD.Sound s = interior ? sound : sound_exterior;
+                    FMOD.Sound sound_interior = __instance.SingleShotEventPaths[0].Contains("actually_2a72") ? sound_alt : sound;
+                    FMOD.Sound s = interior ? sound_interior : sound_exterior;
 
                     Cleanup();
 
@@ -97,29 +99,12 @@ namespace PactIncreasedLethality
 
         static WeaponSystemCodexScriptable weapon_2a7m;
 
-        static AmmoClipCodexScriptable clip_codex_3ubr8;
-        static AmmoType.AmmoClip clip_3ubr8;
-        static AmmoCodexScriptable ammo_codex_3ubr8;
-        static AmmoType ammo_3ubr8;
-
-        static AmmoClipCodexScriptable clip_codex_3uof8;
-        static AmmoType.AmmoClip clip_3uof8;
-        static AmmoCodexScriptable ammo_codex_3uof8;
-        static AmmoType ammo_3uof8;
-
         static AmmoClipCodexScriptable clip_codex_9m113_as;
         static AmmoType.AmmoClip clip_9m113_as;
         static AmmoCodexScriptable ammo_codex_9m113_as;
         static AmmoType ammo_9m113_as;
 
         static AmmoType ammo_9m113;
-
-        static AmmoType ammo_3ubr6;
-        static AmmoClipCodexScriptable clip_codex_3ubr6;
-
-        static AmmoType ammo_3uor6;
-        static AmmoCodexScriptable ammo_codex_3uor6;
-        static AmmoClipCodexScriptable clip_codex_3uor6;
 
         static AmmoClipCodexScriptable clip_codex_bzt;
         static AmmoType.AmmoClip clip_bzt;
@@ -173,12 +158,10 @@ namespace PactIncreasedLethality
         }
 
         public static void Update()
-        {
-            {
-                if (!zsu_conversion.Value) return;
-                if (PactIncreasedLethalityMod.player_manager == null) return;
-                ReplaceSound.Cleanup();
-            }
+        {         
+            if (!zsu_conversion.Value) return;
+            if (PactIncreasedLethalityMod.player_manager == null) return;
+            ReplaceSound.Cleanup();   
         }
 
         public static IEnumerator Convert(GameState _)
@@ -299,8 +282,8 @@ namespace PactIncreasedLethality
                     vic._friendlyName = "BMP-23-4";
                 }
 
-                AmmoClipCodexScriptable ap = use_3ubr8.Value ? clip_codex_3ubr8 : clip_codex_3ubr6;
-                AmmoClipCodexScriptable he = use_3uof8.Value ? clip_codex_3uof8 : clip_codex_3uor6;
+                AmmoClipCodexScriptable ap = use_3ubr8.Value ? AMMO_30MM.clip_codex_3ubr8 : AMMO_30MM.clip_codex_3ubr6;
+                AmmoClipCodexScriptable he = use_3uof8.Value ? AMMO_30MM.clip_codex_3uof8 : AMMO_30MM.clip_codex_3uor6;
 
                 if (is_zsu)
                 {
@@ -406,86 +389,18 @@ namespace PactIncreasedLethality
                 weapon_2a7m.Type = WeaponSystemCodexScriptable.WeaponType.Autocannon;
             }
 
-            if (ammo_3ubr8 == null)
+            foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
             {
-                foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
+                if (s.AmmoType.Name == "9M113 Konkurs")
                 {
-                    if (s.AmmoType.Name == "3UBR6 APBC-T")
-                    {
-                        ammo_3ubr6 = s.AmmoType;
-                    }
-
-                    if (s.AmmoType.Name == "3UOR6 HE-T")
-                    {
-                        ammo_3uor6 = s.AmmoType;
-                        ammo_codex_3uor6 = s;
-                    }
-
-                    if (s.AmmoType.Name == "9M113 Konkurs")
-                    {
-                        ammo_9m113 = s.AmmoType;
-                    }
-
-                    if (ammo_3ubr6 != null && ammo_3uor6 != null && ammo_9m113 != null) break;
+                    ammo_9m113 = s.AmmoType;
                 }
 
-                foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
-                {
-                    if (s.name == "clip_3UOR6_340rd_load") { clip_codex_3uor6 = s; }
-                    if (s.name == "clip_3UBR6_160rd_load") { clip_codex_3ubr6 = s; }
-                    if (clip_codex_3ubr6 != null && clip_codex_3uor6 != null) break;
-                }
+                if (ammo_9m113 != null) break;
+            }
 
-                ammo_3ubr8 = new AmmoType();
-                Util.ShallowCopy(ammo_3ubr8, ammo_3ubr6);
-                ammo_3ubr8.Name = "3UBR8 APDS-T";
-                ammo_3ubr8.Mass = 0.222f;
-                ammo_3ubr8.Coeff = 0.012f;
-                ammo_3ubr8.MuzzleVelocity = 1120f;
-                ammo_3ubr8.RhaPenetration = 72f;
-
-                ammo_codex_3ubr8 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_3ubr8.AmmoType = ammo_3ubr8;
-                ammo_codex_3ubr8.name = "ammo_3ubr8";
-
-                clip_3ubr8 = new AmmoType.AmmoClip();
-                clip_3ubr8.Capacity = 160;
-                clip_3ubr8.Name = "3UBR8 APDS-T";
-                clip_3ubr8.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_3ubr8.MinimalPattern[0] = ammo_codex_3ubr8;
-
-                clip_codex_3ubr8 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_3ubr8.name = "clip_3ubr8";
-                clip_codex_3ubr8.ClipType = clip_3ubr8;
-
-                /////////////////////
-
-                ammo_3uof8 = new AmmoType();
-                Util.ShallowCopy(ammo_3uof8, ammo_3uor6);
-                ammo_3uof8.Name = "3UOF8 HEFI";
-                ammo_3uof8.UseTracer = false;
-                ammo_3uof8.TntEquivalentKg = 0.049f;
-
-                ammo_codex_3uof8 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_3uof8.AmmoType = ammo_3uof8;
-                ammo_codex_3uof8.name = "ammo_3uof8";
-
-                clip_3uof8 = new AmmoType.AmmoClip();
-                clip_3uof8.Capacity = 340;
-                clip_3uof8.Name = "3UOR6 HE-T/3UOF8 HEFI";
-                clip_3uof8.MinimalPattern = new AmmoCodexScriptable[] {
-                    ammo_codex_3uof8,
-                    ammo_codex_3uof8,
-                    ammo_codex_3uor6,
-                };
-                clip_3uof8.MinimalPattern[0] = ammo_codex_3uof8;
-
-                clip_codex_3uof8 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_3uof8.name = "clip_3uof8";
-                clip_codex_3uof8.ClipType = clip_3uof8;
-
-                /////////////////////
-
+            if (ammo_9m113_as == null)
+            {
                 ammo_9m113_as = new AmmoType();
                 Util.ShallowCopy(ammo_9m113_as, ammo_9m113);
                 ammo_9m113_as.Name = "9M113AS Konkurs";
@@ -523,7 +438,7 @@ namespace PactIncreasedLethality
                 ////////////////////
 
                 ammo_apds = new AmmoType();
-                Util.ShallowCopy(ammo_apds, ammo_3ubr6);
+                Util.ShallowCopy(ammo_apds, AMMO_30MM.ammo_3ubr6);
                 ammo_apds.Name = "23mm APDS-T";
                 ammo_apds.Mass = 0.190f;
                 ammo_apds.MuzzleVelocity = 1120f;
@@ -538,7 +453,7 @@ namespace PactIncreasedLethality
 
 
                 ammo_bzt = new AmmoType();
-                Util.ShallowCopy(ammo_bzt, ammo_3ubr6);
+                Util.ShallowCopy(ammo_bzt, AMMO_30MM.ammo_3ubr6);
                 ammo_bzt.Name = "23mm BZT";
                 ammo_bzt.Mass = 0.190f;
                 ammo_bzt.MuzzleVelocity = 970f;
@@ -565,7 +480,7 @@ namespace PactIncreasedLethality
                 ////////////////////
 
                 ammo_ofzt = new AmmoType();
-                Util.ShallowCopy(ammo_ofzt, ammo_3uor6);
+                Util.ShallowCopy(ammo_ofzt, AMMO_30MM.ammo_3uor6);
                 ammo_ofzt.Name = "23mm OFZT";
                 ammo_ofzt.UseTracer = true;
                 ammo_ofzt.TntEquivalentKg = 0.020f;
@@ -579,7 +494,7 @@ namespace PactIncreasedLethality
                 ammo_codex_ofzt.name = "ammo_ofzt";
 
                 ammo_ofz = new AmmoType();
-                Util.ShallowCopy(ammo_ofz, ammo_3uor6);
+                Util.ShallowCopy(ammo_ofz, AMMO_30MM.ammo_3uor6);
                 ammo_ofz.Name = "23mm OFZ";
                 ammo_ofz.UseTracer = false;
                 ammo_ofz.TntEquivalentKg = 0.025f;

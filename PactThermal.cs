@@ -37,6 +37,10 @@ namespace PactIncreasedLethality
 
         static MelonPreferences_Entry<float> lq_blur;
         static MelonPreferences_Entry<float> hq_blur;
+
+        static MelonPreferences_Entry<bool> lq_boxing;
+        static MelonPreferences_Entry<bool> hq_boxing;
+
         public static void Config(MelonPreferences_Category cfg)
         {
             lq_blur = cfg.CreateEntry<float>("Low Quality Thermals Blur", 0.30f);
@@ -45,6 +49,11 @@ namespace PactIncreasedLethality
 
             hq_blur = cfg.CreateEntry<float>("High Quality Thermals Blur", 0.15f);
             hq_blur.Comment = "Default: 0.15";
+
+            lq_boxing = cfg.CreateEntry<bool>("Low Quality Thermals Boxing", true);
+            lq_boxing.Comment = "Creates a box border around the sight";
+
+            hq_boxing = cfg.CreateEntry<bool>("High Quality Thermals Boxing", true);
         }
 
         private static List<List<Vector3>> borders = new List<List<Vector3>>() {
@@ -64,17 +73,20 @@ namespace PactIncreasedLethality
             if (quality == "low") {
                 GameObject s = GameObject.Instantiate(scanline_canvas, optic.transform);
                 s.SetActive(true);
-            }  
+            }
 
-            for (int i = 0; i <= 3; i++)
+            if ((quality == "low" && lq_boxing.Value) || (quality == "high" && hq_boxing.Value))
             {
-                if (quality == "high" && (i == 2 || i == 3)) continue;
-                GameObject t = GameObject.Instantiate(thermal_canvas, optic.transform);
-                t.transform.GetChild(0).localPosition = borders[i][0];
-                t.transform.GetChild(0).localEulerAngles = borders[i][1];
-                if (i == 2 || i == 3)
-                    t.GetComponent<CanvasScaler>().screenMatchMode = CanvasScaler.ScreenMatchMode.Shrink;
-                t.SetActive(true);
+                for (int i = 0; i <= 3; i++)
+                {
+                    if (quality == "high" && (i == 2 || i == 3)) continue;
+                    GameObject t = GameObject.Instantiate(thermal_canvas, optic.transform);
+                    t.transform.GetChild(0).localPosition = borders[i][0];
+                    t.transform.GetChild(0).localEulerAngles = borders[i][1];
+                    if (i == 2 || i == 3)
+                        t.GetComponent<CanvasScaler>().screenMatchMode = CanvasScaler.ScreenMatchMode.Shrink;
+                    t.SetActive(true);
+                }
             }
 
             optic.reticleMesh.reticleSO = quality == "low" ? reticleSO_lq : reticleSO_hq;

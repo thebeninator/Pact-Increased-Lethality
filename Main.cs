@@ -19,7 +19,7 @@ using GHPC.Camera;
 using FMODUnity;
 using FMOD;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.6.1A", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.6.2", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -50,6 +50,7 @@ namespace PactIncreasedLethality
             T80.Config(cfg);
             BMP1.Config(cfg);
             BMP2.Config(cfg);
+            BTR60.Config(cfg);
             Kontakt1.Config(cfg);
             Drozd.Config(cfg);
             PactThermal.Config(cfg);
@@ -57,10 +58,13 @@ namespace PactIncreasedLethality
             var corSystem = FMODUnity.RuntimeManager.CoreSystem;
 
             corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot.wav"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound);
-            BMP2.ReplaceSound.sound.set3DMinMaxDistance(35f, 1300f);
+            BMP2.ReplaceSound.sound.set3DMinMaxDistance(30f, 1300f);
 
             corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound_exterior);
-            BMP2.ReplaceSound.sound_exterior.set3DMinMaxDistance(35f, 1300f);
+            BMP2.ReplaceSound.sound_exterior.set3DMinMaxDistance(30f, 1300f);
+
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.ogg"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound_alt);
+            BMP2.ReplaceSound.sound_alt.set3DMinMaxDistance(30f, 1300f);
         }
 
         public override void OnLateUpdate()
@@ -88,6 +92,7 @@ namespace PactIncreasedLethality
             Kontakt1.Init();
             Kontakt5.Init();
             APFSDS_125mm.Init();
+            AMMO_30MM.Init();
             PactThermal.Init();
             Sosna.Init();
             Drozd.Init();
