@@ -1,5 +1,7 @@
 # Pact Increased Lethality
 
+Turret model for BTR-60A from https://sketchfab.com/3d-models/btr-80a-5e4b7a1b18c04ac68fcd76036feebfc8 by Alexandr Zhilkin
+
 All features listed below can be toggled on/off.
 
 Correct installation of this mod:
