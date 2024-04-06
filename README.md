@@ -6,14 +6,23 @@ Correct installation of this mod:
 
 ![image](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e31193eb-6cd2-4efa-a93c-f17528af5e9e)
 
-Current config looks like this:
-
-![Screenshot_10](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/564ca7ab-111c-4cda-8e23-aa2ab9939112)
-
 To regenerate the config:
 1) Delete this mod's section
 2) Launch the game
 3) Quit the game using the main menu exit button
+
+# Drozd APS
+- Can be equipped on the T-55, T-62, and T-64A
+- Intercepts projectiles in an arc relative to where the turret is facing
+- By default only intercepts projectiles going between 70-700 m/s
+
+![DROZD](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/747c0b97-42a7-4aea-b5b5-fd0b329ce99c)
+
+# Kontakt-5 ERA
+- Can be equipped on the T-72M/1 and T-80B
+- Capable of stopping APFSDS rounds like M833
+
+![K%55](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e3bf6124-99af-4449-8dcc-c3bc2d3ec441)
 
 # T-55
 - 3BK17M HEAT-FS-T
@@ -76,6 +85,22 @@ Demo vid: https://youtu.be/lpvLtdIQ-js
 
 [Desktop 2024.02.10 - 14.36.30.05.DVR.webm](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e9d0899a-9e91-44e4-9877-e7d2a6786a36)
 
+# BTR-60
+- Stabilizer
+- BTR-60A Conversion
+  - 30mm 2A72 Autocannon
+  - Access to the same rounds as the BMP-2
+  - Fixed 6x magnification day sight and passive night vision sight
+
+![BTR60a](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/7eac03c8-98f1-4196-967a-825dd6ba6686)
+
 # T-64A
 - Super engine & transmission
   - Equivalent to the M1 Abrams
+- TPD-K1 sight with laser rangefinder (as seen on vanilla T-72s)
+
+# T-62
+- Better Stabilizer
+  - Less reticle blur & shake while on the move 
+- Laser Rangefinder
+  - Only gives range (you will need to set the range manually)
