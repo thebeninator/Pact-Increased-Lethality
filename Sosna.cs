@@ -15,6 +15,11 @@ using UnityEngine.UI;
 
 namespace PactIncreasedLethality
 {
+    public class BLYAT : MonoBehaviour
+    {
+        public GameObject square;
+    }
+
     public class Sosna
     {
         static GameObject range_readout;
@@ -22,6 +27,8 @@ namespace PactIncreasedLethality
 
         static ReticleSO reticleSO_sosna;
         static ReticleMesh.CachedReticle reticle_cached_sosna;
+
+        static GameObject square;
 
         public static void Add(UsableOptic day_optic, UsableOptic night_optic, WeaponSystemInfo coax) {
             FireControlSystem fcs = day_optic.FCS;
@@ -124,6 +131,12 @@ namespace PactIncreasedLethality
             ready.transform.localPosition = new Vector3(-2.1511f, -256.7888f, -0.0001f);
 
             day_optic.ReadyToFireObject = ready.gameObject;
+
+            GameObject _square = GameObject.Instantiate(square, rangebox.transform);
+
+            BLYAT b = fcs.gameObject.AddComponent<BLYAT>();
+            b.square = _square;
+            _square.SetActive(false);
         }
 
         private static void Reticle() {
@@ -255,6 +268,8 @@ namespace PactIncreasedLethality
                 {
                     if (obj.gameObject.name == "M1IP")
                     {
+                        square = obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas/ready indicator").gameObject;
+
                         range_readout = GameObject.Instantiate(obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas").gameObject);
                         GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
                         //GameObject.Destroy(range_readout.transform.GetChild(0).gameObject);

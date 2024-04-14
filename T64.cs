@@ -20,6 +20,7 @@ using NWH;
 using NWH.VehiclePhysics;
 using static UnityEngine.GraphicsBuffer;
 using GHPC.UI.Tips;
+using GHPC.Equipment;
 
 namespace PactIncreasedLethality
 {
@@ -35,8 +36,8 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> has_lrf;
         static MelonPreferences_Entry<bool> thermals;
         static MelonPreferences_Entry<string> thermals_quality;
+        static MelonPreferences_Entry<bool> lead_calculator_t64;
 
-        static GameObject square;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -59,6 +60,10 @@ namespace PactIncreasedLethality
             thermals_quality = cfg.CreateEntry<string>("Thermals Quality (T-64A)", "High");
             thermals_quality.Comment = "Low, High";
 
+            lead_calculator_t64 = cfg.CreateEntry<bool>("Lead Calculator (T-64A)", true);
+            lead_calculator_t64.Comment = "For use with the standard sight; displays a number that corresponds to the horizontal markings on the sight (LRF required)";
+            lead_calculator_t64.Description = " ";
+
             has_drozd = cfg.CreateEntry<bool>("Drozd APS (T-64A)", false);
             has_drozd.Comment = "Intercepts incoming projectiles; covers the frontal arc of the tank relative to where the turret is facing";
         }
@@ -73,9 +78,9 @@ namespace PactIncreasedLethality
                     ["3BM42"] = APFSDS_125mm.clip_codex_3bm42,
                 };
 
-            foreach (GameObject vic_go in PactIncreasedLethalityMod.vic_gos)
+            foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
             {
-                Vehicle vic = vic_go.GetComponent<Vehicle>();
+                GameObject vic_go = vic.gameObject;
 
                 if (vic == null) continue;
                 if (!vic.FriendlyName.Contains("T-64")) continue;
@@ -89,7 +94,8 @@ namespace PactIncreasedLethality
                 int rand = UnityEngine.Random.Range(0, ap.Count);
                 string ammo_str = t64_random_ammo.Value ? ammo_str = ap.ElementAt(rand).Key : t64_ammo_type.Value;
 
-                GameObject s = GameObject.Instantiate(square, vic.transform.Find("---T64A_MESH---/HULL/TURRET/Main gun/---MAIN GUN SCRIPTS---/2A46/TPD-2-49 gunner's sight/GPS"));
+                FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
+                UsableOptic day_optic = Util.GetDayOptic(fcs);
 
                 if (has_lrf.Value)
                 {
@@ -105,9 +111,6 @@ namespace PactIncreasedLethality
                         }
                     }
 
-                    FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
-                    UsableOptic day_optic = Util.GetDayOptic(fcs);
-
                     GameObject.Destroy(fcs.OpticalRangefinder.gameObject);
                     day_optic.slot.ExclusiveItems = new GameObject[] { };
 
@@ -118,6 +121,9 @@ namespace PactIncreasedLethality
                     day_optic.reticleMesh.reticle = ReticleMesh.cachedReticles["T72"];
                     day_optic.reticleMesh.SMR = null;
                     day_optic.reticleMesh.Load();
+
+                    if (lead_calculator_t64.Value) 
+                        FireControlSystem1A40.Add(fcs, day_optic, new Vector3(-308.8629f, -6.6525f, 0f));
                 }
 
                 try
@@ -205,7 +211,7 @@ namespace PactIncreasedLethality
                 if (thermals.Value)
                 {
                     PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower());
-                    Component.Destroy(vic.InfraredSpotlights[0].GetComponent<Light>());
+                    vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
                 }
             }
 
@@ -222,7 +228,6 @@ namespace PactIncreasedLethality
                 {
                     if (obj.gameObject.name == "M1IP")
                     {
-                        square = obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas/ready indicator").gameObject;
                         abrams_vic_controller = obj.GetComponent<VehicleController>();
                         break;
                     }

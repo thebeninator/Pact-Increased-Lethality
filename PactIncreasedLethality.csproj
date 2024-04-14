@@ -96,13 +96,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="1A40.cs" />
     <Compile Include="AMMO_30MM.cs" />
     <Compile Include="APFSDS_125mm.cs" />
     <Compile Include="BMP1.cs" />
     <Compile Include="BMP2.cs" />
+    <Compile Include="BTR60.cs" />
     <Compile Include="DigitalZoomSnapper.cs" />
     <Compile Include="Drozd.cs" />
     <Compile Include="EFP.cs" />
+    <Compile Include="FireForget.cs" />
     <Compile Include="Kontakt1.cs" />
     <Compile Include="Kontakt5.cs" />
     <Compile Include="LimitedLRF.cs" />
@@ -118,6 +121,7 @@
     <Compile Include="T72.cs" />
     <Compile Include="T80.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="UVBU.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

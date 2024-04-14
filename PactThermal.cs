@@ -437,6 +437,7 @@ namespace PactIncreasedLethality
             foreach (TMP_FontAsset font in Resources.FindObjectsOfTypeAll(typeof(TMP_FontAsset))) {
                 if (font.name == "TPD_Etch SDF") {
                     tpd_etch_sdf = font;
+                    break;
                 }
             }
 

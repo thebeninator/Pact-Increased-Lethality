@@ -130,9 +130,9 @@ namespace PactIncreasedLethality
 
         public static IEnumerator Convert(GameState _)
         {
-            foreach (GameObject vic_go in PactIncreasedLethalityMod.vic_gos)
+            foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
             {
-                Vehicle vic = vic_go.GetComponent<Vehicle>();
+                GameObject vic_go = vic.gameObject;
 
                 if (vic == null) continue;
                 if (vic.FriendlyName != "T-55A") continue;
@@ -189,11 +189,6 @@ namespace PactIncreasedLethality
                 computer.AimElement = weapon.FCS.AimTransform;
                 weapon.GuidanceUnit = computer;
 
-                if (!has_lrf.Value)
-                {
-                    continue;
-                }
-                
                 GameObject t = GameObject.Instantiate(range_readout);
                 t.GetComponent<Reparent>().NewParent = Util.GetDayOptic(fcs).transform;
                 t.transform.GetChild(0).transform.localPosition = new Vector3(-284.1897f, -5.5217f, 0.1f);

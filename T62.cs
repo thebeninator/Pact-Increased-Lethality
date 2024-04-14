@@ -42,9 +42,9 @@ namespace PactIncreasedLethality
 
         public static IEnumerator Convert(GameState _)
         {
-            foreach (GameObject vic_go in PactIncreasedLethalityMod.vic_gos)
+            foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
             {
-                Vehicle vic = vic_go.GetComponent<Vehicle>();
+                GameObject vic_go = vic.gameObject;
 
                 if (vic == null) continue;
                 if (vic.FriendlyName != "T-62") continue;

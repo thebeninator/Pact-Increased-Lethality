@@ -169,7 +169,7 @@ namespace PactIncreasedLethality
             }
         }
     }
-
+    
     [HarmonyPatch(typeof(GHPC.Weapons.LiveRound), "penCheck")]
     public class InsensitiveERA
     {

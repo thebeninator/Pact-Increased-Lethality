@@ -18,15 +18,16 @@ using GHPC.Player;
 using GHPC.Camera;
 using FMODUnity;
 using FMOD;
+using GHPC.Vehicle;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.6.2", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.6.3", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
 {
     public class PactIncreasedLethalityMod : MelonMod
     {
-        public static GameObject[] vic_gos;
+        public static Vehicle[] vics;
         public static MelonPreferences_Category cfg;
 
         private GameObject game_manager;
@@ -35,7 +36,7 @@ namespace PactIncreasedLethality
         public static CameraManager camera_manager;
 
         public IEnumerator GetVics(GameState _) {
-            vic_gos = GameObject.FindGameObjectsWithTag("Vehicle");
+            vics = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
 
             yield break;
         }
@@ -88,7 +89,8 @@ namespace PactIncreasedLethality
             camera_manager = game_manager.GetComponent<CameraManager>();
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Medium);
-
+            
+            FireControlSystem1A40.Init();
             Kontakt1.Init();
             Kontakt5.Init();
             APFSDS_125mm.Init();
@@ -105,6 +107,7 @@ namespace PactIncreasedLethality
             T64.Init();
             T62.Init();
             T80.Init();
+            BTR60.Init();
         }
     }
 }

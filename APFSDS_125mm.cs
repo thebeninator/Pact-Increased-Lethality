@@ -26,6 +26,15 @@ namespace PactIncreasedLethality
         public static AmmoClipCodexScriptable clip_codex_3bm22;
         public static AmmoClipCodexScriptable clip_codex_3bm32;
 
+        public static AmmoClipCodexScriptable clip_codex_9m119_super;
+        public static AmmoType.AmmoClip clip_9m119_super;
+        public static AmmoCodexScriptable ammo_codex_9m119_super;
+        public static AmmoType ammo_9m119_super;
+        public static GameObject ammo_9m119_super_vis = null;
+
+        public static AmmoType ammo_9m111;
+
+
         public static void Init() {
             if (ammo_3bm26 == null)
             {
@@ -63,8 +72,9 @@ namespace PactIncreasedLethality
                 foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
                 {
                     if (s.AmmoType.Name == "3BM15 APFSDS-T") { ammo_3bm15 = s.AmmoType; }
+                    //if (s.AmmoType.Name == "9M111 Fagot") { ammo_9m111 = s.AmmoType; }
 
-                    if (ammo_3bm15 != null) break;
+                    if (/*ammo_9m111 != null &&*/ ammo_3bm15 != null) break;
                 }
 
                 foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
@@ -138,6 +148,7 @@ namespace PactIncreasedLethality
                 ammo_3bm42.VisualModel = ammo_3bm42_vis;
                 ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm42;
                 ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm42;
+                
                 /*
                 ammo_9m119_super = new AmmoType();
                 Util.ShallowCopy(ammo_9m119_super, ammo_9m111);
@@ -174,13 +185,13 @@ namespace PactIncreasedLethality
                 clip_codex_9m119_super.name = "clip_9m119_super";
                 clip_codex_9m119_super.ClipType = clip_9m119_super;
 
-                ammo_9m119_super_vis = GameObject.Instantiate(ammo_3of26.VisualModel);
+                ammo_9m119_super_vis = GameObject.Instantiate(ammo_3bm15.VisualModel);
                 ammo_9m119_super_vis.name = "9m119_super visual";
                 ammo_9m119_super.VisualModel = ammo_9m119_super_vis;
                 ammo_9m119_super.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m119_super;
                 ammo_9m119_super.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m119_super;
 
-                FireForget.AddFireForgetAmmo(ammo_9m119_super);
+                FireForget.AddFireForgetAmmo(ammo_9m119_super);   
                 */
             }
         }

@@ -31,7 +31,7 @@ namespace PactIncreasedLethality
         static ReticleMesh.CachedReticle reticle_cached;
 
         static GameObject casing;
-        static GameObject m60a1_nvs; 
+        static GameObject m60a1_nvs;
 
         static MelonPreferences_Entry<bool> btr60_patch;
         static MelonPreferences_Entry<bool> autocannon;
@@ -52,20 +52,23 @@ namespace PactIncreasedLethality
             use_3uof8.Comment = "Mixed belt of 3UOR6 and 3UOF8 (1:2); 3UOF8 has more explosive filler but no tracer";
         }
 
-        public class SharedNightSight : MonoBehaviour {
+        public class SharedNightSight : MonoBehaviour
+        {
             public GameObject nvs;
             UsableOptic day_optic;
-            bool in_day_sight = true; 
+            bool in_day_sight = true;
 
-            void Awake() { 
+            void Awake()
+            {
                 day_optic = GetComponent<UsableOptic>();
             }
 
-            void Update() {
+            void Update()
+            {
                 bool button = InputUtil.MainPlayer.GetButtonDown("Toggle Night Sight");
 
-                if (!button) return; 
-                
+                if (!button) return;
+
                 in_day_sight = !in_day_sight;
 
                 if (!in_day_sight)
@@ -73,22 +76,26 @@ namespace PactIncreasedLethality
                     nvs.GetComponent<PostProcessVolume>().enabled = true;
                     day_optic.slot.BaseBlur = 0.1f;
                 }
-                else {
+                else
+                {
                     nvs.GetComponent<PostProcessVolume>().enabled = false;
                     day_optic.slot.BaseBlur = 0f;
                 }
             }
-        } 
+        }
 
-        public class UpdateRange : MonoBehaviour {
+        public class UpdateRange : MonoBehaviour
+        {
             FireControlSystem fcs;
             ReticleMesh reticle;
-            void Awake() { 
+            void Awake()
+            {
                 fcs = GetComponent<FireControlSystem>();
                 reticle = fcs.MainOptic.reticleMesh;
             }
 
-            void Update() {
+            void Update()
+            {
                 reticle.CurrentAmmo = fcs.CurrentAmmoType;
 
                 if (reticle.curReticleRange != fcs.CurrentRange)
@@ -96,10 +103,12 @@ namespace PactIncreasedLethality
             }
         }
 
-        public class CasingFix : MonoBehaviour {
+        public class CasingFix : MonoBehaviour
+        {
             public static bool definitely_a_prefab = true;
 
-            void Awake() {
+            void Awake()
+            {
                 if (definitely_a_prefab)
                 {
                     definitely_a_prefab = false;
@@ -111,7 +120,8 @@ namespace PactIncreasedLethality
             }
         }
 
-        public static IEnumerator Convert(GameState _) {
+        public static IEnumerator Convert(GameState _)
+        {
             foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
             {
                 GameObject vic_go = vic.gameObject;
@@ -372,11 +382,13 @@ namespace PactIncreasedLethality
                     day_optic.reticleMesh.Load();
                 }
 
-                if (stab.Value) {
+                if (stab.Value)
+                {
                     weapon.FCS.CurrentStabMode = StabilizationMode.Vector;
                     weapon.FCS.StabsActive = true;
 
-                    for (int i = 0; i <= 1; i++) {
+                    for (int i = 0; i <= 1; i++)
+                    {
                         vic.AimablePlatforms[i]._stabMode = StabilizationMode.Vector;
                         vic.AimablePlatforms[i].StabilizerActive = true;
                         vic.AimablePlatforms[i].Stabilized = true;
@@ -387,7 +399,8 @@ namespace PactIncreasedLethality
             yield break;
         }
 
-        public static void Init() {
+        public static void Init()
+        {
             if (!btr60_patch.Value) return;
 
             if (m60a1_nvs == null)

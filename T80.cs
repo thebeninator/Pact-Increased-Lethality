@@ -23,6 +23,7 @@ using GHPC.UI.Tips;
 using MelonLoader.Utils;
 using System.IO;
 using Thermals;
+using GHPC.Equipment;
 
 namespace PactIncreasedLethality
 {
@@ -80,9 +81,9 @@ namespace PactIncreasedLethality
                     ["3BM42"] = APFSDS_125mm.clip_codex_3bm42,
                 };
 
-            foreach (GameObject vic_go in PactIncreasedLethalityMod.vic_gos)
+            foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
             {
-                Vehicle vic = vic_go.GetComponent<Vehicle>();
+                GameObject vic_go = vic.gameObject;
 
                 if (vic == null) continue;
                 if (!vic.FriendlyName.Contains("T-80")) continue;
@@ -104,7 +105,8 @@ namespace PactIncreasedLethality
                 if (thermals.Value)
                 {
                     PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower());
-                    Component.Destroy(vic.InfraredSpotlights[0].GetComponent<Light>());
+                    vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
+    
                     weapon.FCS.NightOptic.Alignment = OpticAlignment.BoresightStabilized;
                     weapon.FCS.NightOptic.RotateAzimuth = true;
                 }
@@ -237,8 +239,6 @@ namespace PactIncreasedLethality
                 var blyat_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t80_turret_cleaned"));
                 turret_cleaned_mesh = blyat_bundle.LoadAsset<Mesh>("t80turret_front_cleaned.asset");
                 turret_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                Mesh turret_cleaned_mesh15 = blyat_bundle.LoadAsset<Mesh>("jerry.asset");
-                turret_cleaned_mesh15.hideFlags = HideFlags.DontUnloadUnusedAsset;
             }
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
