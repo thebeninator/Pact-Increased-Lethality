@@ -26,7 +26,7 @@ namespace PactIncreasedLethality
 
         public static void Add(FireControlSystem fcs, UsableOptic optic, Vector3 offset) {
             fcs.RecordTraverseRateBuffer = true;
-            fcs.TraverseBufferSeconds = 0.01f;
+            fcs.TraverseBufferSeconds = 0.5f;
             fcs.DynamicLead = true;
             fcs._fixParallaxForVectorMode = true;
             fcs.InertialCompensation = false;
