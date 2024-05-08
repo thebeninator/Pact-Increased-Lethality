@@ -319,7 +319,7 @@ namespace PactIncreasedLethality
 
                 if (thermals.Value)
                 {
-                    PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower());
+                    PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower(), (super_fcs_t72m1.Value && vic.UniqueName == "T72A") || (super_fcs_t72m.Value && vic.UniqueName == "T72M"));
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
                 }
 

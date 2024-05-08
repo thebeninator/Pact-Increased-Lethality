@@ -55,6 +55,8 @@ namespace PactIncreasedLethality
         private LauncherArray l_launchers;
         private LauncherArray r_launchers;
 
+        private static AmmoType dummy_he; 
+
         public static void Config(MelonPreferences_Category cfg)
         {
             high_velocity = cfg.CreateEntry<bool>("Intercept High Velocity Projectiles (Drozd)", false);
@@ -74,6 +76,18 @@ namespace PactIncreasedLethality
         public static void Init()
         {
             if (drozd_go != null) return;
+
+            dummy_he = new AmmoType();
+            dummy_he.DetonateEffect = Resources.FindObjectsOfTypeAll<GameObject>().Where(o => o.name == "HE_explosion").First();
+            dummy_he.ImpactEffectDescriptor = new ParticleEffectsManager.ImpactEffectDescriptor()
+            {
+                HasImpactEffect = true,
+                ImpactCategory = ParticleEffectsManager.Category.HighExplosive,
+                EffectSize = ParticleEffectsManager.EffectSize.MainGun,
+                RicochetType = ParticleEffectsManager.RicochetType.None,
+                Flags = ParticleEffectsManager.ImpactModifierFlags.Large,
+                MinFilterStrictness = ParticleEffectsManager.FilterStrictness.Low
+            };
 
             var bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "testcollider"));
             drozd_go = bundle.LoadAsset<GameObject>("test collider.prefab");
@@ -157,7 +171,7 @@ namespace PactIncreasedLethality
                     if (launcher_array.current_launcher.IsEmpty) launcher_array.current_launcher_index++;
                     
                     launcher_array.current_launcher.FireCurrentRocket();
-                    ParticleEffectsManager.Instance.CreateEffectOfType(ParticleEffectsManager.EffectVisualType.MainGunImpactHighExplosive, __instance._lastFramePosition, null);
+                    ParticleEffectsManager.Instance.CreateImpactEffectOfType(dummy_he, ParticleEffectsManager.FusedStatus.Fuzed, ParticleEffectsManager.SurfaceMaterial.None, false, __instance._lastFramePosition);
                     ImpactSFXManager.Instance.PlaySimpleImpactAudio(ImpactAudioType.Missile, __instance._lastFramePosition);
                     drozd.cd = INTERCEPTION_COOLDOWN;
 

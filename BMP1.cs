@@ -177,10 +177,6 @@ namespace PactIncreasedLethality
                 Util.ShallowCopy(ammo_vog17, ammo_3uor6);
                 ammo_vog17.Name = "VOG-17M HE";
                 ammo_vog17.MuzzleVelocity = 600f;
-                ammo_vog17.ImpactTypeFuzed = GHPC.Effects.ParticleEffectsManager.EffectVisualType.AutocannonImpactExplosive;
-                ammo_vog17.ImpactTypeFuzedTerrain = GHPC.Effects.ParticleEffectsManager.EffectVisualType.AutocannonImpactExplosiveTerrain;
-                ammo_vog17.ImpactTypeUnfuzed = GHPC.Effects.ParticleEffectsManager.EffectVisualType.AutocannonImpactExplosive;
-                ammo_vog17.ImpactTypeUnfuzedTerrain = GHPC.Effects.ParticleEffectsManager.EffectVisualType.AutocannonImpactExplosiveTerrain;
                 ammo_vog17.VisualType = LiveRoundMarshaller.LiveRoundVisualType.Bullet;
                 ammo_vog17.UseTracer = false;
                 ammo_vog17.RhaPenetration = 5f;
@@ -207,10 +203,6 @@ namespace PactIncreasedLethality
                 Util.ShallowCopy(ammo_vog17m1, ammo_3uor6);
                 ammo_vog17m1.Name = "VOG-17M1 HEDP";
                 ammo_vog17m1.MuzzleVelocity = 600f;
-                ammo_vog17m1.ImpactTypeFuzed = GHPC.Effects.ParticleEffectsManager.EffectVisualType.AutocannonImpact;
-                ammo_vog17m1.ImpactTypeFuzedTerrain = GHPC.Effects.ParticleEffectsManager.EffectVisualType.AutocannonImpactExplosiveTerrain;
-                ammo_vog17m1.ImpactTypeUnfuzed = GHPC.Effects.ParticleEffectsManager.EffectVisualType.AutocannonImpact;
-                ammo_vog17m1.ImpactTypeUnfuzedTerrain = GHPC.Effects.ParticleEffectsManager.EffectVisualType.AutocannonImpactExplosiveTerrain;
                 ammo_vog17m1.VisualType = LiveRoundMarshaller.LiveRoundVisualType.Bullet;
                 ammo_vog17m1.UseTracer = false;
                 ammo_vog17m1.RhaPenetration = 50f;

@@ -13,6 +13,7 @@ using Thermals;
 using GHPC.Audio;
 using static MelonLoader.MelonLogger;
 using GHPC.Effects;
+using System.Xml.Linq;
 
 namespace PactIncreasedLethality
 {
@@ -27,8 +28,8 @@ namespace PactIncreasedLethality
             {
                 if (!GetComponent<UniformArmor>().IsDetonated || done) return;
                 GetComponent<MeshRenderer>().material.color = new Color(0.6f, 0.6f, 0.6f);
+                ParticleEffectsManager.Instance.CreateImpactEffectOfType(dummy_he, ParticleEffectsManager.FusedStatus.Fuzed, ParticleEffectsManager.SurfaceMaterial.Steel, false, transform.position);
                 ImpactSFXManager.Instance.PlaySimpleImpactAudio(ImpactAudioType.MainGunHeat, transform.position);
-                ParticleEffectsManager.Instance.CreateEffectOfType(ParticleEffectsManager.EffectVisualType.AutocannonImpactExplosive, transform.position, null);
 
                 int rand = UnityEngine.Random.Range(0, 2);
                 if (rand == 1 && !completely_destroyed)
@@ -56,6 +57,8 @@ namespace PactIncreasedLethality
 
         public static ArmorCodexScriptable kontakt5_so = null;
         public static ArmorType kontakt5_armour = new ArmorType();
+
+        private static AmmoType dummy_he; 
 
         private static void ERA_Setup(Transform[] era_transforms)
         {
@@ -107,6 +110,18 @@ namespace PactIncreasedLethality
         public static void Init() {
             if (t80_kontakt_5_turret_array == null)
             {
+                dummy_he = new AmmoType();
+                dummy_he.DetonateEffect = Resources.FindObjectsOfTypeAll<GameObject>().Where(o => o.name == "HEAT Impact").First();
+                dummy_he.ImpactEffectDescriptor = new ParticleEffectsManager.ImpactEffectDescriptor()
+                {
+                    HasImpactEffect = true,
+                    ImpactCategory = ParticleEffectsManager.Category.HighExplosive,
+                    EffectSize = ParticleEffectsManager.EffectSize.Autocannon,
+                    RicochetType = ParticleEffectsManager.RicochetType.None,
+                    Flags = ParticleEffectsManager.ImpactModifierFlags.Medium,
+                    MinFilterStrictness = ParticleEffectsManager.FilterStrictness.Low
+                };
+
                 var kontakt5_bundle_turret = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/kontakt5", "t80_kontakt5_turret"));
                 var kontakt5_bundle_hull = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/kontakt5", "t80_kontakt5_hull"));
 

@@ -37,6 +37,7 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> thermals;
         static MelonPreferences_Entry<string> thermals_quality;
         static MelonPreferences_Entry<bool> lead_calculator_t64;
+        static MelonPreferences_Entry<bool> du_armour;
 
 
         public static void Config(MelonPreferences_Category cfg)
@@ -83,7 +84,7 @@ namespace PactIncreasedLethality
                 GameObject vic_go = vic.gameObject;
 
                 if (vic == null) continue;
-                if (!vic.FriendlyName.Contains("T-64")) continue;
+                if (!vic.FriendlyName.Contains("T-64A")) continue;
                 if (vic_go.GetComponent<AlreadyConverted>() != null) continue;
 
                 vic_go.AddComponent<AlreadyConverted>();
@@ -99,22 +100,10 @@ namespace PactIncreasedLethality
 
                 if (has_lrf.Value)
                 {
-                    if (!ReticleMesh.cachedReticles.ContainsKey("T72"))
-                    {
-                        foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                        {
-                            if (obj.gameObject.name == "T72M1")
-                            {
-                                obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
-                                break;
-                            }
-                        }
-                    }
+                    GameObject lase = GameObject.Instantiate(new GameObject("lase"), fcs.transform);
 
-                    GameObject.Destroy(fcs.OpticalRangefinder.gameObject);
-                    day_optic.slot.ExclusiveItems = new GameObject[] { };
-
-                    fcs.LaserAim = LaserAimMode.ImpactPoint;
+                    fcs.LaserAim = LaserAimMode.Fixed;
+                    fcs.LaserOrigin = lase.transform;
                     fcs.MaxLaserRange = 4000f;
 
                     day_optic.reticleMesh.reticleSO = ReticleMesh.cachedReticles["T72"].tree;
@@ -124,6 +113,10 @@ namespace PactIncreasedLethality
 
                     if (lead_calculator_t64.Value) 
                         FireControlSystem1A40.Add(fcs, day_optic, new Vector3(-308.8629f, -6.6525f, 0f));
+
+                    fcs.Start();
+
+                    fcs.OpticalRangefinder = null;
                 }
 
                 try
@@ -221,6 +214,18 @@ namespace PactIncreasedLethality
         public static void Init()
         {
             if (!t64_patch.Value) return;
+
+            if (!ReticleMesh.cachedReticles.ContainsKey("T72"))
+            {
+                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
+                {
+                    if (obj.gameObject.name == "T72M1")
+                    {
+                        obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
+                        break;
+                    }
+                }
+            }
 
             if (abrams_vic_controller == null)
             {

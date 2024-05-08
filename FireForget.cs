@@ -37,6 +37,7 @@ namespace PactIncreasedLethality
             private float current_lock_time = 3f;
             private float cd = 0;
             public bool fired = false;
+            Vector3 velocity = Vector3.zero;
 
             void Awake()
             {
@@ -56,6 +57,7 @@ namespace PactIncreasedLethality
                 target = null;
                 current_target = null;
                 fcs.GetComponent<BLYAT>().square.SetActive(false);
+                fcs.GetComponent<BLYAT>().square.GetComponent<Image>().color = Color.green;
             }
 
             public void SetTarget(Vehicle _target)
@@ -108,7 +110,7 @@ namespace PactIncreasedLethality
                 if (current_target == null) return;
 
                 Vector3 s = camera_manager.CameraFollow.BufferedCamera.WorldToScreenPoint(current_target.Center.position);
-                fcs.GetComponent<BLYAT>().square.transform.position = new Vector3((int)s.x, (int)s.y, 1f);
+                fcs.GetComponent<BLYAT>().square.transform.position = Vector3.ClampMagnitude(new Vector3(s.x, s.y, 1f), 50f);
                 fcs.GetComponent<BLYAT>().square.SetActive(true);
 
                 if (target == null) return;

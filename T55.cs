@@ -458,7 +458,7 @@ namespace PactIncreasedLethality
                 ammo_9m117.TntEquivalentKg = 4.77f;
                 ammo_9m117.ImpactFuseTime = ammo_9m111.ImpactFuseTime;
                 ammo_9m117.RhaToFuse = ammo_9m111.RhaToFuse;
-                ammo_9m117.Guidance = AmmoType.GuidanceType.Saclos;
+                ammo_9m117.Guidance = AmmoType.GuidanceType.SACLOS;
                 ammo_9m117.TurnSpeed = 0.25f;
                 ammo_9m117.ShotVisual = ammo_9m111.ShotVisual;
                 ammo_9m117.RangedFuseTime = 12.5f;

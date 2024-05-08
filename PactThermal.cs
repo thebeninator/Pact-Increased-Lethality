@@ -7,6 +7,7 @@ using GHPC.Equipment.Optics;
 using GHPC.UI.Tips;
 using GHPC.Utility;
 using GHPC.Vehicle;
+using GHPC.Weapons;
 using MelonLoader;
 using Reticle;
 using TMPro;
@@ -26,6 +27,8 @@ namespace PactIncreasedLethality
         private static ReticleMesh.CachedReticle reticle_cached_lq;
         private static ReticleSO reticleSO_hq;
         private static ReticleMesh.CachedReticle reticle_cached_hq;
+        private static ReticleSO reticleSO_tpdk1_hq;
+        private static ReticleMesh.CachedReticle reticle_tpdk1_cached_hq;
 
         private static ReticleSO reticleSO_hq_wide;
         private static ReticleMesh.CachedReticle reticle_cached_hq_wide;
@@ -52,8 +55,22 @@ namespace PactIncreasedLethality
 
             lq_boxing = cfg.CreateEntry<bool>("Low Quality Thermals Boxing", true);
             lq_boxing.Comment = "Creates a box border around the sight";
+        }
 
-            hq_boxing = cfg.CreateEntry<bool>("High Quality Thermals Boxing", true);
+        public class UpdateRange : MonoBehaviour
+        {
+            public FireControlSystem fcs;
+            ReticleMesh reticle;
+            void Awake()
+            {
+                reticle = GetComponent<UsableOptic>().reticleMesh;
+            }
+
+            void Update()
+            {
+                if (reticle.curReticleRange != fcs.CurrentRange)
+                    reticle.targetReticleRange = fcs.CurrentRange;
+            }
         }
 
         private static List<List<Vector3>> borders = new List<List<Vector3>>() {
@@ -63,7 +80,8 @@ namespace PactIncreasedLethality
             new List<Vector3> {new Vector3(-330f, 0f, 0f), new Vector3(0f, 0f, 270f)}
         };
 
-        public static void Add(UsableOptic optic, string quality) {
+        public static void Add(UsableOptic optic, string quality, bool is_point_n_shoot = false) {
+            CRTShock.Add(optic.slot.transform, 0f, new Vector3(1f, 1f, 1f));
             optic.slot.VisionType = NightVisionType.Thermal;
             optic.slot.BaseBlur = quality == "low" ? lq_blur.Value : hq_blur.Value;
             PostProcessVolume vol = PostProcessVolume.Instantiate(quality == "low" ? post_lq : post_hq, optic.transform);
@@ -71,15 +89,14 @@ namespace PactIncreasedLethality
             optic.post = vol;
 
             if (quality == "low") {
-                GameObject s = GameObject.Instantiate(scanline_canvas, optic.transform);
+                GameObject s = GameObject.Instantiate(scanline_canvas, optic.transform);          
                 s.SetActive(true);
             }
 
-            if ((quality == "low" && lq_boxing.Value) || (quality == "high" && hq_boxing.Value))
+            if ((quality == "low" && lq_boxing.Value))
             {
                 for (int i = 0; i <= 3; i++)
                 {
-                    if (quality == "high" && (i == 2 || i == 3)) continue;
                     GameObject t = GameObject.Instantiate(thermal_canvas, optic.transform);
                     t.transform.GetChild(0).localPosition = borders[i][0];
                     t.transform.GetChild(0).localEulerAngles = borders[i][1];
@@ -89,13 +106,24 @@ namespace PactIncreasedLethality
                 }
             }
 
-            optic.reticleMesh.reticleSO = quality == "low" ? reticleSO_lq : reticleSO_hq;
-            optic.reticleMesh.reticle = quality == "low" ? reticle_cached_lq : reticle_cached_hq;
+            ReticleSO so_hq = is_point_n_shoot ? reticleSO_hq : reticleSO_tpdk1_hq;
+            ReticleMesh.CachedReticle cached_hq = is_point_n_shoot ? reticle_cached_hq : reticle_tpdk1_cached_hq;
+
+            optic.reticleMesh.reticleSO = quality == "low" ? reticleSO_lq : so_hq;
+            optic.reticleMesh.reticle = quality == "low" ? reticle_cached_lq : cached_hq;
             optic.reticleMesh.SMR = null;
             optic.reticleMesh.Load();
 
             if (quality == "high")
             {
+                if (!is_point_n_shoot)
+                {
+                    optic.reticleMesh.maxSpeed = 1000f;
+
+                    UpdateRange ur = optic.gameObject.AddComponent<UpdateRange>();
+                    ur.fcs = optic.FCS;
+                }
+
                 GameObject wide = GameObject.Instantiate(optic.reticleMesh.gameObject, optic.transform);
                 wide.gameObject.SetActive(true);
                 ReticleMesh wide_reticle_mesh = wide.GetComponent<ReticleMesh>();
@@ -115,12 +143,12 @@ namespace PactIncreasedLethality
                 optic.FovLimitedItems = new UsableOptic.FovLimitedItem[] { wide_lim, zoomed_lim };
                 optic.AdditionalReticleMeshes = new ReticleMesh[] { wide_reticle_mesh };
 
-                optic.slot.DefaultFov = 8.5f;
-                optic.slot.OtherFovs = new float[1] { 3.8f };
+                optic.slot.DefaultFov = 9.52f;
+                optic.slot.OtherFovs = new float[1] { 5.04f };
                 optic.slot.VibrationBlurScale = 0.05f;
                 optic.slot.VibrationShakeMultiplier = 0.01f;
                 optic.slot.VibrationPreBlur = true;
-                optic.slot.SpriteType = GHPC.Camera.CameraSpriteManager.SpriteType.NightVisionGoggles;
+               // optic.slot.SpriteType = GHPC.Camera.CameraSpriteManager.SpriteType.NightVisionGoggles;
             }
         }
 
@@ -162,6 +190,81 @@ namespace PactIncreasedLethality
 
         private static void HQThermalReticle()
         {
+            reticleSO_tpdk1_hq = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T72"].tree);
+            reticleSO_tpdk1_hq.name = "PACT-TPDK1-TIS-HQ";
+
+            Util.ShallowCopy(reticle_tpdk1_cached_hq, ReticleMesh.cachedReticles["T72"]);
+            reticle_tpdk1_cached_hq.tree = reticleSO_tpdk1_hq;
+            reticle_tpdk1_cached_hq.mesh = null;
+
+            reticle_tpdk1_cached_hq.tree.lights = new List<ReticleTree.Light>() {
+                new ReticleTree.Light(),
+                new ReticleTree.Light(),
+            };
+
+            reticle_tpdk1_cached_hq.tree.lights[0].type = ReticleTree.Light.Type.Powered;
+            reticle_tpdk1_cached_hq.tree.lights[0].color = new RGB(2.8f, 3f, 2.8f, true);
+
+            reticle_tpdk1_cached_hq.tree.lights[1].type = ReticleTree.Light.Type.LaserReady;
+            reticle_tpdk1_cached_hq.tree.lights[1].color = new RGB(2.8f, 3f, 2.8f, true);
+
+            reticleSO_tpdk1_hq.planes[0].elements.RemoveAt(0);
+
+            ReticleTree.Angular lase_point = reticleSO_tpdk1_hq.planes[0].elements[1] as ReticleTree.Angular;
+            lase_point.elements.RemoveAt(0);
+
+            ReticleTree.Line lase_line1 = new ReticleTree.Line();
+            lase_line1.rotation.mrad = 0;
+            lase_line1.position = new Position(0f, 0f);
+            lase_line1.length.mrad = 2.0944f;
+            lase_line1.thickness.mrad = 0.05f;
+            lase_line1.illumination = ReticleTree.Light.Type.Powered;
+            lase_line1.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+            lase_point.elements.Add(lase_line1);
+
+            ReticleTree.Line lase_line2 = new ReticleTree.Line();
+            lase_line2.rotation.mrad = 1570.8f;
+            lase_line2.position = new Position(0f, 0f);
+            lase_line2.length.mrad = 2.0944f;
+            lase_line2.thickness.mrad = 0.05f;
+            lase_line2.illumination = ReticleTree.Light.Type.Powered;
+            lase_line2.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+            lase_point.elements.Add(lase_line2);
+
+            ReticleTree.Angular reticle_tpd_hq = reticleSO_tpdk1_hq.planes[0].elements[0] as ReticleTree.Angular;
+            reticle_tpd_hq.elements.RemoveAt(1);
+
+            ReticleTree.Angular horizontal = reticle_tpd_hq.elements[0] as ReticleTree.Angular;
+            ReticleTree.Angular vertical = reticle_tpd_hq.elements[1] as ReticleTree.Angular;
+
+            ((horizontal.elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Line).illumination = ReticleTree.Light.Type.Powered;
+            ((horizontal.elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Line).visualType = VisualElement.Type.ReflectedAdditive;
+
+            ((horizontal.elements[0] as ReticleTree.Angular).elements[1] as ReticleTree.Line).illumination = ReticleTree.Light.Type.Powered;
+            ((horizontal.elements[0] as ReticleTree.Angular).elements[1] as ReticleTree.Line).visualType = VisualElement.Type.ReflectedAdditive;
+            
+            for (int i = 1; i < horizontal.elements.Count; i++) {
+                ReticleTree.Angular h = horizontal.elements[i] as ReticleTree.Angular;
+                ReticleTree.Angular chev = h.elements[0] as ReticleTree.Angular;
+
+                (chev.elements[0] as ReticleTree.Line).illumination = ReticleTree.Light.Type.Powered;
+                (chev.elements[0] as ReticleTree.Line).visualType = VisualElement.Type.ReflectedAdditive;
+
+                (chev.elements[1] as ReticleTree.Line).illumination = ReticleTree.Light.Type.Powered;
+                (chev.elements[1] as ReticleTree.Line).visualType = VisualElement.Type.ReflectedAdditive;
+
+                for (int j = 1; j < h.elements.Count; j++) {
+                    (h.elements[j] as ReticleTree.Line).illumination = ReticleTree.Light.Type.Powered;
+                    (h.elements[j] as ReticleTree.Line).visualType = VisualElement.Type.ReflectedAdditive;
+                }
+            }
+
+            vertical.elements.RemoveAt(0);
+            (vertical.elements[0] as ReticleTree.Line).illumination = ReticleTree.Light.Type.Powered;
+            (vertical.elements[0] as ReticleTree.Line).visualType = VisualElement.Type.ReflectedAdditive;
+
+            ////////////////////////////////
+
             reticleSO_hq = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55-NVS"].tree);
             reticleSO_hq.name = "PACT-TIS-HQ";
 
@@ -173,8 +276,6 @@ namespace PactIncreasedLethality
             };
 
             reticle_cached_hq.tree.lights[0].type = ReticleTree.Light.Type.Powered;
-            //reticle_cached_hq.tree.lights[0].color = new RGB(1.5f, -0.5f, -0.3f, true);
-            //reticle_cached_hq.tree.lights[0].color = new RGB(5f, 0.1f, 0.1f, false);
             reticle_cached_hq.tree.lights[0].color = new RGB(2.8f, 3f, 2.8f, true);
 
             ReticleTree.Angular reticle_hq = (reticleSO_hq.planes[0].elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Angular;
@@ -234,7 +335,7 @@ namespace PactIncreasedLethality
             foreach (Vector3 pos in box_pos) {
                 ReticleTree.Line box = new ReticleTree.Line();
                 box.roundness = 0f;
-                box.thickness.mrad = line2.thickness.mrad * 2.8f;
+                box.thickness.mrad = line2.thickness.mrad * 3.5f;
                 box.length.mrad = 8f;
                 box.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
                 box.length.unit = AngularLength.AngularUnit.MIL_USSR;    
@@ -259,8 +360,9 @@ namespace PactIncreasedLethality
 
             reticle_hq.elements.Add(line3);
             reticle_hq.elements.Add(line4);
-            //reticle_hq.elements.Add(centre);
+            reticle_hq.elements.Add(centre);
 
+            /*
             for (float i = 0f; i < 0.6f; i += 0.05f)
             {
                 ReticleTree.Circle circle = new ReticleTree.Circle();
@@ -274,7 +376,9 @@ namespace PactIncreasedLethality
                 circle.illumination = ReticleTree.Light.Type.Powered;
                 reticle_hq.elements.Add(circle);
             }
+            */
 
+            /*
             ReticleTree.VerticalBallistic markings_sabot = new ReticleTree.VerticalBallistic(new Vector2(0f, 0f), null);
             markings_sabot.projectile = APFSDS_125mm.clip_codex_3bm32.ClipType.MinimalPattern[0];
             markings_sabot.UpdateBC();
@@ -371,6 +475,7 @@ namespace PactIncreasedLethality
             }
 
             reticle_hq.elements.Add(markings_heat);
+            */
 
             reticleSO_hq_wide = ScriptableObject.Instantiate(reticleSO_hq);
             reticleSO_hq_wide.name = "PACT-TIS-HQ-WIDE";
@@ -409,6 +514,11 @@ namespace PactIncreasedLethality
                     night_optic.reticleMesh.Load();
                 }
 
+                if (!ReticleMesh.cachedReticles.ContainsKey("T72") && obj.gameObject.name == "T72M1")
+                {         
+                    obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
+                }
+
                 if (post_og == null && obj.name == "T72M1")
                 {
                     post_og = obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPN-1-49-23 night sight").GetComponent<UsableOptic>().post;
@@ -431,7 +541,7 @@ namespace PactIncreasedLethality
                     scanline_canvas.name = "pact scanline canvas";
                 }
 
-                if (scanline_canvas && thermal_canvas && post_og && ReticleMesh.cachedReticles.ContainsKey("T55-NVS")) break; 
+                if (scanline_canvas && thermal_canvas && post_og && ReticleMesh.cachedReticles.ContainsKey("T55-NVS") && ReticleMesh.cachedReticles.ContainsKey("T72")) break; 
             }
 
             foreach (TMP_FontAsset font in Resources.FindObjectsOfTypeAll(typeof(TMP_FontAsset))) {

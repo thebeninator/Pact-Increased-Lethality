@@ -70,7 +70,7 @@ namespace PactIncreasedLethality
             night_optic.CantCorrectMaxSpeed = 5f;
 
             day_optic.slot.DefaultFov = 15f;
-            day_optic.slot.SpriteType = CameraSpriteManager.SpriteType.NightVisionGoggles;
+            //day_optic.slot.SpriteType = CameraSpriteManager.SpriteType.NightVisionGoggles;
 
             List<float> fovs = new List<float>();
             for (float i = 12; i >= 4; i--)
@@ -101,9 +101,9 @@ namespace PactIncreasedLethality
             rangebox.GetComponent<Reparent>().Awake();
             rangebox.SetActive(true);
             rangebox.transform.localPosition = new Vector3(0f, 0f, 0f);
-            rangebox.transform.GetChild(0).transform.localPosition = new Vector3(-2.1709f, -393.7738f, 0f);
-            rangebox.transform.GetChild(0).transform.localEulerAngles = new Vector3(0f, 0f, 180f);
-            rangebox.transform.GetChild(0).transform.localScale = new Vector3(0.1f, 1f, 1f);
+            rangebox.transform.GetChild(0).transform.localPosition = new Vector3(-2.1709f, -350.7738f, 0f);
+            //rangebox.transform.GetChild(0).transform.localEulerAngles = new Vector3(0f, 0f, 180f);
+            //rangebox.transform.GetChild(0).transform.localScale = new Vector3(1f, 1f, 1f);
 
             GameObject range = GameObject.Instantiate(range_readout);
             range.GetComponent<Reparent>().NewParent = rangebox.transform;
@@ -132,11 +132,12 @@ namespace PactIncreasedLethality
 
             day_optic.ReadyToFireObject = ready.gameObject;
 
+           
             GameObject _square = GameObject.Instantiate(square, rangebox.transform);
 
             BLYAT b = fcs.gameObject.AddComponent<BLYAT>();
             b.square = _square;
-            _square.SetActive(false);
+            _square.SetActive(false);           
         }
 
         private static void Reticle() {

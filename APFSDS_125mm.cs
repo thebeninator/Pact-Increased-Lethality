@@ -74,7 +74,7 @@ namespace PactIncreasedLethality
                     if (s.AmmoType.Name == "3BM15 APFSDS-T") { ammo_3bm15 = s.AmmoType; }
                     //if (s.AmmoType.Name == "9M111 Fagot") { ammo_9m111 = s.AmmoType; }
 
-                    if (/*ammo_9m111 != null &&*/ ammo_3bm15 != null) break;
+                    if (/*ammo_9m111 != null && */ammo_3bm15 != null) break;
                 }
 
                 foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
@@ -148,7 +148,7 @@ namespace PactIncreasedLethality
                 ammo_3bm42.VisualModel = ammo_3bm42_vis;
                 ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm42;
                 ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm42;
-                
+               
                 /*
                 ammo_9m119_super = new AmmoType();
                 Util.ShallowCopy(ammo_9m119_super, ammo_9m111);
@@ -191,7 +191,7 @@ namespace PactIncreasedLethality
                 ammo_9m119_super.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m119_super;
                 ammo_9m119_super.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m119_super;
 
-                FireForget.AddFireForgetAmmo(ammo_9m119_super);   
+                FireForget.AddFireForgetAmmo(ammo_9m119_super);  
                 */
             }
         }

@@ -20,7 +20,7 @@ using FMODUnity;
 using FMOD;
 using GHPC.Vehicle;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.6.3A", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.6.3B", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -89,7 +89,8 @@ namespace PactIncreasedLethality
             camera_manager = game_manager.GetComponent<CameraManager>();
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Medium);
-            
+
+            CRTShock.Init();
             FireControlSystem1A40.Init();
             Kontakt1.Init();
             Kontakt5.Init();

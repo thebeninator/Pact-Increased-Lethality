@@ -102,6 +102,7 @@
     <Compile Include="BMP1.cs" />
     <Compile Include="BMP2.cs" />
     <Compile Include="BTR60.cs" />
+    <Compile Include="CRTShock.cs" />
     <Compile Include="DigitalZoomSnapper.cs" />
     <Compile Include="Drozd.cs" />
     <Compile Include="EFP.cs" />
