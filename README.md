@@ -16,7 +16,8 @@ To regenerate the config:
 
 # BDD Applique Armour
 - Can be equipped on the T-55 and T-62
-- Composite armour that is effective against HEAT rounds and lesser AP rounds 
+- Composite armour that is effective against HEAT rounds and lesser AP rounds
+- Bonus rubber side skirts
 
 ![Screenshot_12](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/588fea7f-9631-4a45-b9b5-42c8ba8722b8)
 
