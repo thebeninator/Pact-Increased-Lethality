@@ -1,32 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GHPC.Equipment.Optics;
 using GHPC.Utility;
 using GHPC.Vehicle;
 using GHPC.Weapons;
-using PactIncreasedLethality;
-using Reticle;
-using UnityEngine.Rendering.PostProcessing;
 using UnityEngine;
-using GHPC.Equipment;
 using GHPC.State;
 using System.Collections;
 using MelonLoader;
 using GHPC;
-using TMPro;
-using HarmonyLib;
-using UnityEngine.UI;
-using GHPC.Camera;
 using GHPC.Effects.Voices;
-using BehaviorDesigner.Runtime.Tasks.Unity.UnityGameObject;
-using System.Reflection;
 using MelonLoader.Utils;
 using System.IO;
 using Thermals;
-using FMOD;
 using NWH.VehiclePhysics;
 
 namespace PactIncreasedLethality
@@ -43,7 +30,11 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> t72m_random_ammo;
         static MelonPreferences_Entry<bool> t72m1_random_ammo;
 
-        static MelonPreferences_Entry<bool> thermals;
+        static MelonPreferences_Entry<List<string>> t72m_random_ammo_pool;
+        static MelonPreferences_Entry<List<string>> t72m1_random_ammo_pool;
+
+        static MelonPreferences_Entry<bool> thermals_t72m;
+        static MelonPreferences_Entry<bool> thermals_t72m1;
         static MelonPreferences_Entry<string> thermals_quality;
 
         static MelonPreferences_Entry<bool> only_carousel;
@@ -63,18 +54,24 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> lead_calculator_t72m;
         static MelonPreferences_Entry<bool> lead_calculator_t72m1;
 
+        static MelonPreferences_Entry<bool> tpn3_t72m;
+        static MelonPreferences_Entry<bool> tpn3_t72m1;
+
         static MelonPreferences_Entry<bool> t72m_composite_cheeks;
+        static MelonPreferences_Entry<bool> t72m_super_composite_cheeks;
+        static MelonPreferences_Entry<bool> t72m1_super_composite_cheeks;
 
         static MelonPreferences_Entry<List<string>> empty_ammo_t72m;
         static MelonPreferences_Entry<List<string>> empty_ammo_t72m1;
 
         static MelonPreferences_Entry<bool> super_engine;
 
+        static MelonPreferences_Entry<bool> better_stab;
+
         static VehicleController abrams_vic_controller;
 
         static AmmoClipCodexScriptable clip_codex_3bk18m;
 
-        static Dictionary<string, AmmoClipCodexScriptable> ap;
         static Dictionary<string, int> ammo_racks = new Dictionary<string, int>() {
             ["Hull Wet"] = 1,
             ["Hull Rear"] = 2,
@@ -90,6 +87,7 @@ namespace PactIncreasedLethality
         static Material t72m1_material;
         static GameObject t72m1_composite_cheeks;
         static Mesh t72m1_turret_mesh;
+        static GameObject super_comp_cheeks;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -99,28 +97,46 @@ namespace PactIncreasedLethality
                 "Hull Rear",
                 "Hull Front",
                 "Turret Spare",
-            }; 
+            };
+
+            var random_ammo_pool = new List<string>()
+            {
+                "3BM22",
+                "3BM26",
+                "3BM32",
+                "3BM42",
+                "3BM46"
+            };
 
             t72_patch = cfg.CreateEntry<bool>("T-72 Patch", true);
             t72_patch.Description = "//////////////////////////////////////////////////////////////////////////////////////////";
 
             t72m_ammo_type = cfg.CreateEntry<string>("AP Round (T-72M)", "3BM22");
-            t72m_ammo_type.Comment = "3BM15, 3BM22, 3BM32, 3BM26 (composite optimized), 3BM42 (composite optimized)";
+            t72m_ammo_type.Comment = "3BM15, 3BM22, 3BM32, 3BM26 (composite optimized), 3BM42 (composite optimized), 3BM46";
 
             t72m1_ammo_type = cfg.CreateEntry<string>("AP Round (T-72M1)", "3BM32");
 
             t72m_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-72M)", false);
-            t72m_random_ammo.Comment = "Randomizes ammo selection for T-72Ms (3BM22, 3BM26, 3BM32, 3BM42)";
+            t72m_random_ammo_pool = cfg.CreateEntry<List<string>>("Random AP Round Pool (T-72M)", random_ammo_pool);
+            t72m_random_ammo_pool.Comment = "3BM22, 3BM26, 3BM32, 3BM42, 3BM46"; 
 
             t72m1_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-72M1)", false);
+            t72m1_random_ammo_pool = cfg.CreateEntry<List<string>>("Random AP Round Pool (T-72M1)", random_ammo_pool);
 
             t72m_heat_type = cfg.CreateEntry<string>("HEAT Round (T-72M)", "3BK18M");
             t72m_heat_type.Comment = "3BK14M, 3BK18M";
             t72m1_heat_type = cfg.CreateEntry<string>("HEAT Round (T-72M1)", "3BK18M");
 
-            thermals = cfg.CreateEntry<bool>("Has Thermals (T-72)", true);
-            thermals.Comment = "Replaces night vision sight with thermal sight";
-            thermals.Description = " ";
+            tpn3_t72m = cfg.CreateEntry<bool>("TPN-3 Night Sight (T-72)", false);
+            tpn3_t72m.Description = " ";
+            tpn3_t72m.Comment = "Replaces the night sight with the one found on the T-80B/T-64B";
+            tpn3_t72m1 = cfg.CreateEntry<bool>("TPN-3 Night Sight (T-72M1)", false);
+
+            thermals_t72m = cfg.CreateEntry<bool>("Has Thermals (T-72M)", true);
+            thermals_t72m.Comment = "Replaces night vision sight with thermal sight";
+            thermals_t72m.Description = " ";
+            thermals_t72m1 = cfg.CreateEntry<bool>("Has Thermals (T-72M1)", true);
+
             thermals_quality = cfg.CreateEntry<string>("Thermals Quality (T-72)", "Low");
             thermals_quality.Comment = "Low, High";
 
@@ -165,24 +181,22 @@ namespace PactIncreasedLethality
             t72m_composite_cheeks.Comment = "Adds composite cheeks to the turret of T-72Ms (not required if using Kontakt-5 for T-72Ms)";
             t72m_composite_cheeks.Description = " ";
 
+            t72m_super_composite_cheeks = cfg.CreateEntry<bool>("Super Composite Cheeks (T-72M)", false);
+            t72m_super_composite_cheeks.Comment = "ultra thick";
+            t72m1_super_composite_cheeks = cfg.CreateEntry<bool>("Super Composite Cheeks (T-72M1)", false);
+
             super_engine = cfg.CreateEntry<bool>("Super Engine/Transmission (T-72)", true);
             super_engine.Comment = "vrrrrrrrrrrooooooooom";
             super_engine.Description = " ";
+
+            better_stab = cfg.CreateEntry<bool>("Better Stabilizer (T-72)", true);
+            better_stab.Comment = "Less reticle blur, shake while on the move";
         }
 
         public class PreviouslyT72M : MonoBehaviour { }
 
         public static IEnumerator Convert(GameState _)
         {
-            if (ap == null)
-                ap = new Dictionary<string, AmmoClipCodexScriptable>()
-                {
-                    ["3BM22"] = APFSDS_125mm.clip_codex_3bm22,
-                    ["3BM26"] = APFSDS_125mm.clip_codex_3bm26,
-                    ["3BM32"] = APFSDS_125mm.clip_codex_3bm32,
-                    ["3BM42"] = APFSDS_125mm.clip_codex_3bm42,
-                };
-
             foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
             {
                 GameObject vic_go = vic.gameObject;
@@ -193,18 +207,46 @@ namespace PactIncreasedLethality
 
                 vic_go.AddComponent<AlreadyConverted>();
 
-                if (vic.UniqueName == "T72M" && t72m_composite_cheeks.Value)
+                if (vic.UniqueName == "T72A" && t72m1_super_composite_cheeks.Value) {
+                    Transform turret = vic.transform.Find("---MESH---/HULL/TURRET");
+                    Transform turret_followers = turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform;
+                    turret_followers.Find("ARMOR/Composite Armor Array").gameObject.SetActive(false);
+
+                    GameObject super_cheeks = GameObject.Instantiate(super_comp_cheeks, turret_followers);
+                    super_cheeks.transform.localPosition = new Vector3(0.5695f, 1.7236f, -0.7984f);
+                }
+
+                if (vic.UniqueName == "T72M" && (t72m_composite_cheeks.Value || t72m_super_composite_cheeks.Value))
                 {
                     vic.transform.Find("T72M_skirt_hull").gameObject.SetActive(true);
                     if (vic.transform.Find("T72M_gills_rig 1") != null)
                     {
                         vic.transform.Find("T72M_gills_rig 1").gameObject.SetActive(false);
                         vic.transform.Find("T72M_gills_hull").gameObject.SetActive(false);
+
+                        foreach (LateFollow t in vic_go.GetComponent<LateFollowTarget>()._lateFollowers) {
+                            if (t.transform.name.Contains("gill")) { 
+                                foreach (Transform k in t.transform) {
+                                    k.gameObject.SetActive(false);
+                                }
+                            }
+                        }
                     }
 
                     Transform turret = vic.transform.Find("T72M_skirts_rig/HULL/TURRET");
                     Transform turret_rend = turret.Find("T72M_turret");
-                    GameObject.Instantiate(t72m1_composite_cheeks, turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform.Find("ARMOR"));
+
+                    if (!t72m_super_composite_cheeks.Value)
+                    {
+                        GameObject.Instantiate(t72m1_composite_cheeks, turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform.Find("ARMOR"));
+                    }
+                    else
+                    {
+                        Transform turret_followers = turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform;
+                        GameObject super_cheeks = GameObject.Instantiate(super_comp_cheeks, turret_followers);
+                        super_cheeks.transform.localPosition = new Vector3(0.5695f, 1.7236f, -0.7984f);
+                    }
+
                     turret_rend.GetChild(0).GetComponent<MeshFilter>().sharedMesh = t72m1_turret_mesh;
                     turret_rend.GetChild(0).GetComponent<MeshRenderer>().materials = new Material[] { t72m1_material };
                     turret_rend.GetChild(0).gameObject.AddComponent<HeatSource>();
@@ -267,20 +309,26 @@ namespace PactIncreasedLethality
                 UsableOptic night_optic = fcs.NightOptic;
                 UsableOptic day_optic = Util.GetDayOptic(fcs);
 
+                if (better_stab.Value)
+                {
+                    day_optic.slot.VibrationBlurScale = 0.05f;
+                    day_optic.slot.VibrationShakeMultiplier = 0.1f;
+                }
+
                 string ammo_str = (vic.UniqueName == "T72M") ? t72m_ammo_type.Value : t72m1_ammo_type.Value;
-                int rand = UnityEngine.Random.Range(0, ap.Count);
+                int rand = UnityEngine.Random.Range(0, AMMO_125mm.ap.Count);
 
                 if (t72m_random_ammo.Value && vic.UniqueName == "T72M")
-                    ammo_str = ap.ElementAt(rand).Key;
+                    ammo_str = t72m_random_ammo_pool.Value.ElementAt(rand);
 
                 if (t72m1_random_ammo.Value && vic.UniqueName == "T72A")
-                    ammo_str = ap.ElementAt(rand).Key;
+                    ammo_str = t72m1_random_ammo_pool.Value.ElementAt(rand);
 
                 string heat_str = (vic.UniqueName == "T72M") ? t72m_heat_type.Value : t72m1_heat_type.Value;
 
                 try
                 {
-                    AmmoClipCodexScriptable codex = ap[ammo_str];
+                    AmmoClipCodexScriptable codex = AMMO_125mm.ap[ammo_str];
                     loadout_manager.LoadedAmmoTypes[0] = codex;
 
                     if (heat_str == "3BK18M")
@@ -317,7 +365,12 @@ namespace PactIncreasedLethality
                     MelonLogger.Msg("Loading default 3BM15 for " + vic.FriendlyName);
                 }
 
-                if (thermals.Value)
+                if ((tpn3_t72m1.Value && vic.UniqueName == "T72A") || (tpn3_t72m.Value && vic.UniqueName == "T72M"))
+                {
+                    TPN3.Add(fcs, day_optic.slot.LinkedNightSight.PairedOptic, day_optic.slot.LinkedNightSight);
+                }
+
+                if ((thermals_t72m1.Value && vic.UniqueName == "T72A") || (thermals_t72m.Value && vic.UniqueName == "T72M"))
                 {
                     PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower(), (super_fcs_t72m1.Value && vic.UniqueName == "T72A") || (super_fcs_t72m.Value && vic.UniqueName == "T72M"));
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
@@ -338,7 +391,7 @@ namespace PactIncreasedLethality
                     {
                         turret = vic.transform.Find("---MESH---/HULL/TURRET");
                         turret_rend = turret.Find("T72M1_turret");
-                        turret_rend.GetComponent<MeshFilter>().sharedMesh = (thermals.Value) ? b3_turret_cleaned_mesh : turret_cleaned_mesh;
+                        turret_rend.GetComponent<MeshFilter>().sharedMesh = (thermals_t72m1.Value) ? b3_turret_cleaned_mesh : turret_cleaned_mesh;
                         turret_rend.gameObject.AddComponent<HeatSource>();
                     }
                     else {
@@ -347,12 +400,12 @@ namespace PactIncreasedLethality
                         turret_rend.GetChild(0).GetComponent<MeshFilter>().sharedMesh = turret_cleaned_mesh;
                     }
 
-                    if (thermals.Value && super_fcs_t72m1.Value && !vic.GetComponent<PreviouslyT72M>())
+                    if (thermals_t72m1.Value && super_fcs_t72m1.Value && !vic.GetComponent<PreviouslyT72M>())
                     {
                         turret.Find("LUNA").localScale = Vector3.zero;
                     }
-
-                    GameObject kontakt_5_turret = GameObject.Instantiate((thermals.Value && super_fcs_t72m1.Value && !vic.GetComponent<PreviouslyT72M>()) ? Kontakt5.t72b3_kontakt_5_turret_array : Kontakt5.t72_kontakt_5_turret_array);
+                    
+                    GameObject kontakt_5_turret = GameObject.Instantiate((thermals_t72m1.Value && super_fcs_t72m1.Value && !vic.GetComponent<PreviouslyT72M>()) ? Kontakt5.t72b3_kontakt_5_turret_array : Kontakt5.t72_kontakt_5_turret_array);
                     turret_rend.gameObject.AddComponent<LateFollowTarget>();
                     LateFollow k5_turret_follow = kontakt_5_turret.AddComponent<LateFollow>();
                     k5_turret_follow.FollowTarget = turret_rend;
@@ -368,7 +421,7 @@ namespace PactIncreasedLethality
                     k5_roof_follow.Awake();
                     k5_roof_follow._localPosShift = new Vector3(-0.06f, 0.108f, -0.02f);
                     k5_roof_follow._localRotShift = Quaternion.Euler(0f, 90f, 0f);
-
+       
                     if (!vic.GetComponent<PreviouslyT72M>())
                     {
                         turret.Find("smoke rack").localScale = Vector3.zero;
@@ -442,7 +495,7 @@ namespace PactIncreasedLethality
                         }
                     }
 
-                    vic._friendlyName = thermals.Value && super_fcs_t72m1.Value && !vic.GetComponent<PreviouslyT72M>() ? "T-72B3" : "T-72BA";
+                    vic._friendlyName = thermals_t72m1.Value && super_fcs_t72m1.Value && !vic.GetComponent<PreviouslyT72M>() ? "T-72B3" : "T-72BA";
                 }
 
                 if ((vic.UniqueName == "T72M") && k5_t72m.Value)
@@ -452,6 +505,17 @@ namespace PactIncreasedLethality
                     {
                         vic.transform.Find("T72M_gills_rig 1").gameObject.SetActive(false);
                         vic.transform.Find("T72M_gills_hull").gameObject.SetActive(false);
+
+                        foreach (LateFollow t in vic_go.GetComponent<LateFollowTarget>()._lateFollowers)
+                        {
+                            if (t.transform.name.Contains("gill"))
+                            {
+                                foreach (Transform k in t.transform)
+                                {
+                                    k.gameObject.SetActive(false);
+                                }
+                            }
+                        }
                     }
 
                     Transform turret = vic.transform.Find("T72M_skirts_rig/HULL/TURRET");
@@ -519,8 +583,7 @@ namespace PactIncreasedLethality
 
                     vic._friendlyName = "T-72BA";
                 }
-
-                /*
+           
                 weapon.Feed.ReloadDuringMissileTracking = true;
                 weapon.FireWhileGuidingMissile = false;
                 GameObject guidance_computer_obj = GameObject.Instantiate(new GameObject("guidance computer"), vic.AimablePlatforms.Where(o => o.name == "---TURRET SCRIPTS---").First().transform.parent);
@@ -528,10 +591,7 @@ namespace PactIncreasedLethality
 
                 computer.AimElement = fcs.AimTransform;
                 weapon.GuidanceUnit = computer;
-
-                fcs.gameObject.AddComponent<FireForget.FireForgetTracker>();
-                */
-
+                
                 if (super_engine.Value)
                 {
                     VehicleController this_vic_controller = vic_go.GetComponent<VehicleController>();
@@ -609,16 +669,44 @@ namespace PactIncreasedLethality
 
             if (turret_cleaned_mesh == null)
             {
-                var blyat_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72_turret_cleaned"));
-                turret_cleaned_mesh = blyat_bundle.LoadAsset<Mesh>("t72m1turret_front_cleaned.asset");
+                var super_comp_cheeks_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "supercompcheeks"));
+                super_comp_cheeks = super_comp_cheeks_bundle.LoadAsset<GameObject>("SUPER CHEEKS.prefab");
+                super_comp_cheeks.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                foreach (Transform t in super_comp_cheeks.transform.GetComponentsInChildren<Transform>())
+                {
+                    t.gameObject.tag = "Penetrable";
+                    t.gameObject.layer = 8;
+                }
+
+                GameObject turret_left_cheek = super_comp_cheeks.transform.Find("LEFT COMP CHEEK").gameObject;
+                VariableArmor armor_turret_l_cheek = turret_left_cheek.AddComponent<VariableArmor>();
+                armor_turret_l_cheek.SetName("turret cheek composite array");
+                armor_turret_l_cheek._armorType = Armour.composite_armor;
+                armor_turret_l_cheek._spallForwardRatio = 0.2f;
+                AarVisual aar_l_cheek = turret_left_cheek.AddComponent<AarVisual>();
+                aar_l_cheek.SwitchMaterials = false;
+                aar_l_cheek.HideUntilAar = true;
+
+                GameObject turret_right_cheek = super_comp_cheeks.transform.Find("RIGHT COMP CHEEK").gameObject;
+                VariableArmor armor_turret_r_cheek = turret_right_cheek.AddComponent<VariableArmor>();
+                armor_turret_r_cheek.SetName("turret cheek composite array");
+                armor_turret_r_cheek._armorType = Armour.composite_armor;
+                armor_turret_r_cheek._spallForwardRatio = 0.2f;
+                AarVisual aar_r_cheek = turret_right_cheek.AddComponent<AarVisual>();
+                aar_r_cheek.SwitchMaterials = false;
+                aar_r_cheek.HideUntilAar = true;
+
+                var t72_cleaned_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72_turret_cleaned"));
+                turret_cleaned_mesh = t72_cleaned_bundle.LoadAsset<Mesh>("t72m1turret_front_cleaned.asset");
                 turret_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-                var blyat_bundle3 = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72b3_turret_cleaned"));
-                b3_turret_cleaned_mesh = blyat_bundle3.LoadAsset<Mesh>("t72b3_turret.asset");
+                var t72b3_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72b3_turret_cleaned"));
+                b3_turret_cleaned_mesh = t72b3_bundle.LoadAsset<Mesh>("t72b3_turret.asset");
                 b3_turret_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-                var blyat2_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72_hull_cleaned"));
-                hull_cleaned_mesh = blyat2_bundle.LoadAsset<Mesh>("T72M1_hull.asset");
+                var t72_cleaned_hull_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72_hull_cleaned"));
+                hull_cleaned_mesh = t72_cleaned_hull_bundle.LoadAsset<Mesh>("T72M1_hull.asset");
                 hull_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
             }

@@ -1,23 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Drawing;
 using GHPC;
 using MelonLoader;
 using MelonLoader.Utils;
 using Thermals;
 using UnityEngine;
-using GHPC.UI.Tips;
 using GHPC.Equipment;
 using HarmonyLib;
-using System.Reflection;
 using System.Reflection.Emit;
-using HarmonyLib.Tools;
-using static HarmonyLib.Tools.Logger;
-using FMOD;
 
 namespace PactIncreasedLethality
 {

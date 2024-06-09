@@ -2,89 +2,78 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GHPC.Camera;
 using GHPC.Equipment.Optics;
-using GHPC.Player;
 using GHPC.State;
-using GHPC.Utility;
 using GHPC.Vehicle;
 using GHPC.Weapons;
 using GHPC;
 using MelonLoader;
 using Reticle;
-using TMPro;
 using UnityEngine;
-using NWH;
 using NWH.VehiclePhysics;
-using static UnityEngine.GraphicsBuffer;
+using static PactIncreasedLethality.T80;
 using GHPC.UI.Tips;
-using GHPC.Equipment;
 
 namespace PactIncreasedLethality
 {
-    public class T64
+    public class T64B
     {
         static MelonPreferences_Entry<bool> t64_patch;
         static MelonPreferences_Entry<bool> super_engine;
         static VehicleController abrams_vic_controller;
-        static Dictionary<string, AmmoClipCodexScriptable> ap;
         static MelonPreferences_Entry<string> t64_ammo_type;
         static MelonPreferences_Entry<bool> t64_random_ammo;
+        static MelonPreferences_Entry<List<string>> t64_random_ammo_pool;
         static MelonPreferences_Entry<bool> has_drozd;
-        static MelonPreferences_Entry<bool> has_lrf;
         static MelonPreferences_Entry<bool> thermals;
         static MelonPreferences_Entry<string> thermals_quality;
-        static MelonPreferences_Entry<bool> lead_calculator_t64;
         static MelonPreferences_Entry<bool> du_armour;
-
+        static MelonPreferences_Entry<bool> zoom_snapper;
 
         public static void Config(MelonPreferences_Category cfg)
         {
-            t64_patch = cfg.CreateEntry<bool>("T-64 Patch", true);
+            var random_ammo_pool = new List<string>()
+            {
+                "3BM26",
+                "3BM32",
+                "3BM42",
+                "3BM46"
+            };
+
+            t64_patch = cfg.CreateEntry<bool>("T-64B Patch", true);
             t64_patch.Description = "//////////////////////////////////////////////////////////////////////////////////////////";
-            super_engine = cfg.CreateEntry<bool>("Super Engine/Transmission", true);
+            super_engine = cfg.CreateEntry<bool>("Super Engine/Transmission (T-64B)", true);
             super_engine.Comment = "vrrrrrrrrrrooooooooom";
 
-            has_lrf = cfg.CreateEntry<bool>("Laser Rangefinder (T-64A)", true);
-            has_lrf.Comment = "Replaces the coincidence rangefinder with a laser rangefinder";
+            t64_ammo_type = cfg.CreateEntry<string>("AP Round (T-64B)", "3BM32");
+            t64_ammo_type.Comment = "3BM32, 3BM26 (composite optimized), 3BM42 (composite optimized), 3BM46";
+            t64_ammo_type.Description = " ";
 
-            t64_ammo_type = cfg.CreateEntry<string>("AP Round (T-64A)", "3BM32");
-            t64_ammo_type.Comment = "3BM32, 3BM26 (composite optimized), 3BM42 (composite optimized)";
+            t64_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-64B)", false);
+            t64_random_ammo_pool = cfg.CreateEntry<List<string>>("Random AP Round Pool (T-64B)", random_ammo_pool);
+            t64_random_ammo_pool.Comment = "3BM26, 3BM32, 3BM42, 3BM46";
 
-            t64_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-64A)", false);
-            t64_random_ammo.Comment = "Randomizes ammo selection for T-64As (3BM26, 3BM32, 3BM42)";
-
-            thermals = cfg.CreateEntry<bool>("Has Thermals (T-64A)", false);
+            thermals = cfg.CreateEntry<bool>("Has Thermals (T-64B)", false);
+            thermals.Description = " ";
             thermals.Comment = "Replaces night vision sight with thermal sight";
-            thermals_quality = cfg.CreateEntry<string>("Thermals Quality (T-64A)", "High");
+            thermals_quality = cfg.CreateEntry<string>("Thermals Quality (T-64B)", "High");
             thermals_quality.Comment = "Low, High";
 
-            lead_calculator_t64 = cfg.CreateEntry<bool>("Lead Calculator (T-64A)", true);
-            lead_calculator_t64.Comment = "For use with the standard sight; displays a number that corresponds to the horizontal markings on the sight (LRF required)";
-            lead_calculator_t64.Description = " ";
-
-            has_drozd = cfg.CreateEntry<bool>("Drozd APS (T-64A)", false);
+            has_drozd = cfg.CreateEntry<bool>("Drozd APS (T-64B)", false);
             has_drozd.Comment = "Intercepts incoming projectiles; covers the frontal arc of the tank relative to where the turret is facing";
+
+            zoom_snapper = cfg.CreateEntry<bool>("Quick Zoom Switch (T-64B)", true);
+            zoom_snapper.Comment = "Press middle mouse to instantly switch between low and high magnification on the daysight";
         }
 
         public static IEnumerator Convert(GameState _)
         {
-            if (ap == null)
-                ap = new Dictionary<string, AmmoClipCodexScriptable>()
-                {
-                    ["3BM32"] = APFSDS_125mm.clip_codex_3bm32,
-                    ["3BM26"] = APFSDS_125mm.clip_codex_3bm26,
-                    ["3BM42"] = APFSDS_125mm.clip_codex_3bm42,
-                };
-
             foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
             {
                 GameObject vic_go = vic.gameObject;
 
                 if (vic == null) continue;
-                if (!vic.FriendlyName.Contains("T-64A")) continue;
+                if (!vic.FriendlyName.Contains("T-64B")) continue;
                 if (vic_go.GetComponent<AlreadyConverted>() != null) continue;
 
                 vic_go.AddComponent<AlreadyConverted>();
@@ -92,36 +81,18 @@ namespace PactIncreasedLethality
                 WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
                 LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
 
-                int rand = UnityEngine.Random.Range(0, ap.Count);
-                string ammo_str = t64_random_ammo.Value ? ammo_str = ap.ElementAt(rand).Key : t64_ammo_type.Value;
+                int rand = UnityEngine.Random.Range(0, AMMO_125mm.ap.Count);
+                string ammo_str = t64_random_ammo.Value ? t64_random_ammo_pool.Value.ElementAt(rand) : t64_ammo_type.Value;
 
                 FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
                 UsableOptic day_optic = Util.GetDayOptic(fcs);
 
-                if (has_lrf.Value)
-                {
-                    GameObject lase = GameObject.Instantiate(new GameObject("lase"), fcs.transform);
-
-                    fcs.LaserAim = LaserAimMode.Fixed;
-                    fcs.LaserOrigin = lase.transform;
-                    fcs.MaxLaserRange = 4000f;
-
-                    day_optic.reticleMesh.reticleSO = ReticleMesh.cachedReticles["T72"].tree;
-                    day_optic.reticleMesh.reticle = ReticleMesh.cachedReticles["T72"];
-                    day_optic.reticleMesh.SMR = null;
-                    day_optic.reticleMesh.Load();
-
-                    if (lead_calculator_t64.Value) 
-                        FireControlSystem1A40.Add(fcs, day_optic, new Vector3(-308.8629f, -6.6525f, 0f));
-
-                    fcs.Start();
-
-                    fcs.OpticalRangefinder = null;
-                }
+                if (zoom_snapper.Value)
+                    day_optic.gameObject.AddComponent<DigitalZoomSnapper>();
 
                 try
                 {
-                    AmmoClipCodexScriptable codex = ap[ammo_str];
+                    AmmoClipCodexScriptable codex = AMMO_125mm.ap[ammo_str];
                     loadout_manager.LoadedAmmoTypes[0] = codex;
                     for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
                     {
@@ -139,6 +110,12 @@ namespace PactIncreasedLethality
                 {
                     MelonLogger.Msg("Loading default 3BM32 for " + vic.FriendlyName);
                 }
+
+                Transform canvas = vic.transform.Find("T64B_rig/HULL/TURRET/Main gun/---MAIN GUN SCRIPTS---/2A46/1G42 gunner's sight/GPS/1G42 Canvas/GameObject");
+                canvas.Find("ammo text APFSDS (TMP)").gameObject.SetActive(true);
+                UpdateAmmoTypeUI ui_fix = day_optic.gameObject.AddComponent<UpdateAmmoTypeUI>();
+                ui_fix.canvas = canvas;
+                ui_fix.fcs = fcs;
 
                 if (super_engine.Value)
                 {
@@ -179,7 +156,7 @@ namespace PactIncreasedLethality
 
                     for (var i = 0; i < launcher_positions.Length; i++)
                     {
-                        GameObject launcher = GameObject.Instantiate(DrozdLauncher.drozd_launcher_visual, vic.transform.Find("---T64A_MESH---/HULL/TURRET"));
+                        GameObject launcher = GameObject.Instantiate(DrozdLauncher.drozd_launcher_visual, vic.transform.Find("T64B_Rig/HULL/TURRET"));
                         launcher.transform.localPosition = launcher_positions[i];
                         launcher.transform.localEulerAngles = launcher_rots[i];
 
@@ -192,7 +169,7 @@ namespace PactIncreasedLethality
                     }
 
                     Drozd.AttachDrozd(
-                        vic.transform.Find("---T64A_MESH---/HULL/TURRET"), vic, new Vector3(0f, 0f, 9.5f),
+                        vic.transform.Find("T64B_Rig/HULL/TURRET"), vic, new Vector3(0f, 0f, 9.5f),
                         launchers.GetRange(0, 2).ToArray(), launchers.GetRange(2, 2).ToArray()
                     );
 
@@ -203,8 +180,11 @@ namespace PactIncreasedLethality
 
                 if (thermals.Value)
                 {
-                    PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower());
+                    PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower(), true);
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
+
+                    weapon.FCS.NightOptic.Alignment = OpticAlignment.BoresightStabilized;
+                    weapon.FCS.NightOptic.RotateAzimuth = true;
                 }
             }
 
@@ -214,18 +194,6 @@ namespace PactIncreasedLethality
         public static void Init()
         {
             if (!t64_patch.Value) return;
-
-            if (!ReticleMesh.cachedReticles.ContainsKey("T72"))
-            {
-                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                {
-                    if (obj.gameObject.name == "T72M1")
-                    {
-                        obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
-                        break;
-                    }
-                }
-            }
 
             if (abrams_vic_controller == null)
             {

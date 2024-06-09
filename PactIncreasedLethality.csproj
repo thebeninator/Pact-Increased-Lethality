@@ -40,6 +40,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\publicized_assemblies\Assembly-CSharp_publicized.dll</HintPath>
     </Reference>
+    <Reference Include="BehaviorDesigner.Runtime, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\BehaviorDesigner.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="FMODUnity, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\FMODUnity.dll</HintPath>
@@ -75,7 +79,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.CoreModule">
+    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -90,39 +95,53 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Gunner HEAT PC\Bin\GHPC_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TerrainModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\UnityEngine.TerrainModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TerrainPhysicsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\UnityEngine.TerrainPhysicsModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="1A40.cs" />
+    <Compile Include="Sights\1A40.cs" />
     <Compile Include="AMMO_30MM.cs" />
-    <Compile Include="APFSDS_125mm.cs" />
-    <Compile Include="BMP1.cs" />
-    <Compile Include="BMP2.cs" />
-    <Compile Include="BTR60.cs" />
-    <Compile Include="CRTShock.cs" />
-    <Compile Include="DigitalZoomSnapper.cs" />
+    <Compile Include="AMMO_125mm.cs" />
+    <Compile Include="Armour.cs" />
+    <Compile Include="Vics\BMP1.cs" />
+    <Compile Include="Vics\BMP2.cs" />
+    <Compile Include="Sights\BOM.cs" />
+    <Compile Include="Vics\BTR60.cs" />
+    <Compile Include="Sights\CRTShock.cs" />
+    <Compile Include="Sights\DigitalZoomSnapper.cs" />
     <Compile Include="Drozd.cs" />
     <Compile Include="EFP.cs" />
     <Compile Include="FireForget.cs" />
-    <Compile Include="Kontakt1.cs" />
-    <Compile Include="Kontakt5.cs" />
+    <Compile Include="ERA\Kontakt1.cs" />
+    <Compile Include="ERA\Kontakt5.cs" />
     <Compile Include="LimitedLRF.cs" />
-    <Compile Include="LockOnLead.cs" />
-    <Compile Include="PactThermal.cs" />
+    <Compile Include="Sights\LockOnLead.cs" />
+    <Compile Include="Sights\PactThermal.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProximityFuse.cs" />
-    <Compile Include="Sosna.cs" />
-    <Compile Include="T55.cs" />
-    <Compile Include="T62.cs" />
-    <Compile Include="T64.cs" />
-    <Compile Include="T72.cs" />
-    <Compile Include="T80.cs" />
+    <Compile Include="ReducedATGMSmoke.cs" />
+    <Compile Include="Sights\Sosna.cs" />
+    <Compile Include="Vics\T55.cs" />
+    <Compile Include="Vics\T62.cs" />
+    <Compile Include="Vics\T64B.cs" />
+    <Compile Include="Vics\T64A.cs" />
+    <Compile Include="Vics\T72.cs" />
+    <Compile Include="Vics\T80.cs" />
+    <Compile Include="Sights\TPN3.cs" />
+    <Compile Include="Sights\UpdateVerticalRangeScale.cs" />
     <Compile Include="Util.cs" />
-    <Compile Include="UVBU.cs" />
+    <Compile Include="Sights\UVBU.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

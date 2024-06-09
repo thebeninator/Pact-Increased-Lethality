@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BehaviorDesigner.Runtime.Tasks;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using GHPC.Weapons;
 using HarmonyLib;
-using MelonLoader;
 
 namespace PactIncreasedLethality
 {

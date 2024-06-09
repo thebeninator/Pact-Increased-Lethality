@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using MelonLoader;
 using MelonLoader.Utils;
@@ -15,9 +12,7 @@ using GHPC.Weapons;
 using Reticle;
 using GHPC.Equipment.Optics;
 using GHPC;
-using System.Security.Cryptography; // lol?????
 using Thermals;
-using TMPro;
 using GHPC.Camera;
 using UnityEngine.Rendering.PostProcessing;
 
@@ -57,10 +52,12 @@ namespace PactIncreasedLethality
             public GameObject nvs;
             UsableOptic day_optic;
             bool in_day_sight = true;
+            PostProcessVolume ppv; 
 
             void Awake()
             {
                 day_optic = GetComponent<UsableOptic>();
+                ppv = nvs.GetComponent<PostProcessVolume>();
             }
 
             void Update()
@@ -73,33 +70,14 @@ namespace PactIncreasedLethality
 
                 if (!in_day_sight)
                 {
-                    nvs.GetComponent<PostProcessVolume>().enabled = true;
+                    ppv.enabled = true;
                     day_optic.slot.BaseBlur = 0.1f;
                 }
                 else
                 {
-                    nvs.GetComponent<PostProcessVolume>().enabled = false;
+                    ppv.enabled = false;
                     day_optic.slot.BaseBlur = 0f;
                 }
-            }
-        }
-
-        public class UpdateRange : MonoBehaviour
-        {
-            FireControlSystem fcs;
-            ReticleMesh reticle;
-            void Awake()
-            {
-                fcs = GetComponent<FireControlSystem>();
-                reticle = fcs.MainOptic.reticleMesh;
-            }
-
-            void Update()
-            {
-                reticle.CurrentAmmo = fcs.CurrentAmmoType;
-
-                if (reticle.curReticleRange != fcs.CurrentRange)
-                    reticle.targetReticleRange = fcs.CurrentRange;
             }
         }
 
@@ -210,7 +188,9 @@ namespace PactIncreasedLethality
                     weapon.FCS.RegisteredRangeLimits = new Vector2(0f, 4000f);
                     day_optic.FCS = weapon.FCS;
                     weapon.FCS.RegisterOptic(day_optic);
-                    weapon.FCS.gameObject.AddComponent<UpdateRange>();
+                    UpdateVerticalRangeScale uvrs = day_optic.gameObject.AddComponent<UpdateVerticalRangeScale>();
+                    uvrs.reticle = day_optic.reticleMesh;
+                    uvrs.fcs = weapon.FCS;
                     weapon._impulseLocation = btr_gun.Find("gun_recoil");
                     weapon.Impulse = 35f;
 
@@ -411,7 +391,7 @@ namespace PactIncreasedLethality
                     {
                         m60a1_nvs = GameObject.Instantiate(obj.transform.Find("Turret Scripts/Sights/NVS").gameObject);
                         m60a1_nvs.SetActive(false);
-                        GameObject.Destroy(m60a1_nvs.transform.GetChild(0).gameObject);
+                        UnityEngine.Object.Destroy(m60a1_nvs.transform.GetChild(0).gameObject);
                         GameObject.Destroy(m60a1_nvs.transform.GetChild(0).gameObject);
                         Component.Destroy(m60a1_nvs.GetComponent<UsableOptic>());
                         Component.Destroy(m60a1_nvs.GetComponent<CameraSlot>());

@@ -2,28 +2,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GHPC.Camera;
 using GHPC.Equipment.Optics;
-using GHPC.Player;
 using GHPC.State;
 using GHPC.Utility;
 using GHPC.Vehicle;
 using GHPC.Weapons;
 using GHPC;
 using MelonLoader;
-using Reticle;
-using TMPro;
 using UnityEngine;
-using NWH;
 using NWH.VehiclePhysics;
-using static UnityEngine.GraphicsBuffer;
-using GHPC.UI.Tips;
 using MelonLoader.Utils;
 using System.IO;
 using Thermals;
-using GHPC.Equipment;
 
 namespace PactIncreasedLethality
 {
@@ -32,31 +22,83 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> t80_patch;
         static MelonPreferences_Entry<bool> super_engine;
         static VehicleController abrams_vic_controller;
-        static Dictionary<string, AmmoClipCodexScriptable> ap;
         static MelonPreferences_Entry<string> t80_ammo_type;
         static MelonPreferences_Entry<bool> t80_random_ammo;
+        static MelonPreferences_Entry<List<string>> t80_random_ammo_pool;
         static MelonPreferences_Entry<bool> thermals;
         static MelonPreferences_Entry<string> thermals_quality;
         static MelonPreferences_Entry<bool> zoom_snapper;
         static MelonPreferences_Entry<bool> super_fcs_t80;
         static MelonPreferences_Entry<bool> kontakt5;
 
-        static Mesh turret_cleaned_mesh; 
+        static Mesh turret_cleaned_mesh;
+
+        public class UpdateAmmoTypeUI : MonoBehaviour
+        {
+            GameObject ap;
+            GameObject heat;
+            GameObject he;
+            GameObject glatgm;
+            GameObject current_display;
+            public FireControlSystem fcs;
+            public Transform canvas; 
+
+            Dictionary<AmmoType.AmmoShortName, GameObject> displays;
+
+            void Awake()
+            {
+                ap = canvas.transform.Find("ammo text APFSDS (TMP)").gameObject;
+                heat = canvas.transform.Find("ammo text HEAT (TMP)").gameObject;
+                he = canvas.transform.Find("ammo text HE (TMP)").gameObject;
+                glatgm = canvas.transform.Find("ammo text GLATGM (TMP)").gameObject;
+
+                current_display = ap;
+
+                displays = new Dictionary<AmmoType.AmmoShortName, GameObject>()
+                {
+                    [AmmoType.AmmoShortName.Sabot] = ap,
+                    [AmmoType.AmmoShortName.Heat] = heat,
+                    [AmmoType.AmmoShortName.He] = he,
+                    [AmmoType.AmmoShortName.Missile] = glatgm,
+                };
+            }
+
+            void Update()
+            {
+                if (displays[fcs.CurrentAmmoType.ShortName] != current_display)
+                {
+                    current_display.SetActive(false);
+                    current_display = displays[fcs.CurrentAmmoType.ShortName];
+                    current_display.SetActive(true);
+                }
+            }
+        }
 
         public static void Config(MelonPreferences_Category cfg)
         {
+            var random_ammo_pool = new List<string>()
+            {
+                "3BM26",
+                "3BM32",
+                "3BM42",
+                "3BM46"
+            };
+
             t80_patch = cfg.CreateEntry<bool>("T-80B Patch", true);
             t80_patch.Description = "//////////////////////////////////////////////////////////////////////////////////////////";
             super_engine = cfg.CreateEntry<bool>("Super Engine/Transmission (T-80B)", false);
             super_engine.Comment = "vrrrrrrrrrrooooooooom";
 
             t80_ammo_type = cfg.CreateEntry<string>("AP Round (T-80B)", "3BM32");
-            t80_ammo_type.Comment = "3BM32, 3BM26 (composite optimized), 3BM42 (composite optimized)";
+            t80_ammo_type.Comment = "3BM32, 3BM26 (composite optimized), 3BM42 (composite optimized), 3BM46";
+            t80_ammo_type.Description = " ";
 
             t80_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-80B)", false);
-            t80_random_ammo.Comment = "Randomizes ammo selection for T-64As (3BM26, 3BM32, 3BM42)";
+            t80_random_ammo_pool = cfg.CreateEntry<List<string>>("Random AP Round Pool (T-80B)", random_ammo_pool);
+            t80_random_ammo_pool.Comment = "3BM26, 3BM32, 3BM42, 3BM46";
 
-            zoom_snapper = cfg.CreateEntry<bool>("Quick Zoom Switch", true);
+            zoom_snapper = cfg.CreateEntry<bool>("Quick Zoom Switch (T-80B)", true);
+            zoom_snapper.Description = " ";
             zoom_snapper.Comment = "Press middle mouse to instantly switch between low and high magnification on the daysight";
 
             super_fcs_t80 = cfg.CreateEntry<bool>("Super FCS (T-80B)", false);
@@ -73,14 +115,6 @@ namespace PactIncreasedLethality
 
         public static IEnumerator Convert(GameState _)
         {
-            if (ap == null)
-                ap = new Dictionary<string, AmmoClipCodexScriptable>()
-                {
-                    ["3BM32"] = APFSDS_125mm.clip_codex_3bm32,
-                    ["3BM26"] = APFSDS_125mm.clip_codex_3bm26,
-                    ["3BM42"] = APFSDS_125mm.clip_codex_3bm42,
-                };
-
             foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
             {
                 GameObject vic_go = vic.gameObject;
@@ -94,11 +128,12 @@ namespace PactIncreasedLethality
                 WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
                 LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
                 UsableOptic day_optic = Util.GetDayOptic(weapon.FCS);
+
                 if (zoom_snapper.Value)
                     day_optic.gameObject.AddComponent<DigitalZoomSnapper>();
 
-                int rand = UnityEngine.Random.Range(0, ap.Count);
-                string ammo_str = t80_random_ammo.Value ? ammo_str = ap.ElementAt(rand).Key : t80_ammo_type.Value;
+                int rand = UnityEngine.Random.Range(0, AMMO_125mm.ap.Count);
+                string ammo_str = t80_random_ammo.Value ? t80_random_ammo_pool.Value.ElementAt(rand) : t80_ammo_type.Value;
 
                 vic.AimablePlatforms[1].transform.Find("optic cover parent").gameObject.SetActive(false);
 
@@ -113,7 +148,7 @@ namespace PactIncreasedLethality
 
                 try
                 {
-                    AmmoClipCodexScriptable codex = ap[ammo_str];
+                    AmmoClipCodexScriptable codex = AMMO_125mm.ap[ammo_str];
                     loadout_manager.LoadedAmmoTypes[0] = codex;
                     for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
                     {
@@ -131,6 +166,12 @@ namespace PactIncreasedLethality
                 {
                     MelonLogger.Msg("Loading default 3BM32 for " + vic.FriendlyName);
                 }
+
+                Transform canvas = vic.transform.Find("T80B_rig/HULL/TURRET/gun/---MAIN GUN SCRIPTS---/2A46-2/1G42 gunner's sight/GPS/1G42 Canvas/GameObject");
+                canvas.Find("ammo text APFSDS (TMP)").gameObject.SetActive(true);
+                UpdateAmmoTypeUI ui_fix = day_optic.gameObject.AddComponent<UpdateAmmoTypeUI>();
+                ui_fix.canvas = canvas;
+                ui_fix.fcs = weapon.FCS;
 
                 if (super_engine.Value)
                 {

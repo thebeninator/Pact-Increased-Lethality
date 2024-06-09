@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -22,6 +21,19 @@ namespace PactIncreasedLethality
             "LOADER_INITIAL",
             "t64_menu"
         };
+
+        public static T[] AppendToArray<T>(T[] array, T new_item)
+        {
+            List<T> values = new List<T>();
+            foreach (T old_item in array)
+            {
+                values.Add(old_item);
+            }
+
+            values.Add(new_item);
+
+            return values.ToArray();
+        }
 
         public static void ShallowCopy(System.Object dest, System.Object src)
         {

@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BehaviorDesigner.Runtime.Tasks.Unity.Math;
-using GHPC;
 using GHPC.Utility;
 using GHPC.Weapons;
 using TMPro;
@@ -52,11 +46,11 @@ namespace PactIncreasedLethality
             float x = __instance._averageTraverseRate.x * 0.017453292f * __instance._currentRange * flight_time * -10f;
             x /= (1f - __instance.transform.localPosition.x) * Mathf.Clamp(__instance._currentRange / 1500f, 0f, 1f);
             string sign = Math.Sign(x) > 0 ? "+" : "-";
-            if ((int)x == 0) sign = "";
 
             int lead = (int)Math.Abs(MathUtil.RoundIntToMultipleOf((int)x, 5));
 
             if (lead > 999) lead = 999;
+            if ((int)lead == 0) sign = "";
 
             uvbu.readout.text = sign + lead.ToString("000");
         }

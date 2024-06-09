@@ -1,22 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MelonLoader.Utils;
 using UnityEngine;
 using HarmonyLib;
 using MelonLoader;
-using GHPC;
 using GHPC.Vehicle;
 using GHPC.Utility;
-using FMOD;
-using GHPC.Equipment;
 using GHPC.Effects;
 using GHPC.Audio;
-using System.Reflection;
-using System.Dynamic;
 
 namespace PactIncreasedLethality
 {
@@ -94,6 +86,7 @@ namespace PactIncreasedLethality
             drozd_go.name = "drozd";
             drozd_go.layer = 7;
             drozd_go.tag = "Untagged";
+            drozd_go.GetComponent<MeshRenderer>().enabled = false;   
             drozd_go.AddComponent<Drozd>();
             drozd_go.AddComponent<LateFollow>();
 
@@ -206,7 +199,6 @@ namespace PactIncreasedLethality
                     __instance.createExplosion(false, 0f, Vector3.zero, 0.03f, 55);
 
                     return false;
-
                 }
 
                 return true;
@@ -264,7 +256,7 @@ namespace PactIncreasedLethality
 
                 fx = GameObject.Instantiate(s.transform.Find("Gun Scripts/Launcher M2 TOW/muzzle effects L").gameObject);
                 GameObject.Destroy(fx.transform.GetChild(0).GetChild(6).gameObject);
-                GameObject.Destroy(fx.transform.GetChild(1).GetChild(8).gameObject);
+                GameObject.Destroy(fx.transform.GetChild(1).GetChild(7).gameObject);
 
                 drozd_rocket = s.transform.Find("placeholder missile R/lp_rocket").gameObject;
 

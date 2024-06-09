@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GHPC.Equipment.Optics;
-using GHPC.Utility;
 using GHPC.Vehicle;
 using GHPC.Weapons;
 using TMPro;
 using UnityEngine;
-using MelonLoader;
-using GHPC;
 using Reticle;
 using static Reticle.ReticleTree;
 

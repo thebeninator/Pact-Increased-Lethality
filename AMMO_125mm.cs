@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GHPC.Weapons;
 using UnityEngine;
 
 namespace PactIncreasedLethality
 {
-    public class APFSDS_125mm
+    public class AMMO_125mm
     {
-        static AmmoType ammo_3bm15;
+        static AmmoType ammo_3bm32;
         public static AmmoClipCodexScriptable clip_codex_3bm26;
         public static AmmoType.AmmoClip clip_3bm26;
         public static AmmoCodexScriptable ammo_codex_3bm26;
@@ -23,6 +20,12 @@ namespace PactIncreasedLethality
         public static AmmoType ammo_3bm42;
         public static GameObject ammo_3bm42_vis = null;
 
+        public static AmmoClipCodexScriptable clip_codex_3bm46;
+        public static AmmoType.AmmoClip clip_3bm46;
+        public static AmmoCodexScriptable ammo_codex_3bm46;
+        public static AmmoType ammo_3bm46;
+        public static GameObject ammo_3bm46_vis = null;
+
         public static AmmoClipCodexScriptable clip_codex_3bm22;
         public static AmmoClipCodexScriptable clip_codex_3bm32;
 
@@ -33,6 +36,8 @@ namespace PactIncreasedLethality
         public static GameObject ammo_9m119_super_vis = null;
 
         public static AmmoType ammo_9m111;
+
+        public static Dictionary<string, AmmoClipCodexScriptable> ap; 
 
 
         public static void Init() {
@@ -71,10 +76,10 @@ namespace PactIncreasedLethality
 
                 foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
                 {
-                    if (s.AmmoType.Name == "3BM15 APFSDS-T") { ammo_3bm15 = s.AmmoType; }
+                    if (s.AmmoType.Name == "3BM32 APFSDS-T") { ammo_3bm32 = s.AmmoType; }
                     //if (s.AmmoType.Name == "9M111 Fagot") { ammo_9m111 = s.AmmoType; }
 
-                    if (/*ammo_9m111 != null && */ammo_3bm15 != null) break;
+                    if (/*ammo_9m111 != null && */ammo_3bm32 != null) break;
                 }
 
                 foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
@@ -86,7 +91,7 @@ namespace PactIncreasedLethality
                 }
 
                 ammo_3bm26 = new AmmoType();
-                Util.ShallowCopy(ammo_3bm26, ammo_3bm15);
+                Util.ShallowCopy(ammo_3bm26, ammo_3bm32);
                 ammo_3bm26.Name = "3BM26 APFSDS-T";
                 ammo_3bm26.Caliber = 125;
                 ammo_3bm26.RhaPenetration = 440f;
@@ -109,24 +114,23 @@ namespace PactIncreasedLethality
                 clip_codex_3bm26.name = "clip_3bm26";
                 clip_codex_3bm26.ClipType = clip_3bm26;
 
-                ammo_3bm26_vis = GameObject.Instantiate(ammo_3bm15.VisualModel);
+                ammo_3bm26_vis = GameObject.Instantiate(ammo_3bm32.VisualModel);
                 ammo_3bm26_vis.name = "3bm26 visual";
                 ammo_3bm26.VisualModel = ammo_3bm26_vis;
                 ammo_3bm26.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm26;
                 ammo_3bm26.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm26;
 
                 ammo_3bm42 = new AmmoType();
-                Util.ShallowCopy(ammo_3bm42, ammo_3bm15);
+                Util.ShallowCopy(ammo_3bm42, ammo_3bm32);
                 ammo_3bm42.Name = "3BM42 APFSDS-T";
                 ammo_3bm42.Coeff = ammo_3bm42.Coeff / 2f;
                 ammo_3bm42.Caliber = 125;
                 ammo_3bm42.RhaPenetration = 540f;
                 ammo_3bm42.Mass = 4.85f;
                 ammo_3bm42.MuzzleVelocity = 1700f;
-                ammo_3bm42.SpallMultiplier = 1f;
                 ammo_3bm42.MaxSpallRha = 24f;
                 ammo_3bm42.MinSpallRha = 6f;
-
+                ammo_3bm26.SpallMultiplier = 0.9f;
                 ammo_3bm42.ArmorOptimizations = composite_optimizations_3bm42.ToArray<AmmoType.ArmorOptimization>();
 
                 ammo_codex_3bm42 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
@@ -143,12 +147,53 @@ namespace PactIncreasedLethality
                 clip_codex_3bm42.name = "clip_3bm42";
                 clip_codex_3bm42.ClipType = clip_3bm42;
 
-                ammo_3bm42_vis = GameObject.Instantiate(ammo_3bm15.VisualModel);
+                ammo_3bm42_vis = GameObject.Instantiate(ammo_3bm32.VisualModel);
                 ammo_3bm42_vis.name = "3bm42 visual";
                 ammo_3bm42.VisualModel = ammo_3bm42_vis;
                 ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm42;
                 ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm42;
-               
+
+                ammo_3bm46 = new AmmoType();
+                Util.ShallowCopy(ammo_3bm46, ammo_3bm32);
+                ammo_3bm46.Name = "3BM46 APFSDS-T";
+                ammo_3bm46.Caliber = 125;
+                ammo_3bm46.RhaPenetration = 675f;
+                ammo_3bm46.Mass = 4.85f;
+                ammo_3bm46.MuzzleVelocity = 1700f;
+                ammo_3bm46.SpallMultiplier = 1f;
+                ammo_3bm46.MaxSpallRha = 24f;
+                ammo_3bm46.MinSpallRha = 6f;
+
+                ammo_codex_3bm46 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+                ammo_codex_3bm46.AmmoType = ammo_3bm46;
+                ammo_codex_3bm46.name = "ammo_3bm46";
+
+                clip_3bm46 = new AmmoType.AmmoClip();
+                clip_3bm46.Capacity = 1;
+                clip_3bm46.Name = "3BM46 APFSDS-T";
+                clip_3bm46.MinimalPattern = new AmmoCodexScriptable[1];
+                clip_3bm46.MinimalPattern[0] = ammo_codex_3bm46;
+
+                clip_codex_3bm46 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+                clip_codex_3bm46.name = "clip_3bm46";
+                clip_codex_3bm46.ClipType = clip_3bm46;
+
+                ammo_3bm46_vis = GameObject.Instantiate(ammo_3bm32.VisualModel);
+                ammo_3bm46_vis.name = "3bm46 visual";
+                ammo_3bm46.VisualModel = ammo_3bm46_vis;
+                ammo_3bm46.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm46;
+                ammo_3bm46.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm46;
+
+                if (ap == null)
+                    ap = new Dictionary<string, AmmoClipCodexScriptable>()
+                    {
+                        ["3BM22"] = clip_codex_3bm22,
+                        ["3BM26"] = clip_codex_3bm26,
+                        ["3BM32"] = clip_codex_3bm32,
+                        ["3BM42"] = clip_codex_3bm42,
+                        ["3BM46"] = clip_codex_3bm46,
+                    };
+
                 /*
                 ammo_9m119_super = new AmmoType();
                 Util.ShallowCopy(ammo_9m119_super, ammo_9m111);

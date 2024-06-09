@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Security.Cryptography;
 using GHPC.Equipment.Optics;
-using GHPC.UI.Tips;
-using GHPC.Utility;
 using GHPC.Vehicle;
 using GHPC.Weapons;
 using MelonLoader;
@@ -14,7 +10,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
-using static System.Net.Mime.MediaTypeNames;
 using static Reticle.ReticleTree;
 
 namespace PactIncreasedLethality
@@ -143,12 +138,12 @@ namespace PactIncreasedLethality
                 optic.FovLimitedItems = new UsableOptic.FovLimitedItem[] { wide_lim, zoomed_lim };
                 optic.AdditionalReticleMeshes = new ReticleMesh[] { wide_reticle_mesh };
 
-                optic.slot.DefaultFov = 9.52f;
-                optic.slot.OtherFovs = new float[1] { 5.04f };
+                optic.slot.DefaultFov = 10.5f;
+                optic.slot.OtherFovs = new float[1] { 4.04f };
                 optic.slot.VibrationBlurScale = 0.05f;
                 optic.slot.VibrationShakeMultiplier = 0.01f;
                 optic.slot.VibrationPreBlur = true;
-               // optic.slot.SpriteType = GHPC.Camera.CameraSpriteManager.SpriteType.NightVisionGoggles;
+                //optic.slot.SpriteType = GHPC.Camera.CameraSpriteManager.SpriteType.NightVisionGoggles;
             }
         }
 
@@ -190,10 +185,10 @@ namespace PactIncreasedLethality
 
         private static void HQThermalReticle()
         {
-            reticleSO_tpdk1_hq = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T72"].tree);
+            reticleSO_tpdk1_hq = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["TPN3"].tree);
             reticleSO_tpdk1_hq.name = "PACT-TPDK1-TIS-HQ";
 
-            Util.ShallowCopy(reticle_tpdk1_cached_hq, ReticleMesh.cachedReticles["T72"]);
+            Util.ShallowCopy(reticle_tpdk1_cached_hq, ReticleMesh.cachedReticles["TPN3"]);
             reticle_tpdk1_cached_hq.tree = reticleSO_tpdk1_hq;
             reticle_tpdk1_cached_hq.mesh = null;
 
@@ -208,60 +203,19 @@ namespace PactIncreasedLethality
             reticle_tpdk1_cached_hq.tree.lights[1].type = ReticleTree.Light.Type.LaserReady;
             reticle_tpdk1_cached_hq.tree.lights[1].color = new RGB(2.8f, 3f, 2.8f, true);
 
-            reticleSO_tpdk1_hq.planes[0].elements.RemoveAt(0);
+            ReticleTree.Angular lase_point = new ReticleTree.Angular(Vector2.zero, null);
+            lase_point.align = GroupBase.Alignment.LasePoint;
 
-            ReticleTree.Angular lase_point = reticleSO_tpdk1_hq.planes[0].elements[1] as ReticleTree.Angular;
-            lase_point.elements.RemoveAt(0);
+            ReticleTree.Circle lase_circle = new ReticleTree.Circle();
+            lase_circle.segments = 32;
+            lase_circle.radius = 0.5f;
+            lase_circle.illumination = ReticleTree.Light.Type.Powered;
+            lase_circle.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+            lase_circle.position = new Position(0f, 0f);
+            lase_circle.thickness.mrad = 0.05f;
+            lase_point.elements.Add(lase_circle);
 
-            ReticleTree.Line lase_line1 = new ReticleTree.Line();
-            lase_line1.rotation.mrad = 0;
-            lase_line1.position = new Position(0f, 0f);
-            lase_line1.length.mrad = 2.0944f;
-            lase_line1.thickness.mrad = 0.05f;
-            lase_line1.illumination = ReticleTree.Light.Type.Powered;
-            lase_line1.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
-            lase_point.elements.Add(lase_line1);
-
-            ReticleTree.Line lase_line2 = new ReticleTree.Line();
-            lase_line2.rotation.mrad = 1570.8f;
-            lase_line2.position = new Position(0f, 0f);
-            lase_line2.length.mrad = 2.0944f;
-            lase_line2.thickness.mrad = 0.05f;
-            lase_line2.illumination = ReticleTree.Light.Type.Powered;
-            lase_line2.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
-            lase_point.elements.Add(lase_line2);
-
-            ReticleTree.Angular reticle_tpd_hq = reticleSO_tpdk1_hq.planes[0].elements[0] as ReticleTree.Angular;
-            reticle_tpd_hq.elements.RemoveAt(1);
-
-            ReticleTree.Angular horizontal = reticle_tpd_hq.elements[0] as ReticleTree.Angular;
-            ReticleTree.Angular vertical = reticle_tpd_hq.elements[1] as ReticleTree.Angular;
-
-            ((horizontal.elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Line).illumination = ReticleTree.Light.Type.Powered;
-            ((horizontal.elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Line).visualType = VisualElement.Type.ReflectedAdditive;
-
-            ((horizontal.elements[0] as ReticleTree.Angular).elements[1] as ReticleTree.Line).illumination = ReticleTree.Light.Type.Powered;
-            ((horizontal.elements[0] as ReticleTree.Angular).elements[1] as ReticleTree.Line).visualType = VisualElement.Type.ReflectedAdditive;
-            
-            for (int i = 1; i < horizontal.elements.Count; i++) {
-                ReticleTree.Angular h = horizontal.elements[i] as ReticleTree.Angular;
-                ReticleTree.Angular chev = h.elements[0] as ReticleTree.Angular;
-
-                (chev.elements[0] as ReticleTree.Line).illumination = ReticleTree.Light.Type.Powered;
-                (chev.elements[0] as ReticleTree.Line).visualType = VisualElement.Type.ReflectedAdditive;
-
-                (chev.elements[1] as ReticleTree.Line).illumination = ReticleTree.Light.Type.Powered;
-                (chev.elements[1] as ReticleTree.Line).visualType = VisualElement.Type.ReflectedAdditive;
-
-                for (int j = 1; j < h.elements.Count; j++) {
-                    (h.elements[j] as ReticleTree.Line).illumination = ReticleTree.Light.Type.Powered;
-                    (h.elements[j] as ReticleTree.Line).visualType = VisualElement.Type.ReflectedAdditive;
-                }
-            }
-
-            vertical.elements.RemoveAt(0);
-            (vertical.elements[0] as ReticleTree.Line).illumination = ReticleTree.Light.Type.Powered;
-            (vertical.elements[0] as ReticleTree.Line).visualType = VisualElement.Type.ReflectedAdditive;
+            reticleSO_tpdk1_hq.planes[0].elements.Add(lase_point);
 
             ////////////////////////////////
 
@@ -328,8 +282,8 @@ namespace PactIncreasedLethality
             List<Vector3> box_pos = new List<Vector3>() {
                 new Vector3(0, -13.344f),
                 new Vector3(0, 13.344f),
-                new Vector3(18.654f, 0),
-                new Vector3(-18.654f,0),
+                new Vector3(15.344f, 0),
+                new Vector3(-15.344f,0),
             };
 
             foreach (Vector3 pos in box_pos) {
@@ -360,123 +314,19 @@ namespace PactIncreasedLethality
 
             reticle_hq.elements.Add(line3);
             reticle_hq.elements.Add(line4);
-            reticle_hq.elements.Add(centre);
+           // reticle_hq.elements.Add(centre);
 
-            /*
-            for (float i = 0f; i < 0.6f; i += 0.05f)
-            {
-                ReticleTree.Circle circle = new ReticleTree.Circle();
-                circle.position = new ReticleTree.Position(0f, -i);
-                circle.radius = i;
-                circle.segments = 3;
-                circle.thickness.mrad = line2.thickness.mrad;
-                //circle.rotation.mrad = 785.398f;
-                circle.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                circle.visualType = ReticleTree.VisualElement.Type.Painted;
-                circle.illumination = ReticleTree.Light.Type.Powered;
-                reticle_hq.elements.Add(circle);
-            }
-            */
-
-            /*
-            ReticleTree.VerticalBallistic markings_sabot = new ReticleTree.VerticalBallistic(new Vector2(0f, 0f), null);
-            markings_sabot.projectile = APFSDS_125mm.clip_codex_3bm32.ClipType.MinimalPattern[0];
-            markings_sabot.UpdateBC();
-
-            ReticleTree.Angular sabot_holder = new ReticleTree.Angular(new Vector2(2f, -11f), null);
-            ReticleTree.Text sabot = new ReticleTree.Text();
-            sabot.alignment = TextAlignmentOptions.Center;
-            sabot.font = tpd_etch_sdf;
-            sabot.fontSize = 11f;
-            sabot.text = "B";
-            sabot.illumination = ReticleTree.Light.Type.Powered;
-            sabot.visualType = VisualElement.Type.Painted;
-            sabot.rotation = new Reticle.AngularLength();
-            sabot_holder.elements.Add(sabot);
-            reticle_hq.elements.Add(sabot_holder);
-
-            List<float> ranges = new List<float>() {800f, 1500f, 2000f, 2500f, 3000f, 3500f};
-            for(int i = 0; i < ranges.Count; i++) {
-                float range = ranges[i];
-                ReticleTree.Angular angular = new ReticleTree.Angular(new Vector3(0f, range), markings_sabot);
-                angular.name = range + "M";
-
-                ReticleTree.Text text = new ReticleTree.Text();
-                text.alignment = TextAlignmentOptions.Center;
-                text.font = tpd_etch_sdf;
-                text.fontSize = 7f;
-                text.text = ((int)ranges[i] / 100).ToString();
-                text.illumination = ReticleTree.Light.Type.Powered;
-                text.visualType = VisualElement.Type.Painted;
-                text.position = new Position(i % 2 == 0 ? 2.4f : 4f, 0f);
-                text.rotation = new Reticle.AngularLength();
-
-                ReticleTree.Line line = new ReticleTree.Line();
-                line.roundness = line1.roundness;
-                line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                line.length.unit = AngularLength.AngularUnit.MIL_USSR;
-                line.thickness.mrad = line1.thickness.mrad / 2f;
-                line.length.mrad = i % 2 == 0 ? 1.5f : 2.5f;
-                line.position = new ReticleTree.Position(i % 2 == 0 ? 0.8f : 1.18f, 0f, AngularLength.AngularUnit.MIL_USSR, LinearLength.LinearUnit.M);
-                line.visualType = ReticleTree.VisualElement.Type.Painted;
-                line.illumination = ReticleTree.Light.Type.Powered;
-                angular.elements.Add(text);
-                angular.elements.Add(line);
-                markings_sabot.elements.Add(angular);
-            }
-
-            reticle_hq.elements.Add(markings_sabot);
+            ReticleTree.Circle circle = new ReticleTree.Circle();
+            circle.position = new ReticleTree.Position(0f, -0.6f);
+            circle.radius = 0.6f;
+            circle.segments = 3;
+            circle.thickness.mrad = line2.thickness.mrad;
+            //circle.rotation.mrad = 785.398f;
+            circle.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
+            circle.visualType = ReticleTree.VisualElement.Type.Painted;
+            circle.illumination = ReticleTree.Light.Type.Powered;
+            reticle_hq.elements.Add(circle);
             
-            ReticleTree.VerticalBallistic markings_heat = new ReticleTree.VerticalBallistic(new Vector2(0f, 0f), null);
-            markings_heat.projectile = ammo_3bk14m;
-            markings_heat.UpdateBC();
-
-            ReticleTree.Angular heat_holder = new ReticleTree.Angular(new Vector2(-2f, -11f), null);
-            ReticleTree.Text heat = new ReticleTree.Text();
-            heat.alignment = TextAlignmentOptions.Center;
-            heat.font = tpd_etch_sdf;
-            heat.fontSize = 11f;
-            heat.text = "K";
-            heat.illumination = ReticleTree.Light.Type.Powered;
-            heat.visualType = VisualElement.Type.Painted;
-            heat.rotation = new Reticle.AngularLength();
-            heat_holder.elements.Add(heat);
-            reticle_hq.elements.Add(heat_holder);
-
-            List<float> hranges = new List<float>() { 300f, 500f, 700f, 800f, 1000f, 1200f };
-            for (int i = 0; i < hranges.Count; i++)
-            {
-                float range = hranges[i];
-                ReticleTree.Angular angular = new ReticleTree.Angular(new Vector3(0f, range), markings_heat);
-                angular.name = range + "M";
-
-                ReticleTree.Text text = new ReticleTree.Text();
-                text.alignment = TextAlignmentOptions.Center;
-                text.font = tpd_etch_sdf;
-                text.fontSize = 7f;
-                text.text = ((int)hranges[i] / 100).ToString();
-                text.illumination = ReticleTree.Light.Type.Powered;
-                text.visualType = VisualElement.Type.Painted;
-                text.position = new Position(i % 2 == 0 ? -2.4f : -4f, 0f);
-                text.rotation = new Reticle.AngularLength();
-
-                ReticleTree.Line line = new ReticleTree.Line();
-                line.roundness = line1.roundness;
-                line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                line.length.unit = AngularLength.AngularUnit.MIL_USSR;
-                line.thickness.mrad = line1.thickness.mrad / 2f;
-                line.length.mrad = i % 2 == 0 ? 1.5f : 2.5f;
-                line.position = new ReticleTree.Position(i % 2 == 0 ? -0.8f : -1.18f, 0f, AngularLength.AngularUnit.MIL_USSR, LinearLength.LinearUnit.M);
-                line.visualType = ReticleTree.VisualElement.Type.Painted;
-                line.illumination = ReticleTree.Light.Type.Powered;
-                angular.elements.Add(text);
-                angular.elements.Add(line);
-                markings_heat.elements.Add(angular);
-            }
-
-            reticle_hq.elements.Add(markings_heat);
-            */
-
             reticleSO_hq_wide = ScriptableObject.Instantiate(reticleSO_hq);
             reticleSO_hq_wide.name = "PACT-TIS-HQ-WIDE";
             Util.ShallowCopy(reticle_cached_hq_wide, reticle_cached_hq);
@@ -484,22 +334,28 @@ namespace PactIncreasedLethality
             reticle_cached_hq_wide.mesh = null;
 
             ReticleTree.Angular reticle_hq_wide = (reticleSO_hq_wide.planes[0].elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Angular;
-            reticle_hq_wide.elements.RemoveRange(8, reticle_hq_wide.elements.Count - 8);
+            reticle_hq_wide.elements.RemoveRange(0, reticle_hq_wide.elements.Count - 1);
 
-            foreach (int i in new int[] {0, 1, 6, 7})
-            {
-                ReticleTree.Line line = reticle_hq_wide.elements[i] as ReticleTree.Line;
+            ReticleTree.Line l1 = new ReticleTree.Line();
+            l1.length = new AngularLength(3f, unit: AngularLength.AngularUnit.MIL_USSR);
+            l1.roundness = 1f;
+            l1.thickness = new AngularLength(0.2f, AngularLength.AngularUnit.MIL_USSR);
+            l1.illumination = ReticleTree.Light.Type.Powered;
+            l1.visualType = VisualElement.Type.ReflectedAdditive;
+            l1.position = new ReticleTree.Position(angUnit: AngularLength.AngularUnit.MIL_NATO, linUnit: LinearLength.LinearUnit.M, x: -0.7461f, y: -1.237f);
+            l1.rotation = new AngularLength(240f, unit: AngularLength.AngularUnit.DEG);
 
-                if (i == 0 || i == 6) {
-                    line.rotation.mrad = 1570.8f;
-                    line.position.x = Math.Sign(line.position.x) * 18.654f - Math.Sign(line.position.x) * 4f;
-                    continue;
-                }
+            ReticleTree.Line l2 = new ReticleTree.Line();
+            l2.length = new AngularLength(3f, unit: AngularLength.AngularUnit.MIL_USSR);
+            l2.roundness = 1f;
+            l2.thickness = new AngularLength(0.2f, AngularLength.AngularUnit.MIL_USSR);
+            l2.illumination = ReticleTree.Light.Type.Powered;
+            l2.visualType = VisualElement.Type.ReflectedAdditive;
+            l2.position = new ReticleTree.Position(angUnit: AngularLength.AngularUnit.MIL_NATO, linUnit: LinearLength.LinearUnit.M, x: 0.7461f, y: -1.237f);
+            l2.rotation = new AngularLength(300f, unit: AngularLength.AngularUnit.DEG);
 
-                line.position.y = Math.Sign(line.position.y) * 13.344f - Math.Sign(line.position.y) * 4f;
-                line.rotation.mrad = 0f;
-            }
-
+            reticle_hq_wide.elements.Add(l1);
+            reticle_hq_wide.elements.Add(l2);
             reticle_hq.elements.RemoveAt(1);
         }
 
@@ -514,9 +370,9 @@ namespace PactIncreasedLethality
                     night_optic.reticleMesh.Load();
                 }
 
-                if (!ReticleMesh.cachedReticles.ContainsKey("T72") && obj.gameObject.name == "T72M1")
+                if (!ReticleMesh.cachedReticles.ContainsKey("TPN3") && obj.gameObject.name == "T64B")
                 {         
-                    obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
+                    obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPN‑3‑49 night sight/Reticle Mesh").GetComponent<ReticleMesh>().Load();
                 }
 
                 if (post_og == null && obj.name == "T72M1")

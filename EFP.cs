@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BehaviorDesigner.Runtime.Tasks;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using GHPC.Weapons;
 using HarmonyLib;
 using MelonLoader;
-using static MelonLoader.MelonLogger;
 
 namespace PactIncreasedLethality
 {
@@ -60,7 +54,8 @@ namespace PactIncreasedLethality
             if (Physics.Raycast(pos, Vector3.down, out hit, 1.8f, 1 << 8))
             {
                 if (hit.collider.CompareTag("Penetrable"))
-                    Invoke("Detonate", 0.85f / (live_round.CurrentSpeed + hit.distance));
+                    Invoke("Detonate", 0.05f);
+                    //Invoke("Detonate", 0.85f / (live_round.CurrentSpeed + hit.distance));
                 
             }
         }
@@ -69,9 +64,9 @@ namespace PactIncreasedLethality
         {
             if (!detonated && Vector3.Distance(live_round.transform.position, live_round._trueInitialPosition) >= live_round.Info.ArmingDistance)
             {
-                live_round._rangedFuseActive = true;
-                live_round._rangedFuseCountdown = 0f;
                 detonated = true;
+                live_round.createExplosion(false, 0f, Vector3.zero, 0f);
+                live_round.Detonate();
             }
         }
 

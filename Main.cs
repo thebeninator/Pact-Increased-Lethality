@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using MelonLoader;
 using UnityEngine;
 using GHPC.State;
@@ -11,16 +6,13 @@ using PactIncreasedLethality;
 using System.Collections;
 using MelonLoader.Utils;
 using System.IO;
-using Thermals;
-using GHPC;
 using GHPC.Audio;
 using GHPC.Player;
 using GHPC.Camera;
-using FMODUnity;
 using FMOD;
 using GHPC.Vehicle;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.6.3B", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.7.3", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -46,7 +38,8 @@ namespace PactIncreasedLethality
             cfg = MelonPreferences.CreateCategory("PactIncreasedLethality");
             T55.Config(cfg);
             T72.Config(cfg);
-            T64.Config(cfg);
+            T64A.Config(cfg);
+            T64B.Config(cfg);
             T62.Config(cfg);
             T80.Config(cfg);
             BMP1.Config(cfg);
@@ -68,11 +61,6 @@ namespace PactIncreasedLethality
             BMP2.ReplaceSound.sound_alt.set3DMinMaxDistance(30f, 1300f);
         }
 
-        public override void OnLateUpdate()
-        {
-            T55.OnLateUpdate();
-        }
-
         public override void OnUpdate() {
             BMP2.Update();
         }
@@ -89,12 +77,13 @@ namespace PactIncreasedLethality
             camera_manager = game_manager.GetComponent<CameraManager>();
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Medium);
-
+            BOM.Init();
+            Armour.Init();
             CRTShock.Init();
             FireControlSystem1A40.Init();
             Kontakt1.Init();
             Kontakt5.Init();
-            APFSDS_125mm.Init();
+            AMMO_125mm.Init();
             AMMO_30MM.Init();
             PactThermal.Init();
             Sosna.Init();
@@ -105,7 +94,8 @@ namespace PactIncreasedLethality
             BMP2.Init();
             T55.Init();
             BMP1.Init();
-            T64.Init();
+            T64A.Init();
+            T64B.Init();
             T62.Init();
             T80.Init();
             BTR60.Init();
