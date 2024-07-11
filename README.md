@@ -14,6 +14,13 @@ To regenerate the config:
 2) Launch the game
 3) Quit the game using the main menu exit button
 
+# BDD Applique Armour
+- Can be equipped on the T-55 and T-62
+- Composite armour that is effective against HEAT rounds and lesser AP rounds
+- Bonus rubber side skirts
+
+![Screenshot_12](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/588fea7f-9631-4a45-b9b5-42c8ba8722b8)
+
 # Drozd APS
 - Can be equipped on the T-55, T-62, and T-64A
 - Intercepts projectiles in an arc relative to where the turret is facing
