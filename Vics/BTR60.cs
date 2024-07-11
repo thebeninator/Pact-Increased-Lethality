@@ -15,6 +15,7 @@ using GHPC;
 using Thermals;
 using GHPC.Camera;
 using UnityEngine.Rendering.PostProcessing;
+using GHPC.AI.Platoons;
 
 namespace PactIncreasedLethality
 {
@@ -33,6 +34,7 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> use_3ubr8;
         static MelonPreferences_Entry<bool> use_3uof8;
         static MelonPreferences_Entry<bool> stab;
+        static GameObject m60a1;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -103,7 +105,18 @@ namespace PactIncreasedLethality
             foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
             {
                 GameObject vic_go = vic.gameObject;
+                /*
+                if (vic.name == "M113") {
+                    bool platoon_leader = vic.Platoon.PlatoonLeaderUnit == vic;
+                    PlatoonData platoon = vic.Platoon;
 
+                    GameObject new_unit = GameObject.Instantiate(m60a1, vic_go.transform.parent);
+                    Vehicle new_unit_vic = new_unit.GetComponent<Vehicle>();
+                    new_unit.transform.position = vic_go.transform.position;
+                    new_unit.transform.localEulerAngles = vic_go.transform.localEulerAngles;
+                    new_unit_vic.Allegiance = vic.Allegiance;         
+                }
+                */
                 if (vic == null) continue;
                 if (!vic.UniqueName.Contains("BTR60PB")) continue;
                 if (vic_go.GetComponent<AlreadyConverted>() != null) continue;
@@ -389,6 +402,7 @@ namespace PactIncreasedLethality
                 {
                     if (obj.gameObject.name == "M60A1")
                     {
+                        m60a1 = obj.gameObject;
                         m60a1_nvs = GameObject.Instantiate(obj.transform.Find("Turret Scripts/Sights/NVS").gameObject);
                         m60a1_nvs.SetActive(false);
                         UnityEngine.Object.Destroy(m60a1_nvs.transform.GetChild(0).gameObject);

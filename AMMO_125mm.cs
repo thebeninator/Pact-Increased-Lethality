@@ -123,7 +123,7 @@ namespace PactIncreasedLethality
                 ammo_3bm42 = new AmmoType();
                 Util.ShallowCopy(ammo_3bm42, ammo_3bm32);
                 ammo_3bm42.Name = "3BM42 APFSDS-T";
-                ammo_3bm42.Coeff = ammo_3bm42.Coeff / 2f;
+                ammo_3bm42.Coeff = 0.152f;
                 ammo_3bm42.Caliber = 125;
                 ammo_3bm42.RhaPenetration = 540f;
                 ammo_3bm42.Mass = 4.85f;

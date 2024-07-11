@@ -11,8 +11,10 @@ using GHPC.Player;
 using GHPC.Camera;
 using FMOD;
 using GHPC.Vehicle;
+using HarmonyLib;
+using GHPC;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.7.3", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.7.3A", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -48,6 +50,7 @@ namespace PactIncreasedLethality
             Kontakt1.Config(cfg);
             Drozd.Config(cfg);
             PactThermal.Config(cfg);
+            Armour.Config(cfg);
 
             var corSystem = FMODUnity.RuntimeManager.CoreSystem;
 

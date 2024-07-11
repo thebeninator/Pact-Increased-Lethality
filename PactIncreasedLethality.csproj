@@ -36,9 +36,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Desktop\GHPC MODDED\MelonLoader\net35\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp_publicized, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\publicized_assemblies\Assembly-CSharp_publicized.dll</HintPath>
+    <Reference Include="Assembly-CSharp-Publicized">
+      <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\publicized_assemblies\Assembly-CSharp-Publicized.dll</HintPath>
     </Reference>
     <Reference Include="BehaviorDesigner.Runtime, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -116,6 +115,7 @@
     <Compile Include="Vics\BMP1.cs" />
     <Compile Include="Vics\BMP2.cs" />
     <Compile Include="Sights\BOM.cs" />
+    <Compile Include="Vics\BMP3.cs" />
     <Compile Include="Vics\BTR60.cs" />
     <Compile Include="Sights\CRTShock.cs" />
     <Compile Include="Sights\DigitalZoomSnapper.cs" />

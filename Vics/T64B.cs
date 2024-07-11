@@ -156,7 +156,7 @@ namespace PactIncreasedLethality
 
                     for (var i = 0; i < launcher_positions.Length; i++)
                     {
-                        GameObject launcher = GameObject.Instantiate(DrozdLauncher.drozd_launcher_visual, vic.transform.Find("T64B_Rig/HULL/TURRET"));
+                        GameObject launcher = GameObject.Instantiate(DrozdLauncher.drozd_launcher_visual, vic.transform.Find("T64B_rig/HULL/TURRET"));
                         launcher.transform.localPosition = launcher_positions[i];
                         launcher.transform.localEulerAngles = launcher_rots[i];
 
@@ -169,7 +169,7 @@ namespace PactIncreasedLethality
                     }
 
                     Drozd.AttachDrozd(
-                        vic.transform.Find("T64B_Rig/HULL/TURRET"), vic, new Vector3(0f, 0f, 9.5f),
+                        vic.transform.Find("T64B_rig/HULL/TURRET"), vic, new Vector3(0f, 0f, 9.5f),
                         launchers.GetRange(0, 2).ToArray(), launchers.GetRange(2, 2).ToArray()
                     );
 

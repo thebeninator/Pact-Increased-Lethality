@@ -138,7 +138,7 @@ namespace PactIncreasedLethality
                 optic.FovLimitedItems = new UsableOptic.FovLimitedItem[] { wide_lim, zoomed_lim };
                 optic.AdditionalReticleMeshes = new ReticleMesh[] { wide_reticle_mesh };
 
-                optic.slot.DefaultFov = 10.5f;
+                optic.slot.DefaultFov = 9.5f;
                 optic.slot.OtherFovs = new float[1] { 4.04f };
                 optic.slot.VibrationBlurScale = 0.05f;
                 optic.slot.VibrationShakeMultiplier = 0.01f;
@@ -339,7 +339,7 @@ namespace PactIncreasedLethality
             ReticleTree.Line l1 = new ReticleTree.Line();
             l1.length = new AngularLength(3f, unit: AngularLength.AngularUnit.MIL_USSR);
             l1.roundness = 1f;
-            l1.thickness = new AngularLength(0.2f, AngularLength.AngularUnit.MIL_USSR);
+            l1.thickness = new AngularLength(0.4f, AngularLength.AngularUnit.MIL_USSR);
             l1.illumination = ReticleTree.Light.Type.Powered;
             l1.visualType = VisualElement.Type.ReflectedAdditive;
             l1.position = new ReticleTree.Position(angUnit: AngularLength.AngularUnit.MIL_NATO, linUnit: LinearLength.LinearUnit.M, x: -0.7461f, y: -1.237f);
@@ -348,7 +348,7 @@ namespace PactIncreasedLethality
             ReticleTree.Line l2 = new ReticleTree.Line();
             l2.length = new AngularLength(3f, unit: AngularLength.AngularUnit.MIL_USSR);
             l2.roundness = 1f;
-            l2.thickness = new AngularLength(0.2f, AngularLength.AngularUnit.MIL_USSR);
+            l2.thickness = new AngularLength(0.4f, AngularLength.AngularUnit.MIL_USSR);
             l2.illumination = ReticleTree.Light.Type.Powered;
             l2.visualType = VisualElement.Type.ReflectedAdditive;
             l2.position = new ReticleTree.Position(angUnit: AngularLength.AngularUnit.MIL_NATO, linUnit: LinearLength.LinearUnit.M, x: 0.7461f, y: -1.237f);

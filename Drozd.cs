@@ -9,6 +9,8 @@ using GHPC.Vehicle;
 using GHPC.Utility;
 using GHPC.Effects;
 using GHPC.Audio;
+using GHPC;
+using System.Xml.Linq;
 
 namespace PactIncreasedLethality
 {
@@ -116,12 +118,19 @@ namespace PactIncreasedLethality
 
             if (cd < 0f) cd = 0f;
         }
-
+        
         [HarmonyPatch(typeof(GHPC.Weapons.LiveRound), "penCheck")]
         public static class Interception
         {
             private static bool Prefix(GHPC.Weapons.LiveRound __instance, object[] __args)
             {
+                /*
+                if (!__instance.IsSpall && ((Collider)__args[0]).GetComponent<IArmor>() != null) {
+                    __instance.doRicochet((Collider)__args[0], ((Collider)__args[0]).GetComponent<IArmor>(), (Vector3)__args[2], (Vector3)__args[1], 90f, false);
+                    return true;
+                }
+                */
+
                 if (__instance.IsSpall) return true;
                 if (__instance.ShotInfo.TypeInfo.Caliber < min_diameter.Value && __instance.ShotInfo.TypeInfo.Caliber != 0f) return true;
                 if (__instance.CurrentSpeed < MIN_ENGAGEMENT_SPEED || (__instance.CurrentSpeed > MAX_ENGAGEMENT_SPEED && !high_velocity.Value)) return true;

@@ -1,4 +1,5 @@
 ﻿using GHPC.Equipment;
+using MelonLoader;
 using UnityEngine;
 
 namespace PactIncreasedLethality
@@ -11,6 +12,14 @@ namespace PactIncreasedLethality
         public static ArmorCodexScriptable composite_armor;
         public static ArmorCodexScriptable hull_metal_polymer;
         public static ArmorCodexScriptable cheek_metal_polymer;
+        public static MelonPreferences_Entry<bool> super_mpoly;
+
+        public static void Config(MelonPreferences_Category cfg)
+        {
+            super_mpoly = cfg.CreateEntry<bool>("Improved Composite (BDD Applique)", false);
+            super_mpoly.Description = "//////////////////////////////////////////////////////////////////////////////////////////";
+            super_mpoly.Comment = "Increases effectiveness of the composite blocks inside the BDD applique armour against AP and HEAT rounds";
+        }
 
         public static void Init()
         {
@@ -86,8 +95,8 @@ namespace PactIncreasedLethality
                 mpoly_cheek.ThicknessSource = ArmorType.RhaSource.Multipliers;
                 mpoly_cheek.SpallAngleMultiplier = 1f;
                 mpoly_cheek.SpallPowerMultiplier = 0.2f;
-                mpoly_cheek.RhaeMultiplierCe = 1.45f;
-                mpoly_cheek.RhaeMultiplierKe = 1.05f;
+                mpoly_cheek.RhaeMultiplierCe = super_mpoly.Value ? 1.8f : 1.45f;
+                mpoly_cheek.RhaeMultiplierKe = super_mpoly.Value ? 1.15f : 1.05f;
                 mpoly_cheek.CrushThicknessModifier = 1f;
                 cheek_metal_polymer.ArmorType = mpoly_cheek;
 
@@ -101,8 +110,8 @@ namespace PactIncreasedLethality
                 mpoly_hull.ThicknessSource = ArmorType.RhaSource.Multipliers;
                 mpoly_hull.SpallAngleMultiplier = 1f;
                 mpoly_hull.SpallPowerMultiplier = 0.2f;
-                mpoly_hull.RhaeMultiplierCe = 2.2f;
-                mpoly_hull.RhaeMultiplierKe = 1.05f;
+                mpoly_hull.RhaeMultiplierCe = super_mpoly.Value ? 2.35f : 2.2f;
+                mpoly_hull.RhaeMultiplierKe = super_mpoly.Value ? 1.15f : 1.05f;
                 mpoly_hull.CrushThicknessModifier = 1f;
                 hull_metal_polymer.ArmorType = mpoly_hull;
             }

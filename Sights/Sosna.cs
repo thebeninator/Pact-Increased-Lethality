@@ -43,7 +43,7 @@ namespace PactIncreasedLethality
             fcs.ActiveDeltaD = false;
             fcs.ImperfectDeltaD = false;
             fcs.RegisteredRangeLimits = new Vector2(200f, 4000f);
-            fcs.CurrentRange = 200f;
+            fcs._currentRange = 200f;
             fcs.ManualModeTriggers = new GHPC.Equipment.FcsManualModeStartTrigger[] { };
             fcs.AutoModeTriggers = new GHPC.Equipment.FcsManualModeCancelTrigger[] { };
             fcs.GatedAimablePlatforms = fcs.Mounts;
