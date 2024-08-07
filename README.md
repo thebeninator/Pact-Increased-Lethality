@@ -32,6 +32,7 @@ To regenerate the config:
 - Can be equipped on the T-72M/1 and T-80B
 - Capable of stopping APFSDS rounds like M833
 
+![image](https://github.com/user-attachments/assets/99dd7066-a4d8-4ca9-b599-e7d56484be55)
 ![K%55](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e3bf6124-99af-4449-8dcc-c3bc2d3ec441)
 
 # T-55
