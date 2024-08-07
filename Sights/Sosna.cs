@@ -42,8 +42,8 @@ namespace PactIncreasedLethality
             fcs.UseDeltaD = false;
             fcs.ActiveDeltaD = false;
             fcs.ImperfectDeltaD = false;
-            fcs.RegisteredRangeLimits = new Vector2(200f, 4000f);
-            fcs._currentRange = 200f;
+            fcs.RegisteredRangeLimits = new Vector2(0f, 4000f);
+            fcs._currentRange = 0f;
             fcs.ManualModeTriggers = new GHPC.Equipment.FcsManualModeStartTrigger[] { };
             fcs.AutoModeTriggers = new GHPC.Equipment.FcsManualModeCancelTrigger[] { };
             fcs.GatedAimablePlatforms = fcs.Mounts;
@@ -82,12 +82,12 @@ namespace PactIncreasedLethality
             day_optic.UseRotationForShake = true;
             day_optic.CantCorrect = true;
             day_optic.CantCorrectMaxSpeed = 5f;
-            day_optic.Alignment = OpticAlignment.FcsRange;
+            day_optic.Alignment = OpticAlignment.BoresightStabilized;
             day_optic.slot.VibrationShakeMultiplier = 0f;
             day_optic.slot.VibrationBlurScale = 0f;
             day_optic.slot.fovAspect = false;
             day_optic.RotateAzimuth = true;
-            day_optic.ForceHorizontalReticleAlign = true;
+            day_optic.ForceHorizontalReticleAlign = false;
             day_optic.reticleMesh.reticleSO = reticleSO_sosna;
             day_optic.reticleMesh.reticle = reticle_cached_sosna;
             day_optic.reticleMesh.SMR = null;
@@ -160,7 +160,7 @@ namespace PactIncreasedLethality
 
             Util.ShallowCopy(reticle_cached_sosna.tree.lights[0], ReticleMesh.cachedReticles["T55"].tree.lights[0]);
             reticle_cached_sosna.tree.lights[0].type = ReticleTree.Light.Type.Powered;
-            reticle_cached_sosna.tree.lights[0].color = new RGB(2f, -0.3f, -0.3f, true);
+            reticle_cached_sosna.tree.lights[0].color = new RGB(12f, 0f, 0f, true);
             reticle_cached_sosna.mesh = null;
 
             ReticleTree.Angular impact = new ReticleTree.Angular(new Vector2(), null);
@@ -175,7 +175,7 @@ namespace PactIncreasedLethality
             for (int i = -1; i <= 1; i += 2)
             {
                 ReticleTree.Line chev_line = new ReticleTree.Line();
-                chev_line.thickness.mrad = 0.1833f;
+                chev_line.thickness.mrad = 0.1555f;
                 chev_line.length.mrad = 2.0944f;
                 chev_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
                 chev_line.length.unit = AngularLength.AngularUnit.MIL_USSR;
@@ -228,7 +228,7 @@ namespace PactIncreasedLethality
             }
 
             ReticleTree.Line middle_line = new ReticleTree.Line();
-            middle_line.thickness.mrad = 0.1833f;
+            middle_line.thickness.mrad = 0.1555f;
             middle_line.length.mrad = 5.0944f;
             middle_line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
             middle_line.length.unit = AngularLength.AngularUnit.MIL_USSR;

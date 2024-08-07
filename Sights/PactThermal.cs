@@ -389,7 +389,7 @@ namespace PactIncreasedLethality
                     thermal_canvas.name = "pact thermal canvas";
                 }
 
-                if (scanline_canvas == null && obj.name == "M60A3")
+                if (scanline_canvas == null && obj.name == "M60A3 TTS")
                 {
                     scanline_canvas = GameObject.Instantiate(obj.transform.Find("Turret Scripts/Sights/FLIR/Canvas Scanlines").gameObject);
                     scanline_canvas.SetActive(false);

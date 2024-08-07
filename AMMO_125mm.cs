@@ -29,13 +29,19 @@ namespace PactIncreasedLethality
         public static AmmoClipCodexScriptable clip_codex_3bm22;
         public static AmmoClipCodexScriptable clip_codex_3bm32;
 
-        public static AmmoClipCodexScriptable clip_codex_9m119_super;
-        public static AmmoType.AmmoClip clip_9m119_super;
-        public static AmmoCodexScriptable ammo_codex_9m119_super;
-        public static AmmoType ammo_9m119_super;
-        public static GameObject ammo_9m119_super_vis = null;
+        public static AmmoClipCodexScriptable clip_codex_9m119m1;
+        public static AmmoType.AmmoClip clip_9m119m1;
+        public static AmmoCodexScriptable ammo_codex_9m119m1;
+        public static AmmoType ammo_9m119m1;
+        public static GameObject ammo_9m119m1_vis = null;
 
-        public static AmmoType ammo_9m111;
+        public static AmmoClipCodexScriptable clip_codex_9m119;
+        public static AmmoType.AmmoClip clip_9m119;
+        public static AmmoCodexScriptable ammo_codex_9m119;
+        public static AmmoType ammo_9m119;
+        public static GameObject ammo_9m119_vis = null;
+
+        public static AmmoType ammo_kobra;
 
         public static Dictionary<string, AmmoClipCodexScriptable> ap; 
 
@@ -77,9 +83,9 @@ namespace PactIncreasedLethality
                 foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
                 {
                     if (s.AmmoType.Name == "3BM32 APFSDS-T") { ammo_3bm32 = s.AmmoType; }
-                    //if (s.AmmoType.Name == "9M111 Fagot") { ammo_9m111 = s.AmmoType; }
+                    if (s.AmmoType.Name == "9M112M Kobra") { ammo_kobra = s.AmmoType; }
 
-                    if (/*ammo_9m111 != null && */ammo_3bm32 != null) break;
+                    if (ammo_kobra != null && ammo_3bm32 != null) break;
                 }
 
                 foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
@@ -194,50 +200,67 @@ namespace PactIncreasedLethality
                         ["3BM46"] = clip_codex_3bm46,
                     };
 
-                /*
-                ammo_9m119_super = new AmmoType();
-                Util.ShallowCopy(ammo_9m119_super, ammo_9m111);
-                ammo_9m119_super.Name = "blyat";
-                ammo_9m119_super.Caliber = 125;
-                ammo_9m119_super.TntEquivalentKg = 3f;
-                ammo_9m119_super.SpallMultiplier = 1.5f;
-                ammo_9m119_super.ClimbAngle = 40f;
-                ammo_9m119_super.TurnSpeed = 2.5f;
-                ammo_9m119_super.DiveAngle = 55f;
-                ammo_9m119_super.LoiterAltitude = 1000f;
-                ammo_9m119_super.AimPointMarch = 0.05f;
-                ammo_9m119_super.MaxSpallRha = 55f;
-                ammo_9m119_super.MinSpallRha = 20f;
-                ammo_9m119_super.RangedFuseTime = 20f;
-                ammo_9m119_super.UseTracer = false;
-                ammo_9m119_super.EdgeSetback = 0.5f;
-                ammo_9m119_super.NoisePowerX = 0f;
-                ammo_9m119_super.NoisePowerY = 0f;
-                ammo_9m119_super.SpiralAngularRate = 0f;
-                ammo_9m119_super.Guidance = AmmoType.GuidanceType.Laser;
+                ammo_9m119m1 = new AmmoType();
+                Util.ShallowCopy(ammo_9m119m1, ammo_kobra);
+                ammo_9m119m1.Name = "9M119M1 Invar-M";
+                ammo_9m119m1.Caliber = 125;
+                ammo_9m119m1.RhaPenetration = 960f;
+                ammo_9m119m1.MuzzleVelocity = 440f;
+                ammo_9m119m1.RangedFuseTime = 17.7f;
+                ammo_9m119m1.TntEquivalentKg = 5.72f;
+                ammo_9m119m1.MaxSpallRha = 12f;
+                ammo_9m119m1.MinSpallRha = 2f;
 
-                ammo_codex_9m119_super = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_9m119_super.AmmoType = ammo_9m119_super;
-                ammo_codex_9m119_super.name = "ammo_9m119_super";
+                ammo_codex_9m119m1 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+                ammo_codex_9m119m1.AmmoType = ammo_9m119m1;
+                ammo_codex_9m119m1.name = "ammo_9m119m1_refleks";
 
-                clip_9m119_super = new AmmoType.AmmoClip();
-                clip_9m119_super.Capacity = 1;
-                clip_9m119_super.Name = "blyat";
-                clip_9m119_super.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_9m119_super.MinimalPattern[0] = ammo_codex_9m119_super;
+                clip_9m119m1 = new AmmoType.AmmoClip();
+                clip_9m119m1.Capacity = 1;
+                clip_9m119m1.Name = "9M119M1 Invar-M";
+                clip_9m119m1.MinimalPattern = new AmmoCodexScriptable[1];
+                clip_9m119m1.MinimalPattern[0] = ammo_codex_9m119m1;
 
-                clip_codex_9m119_super = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_9m119_super.name = "clip_9m119_super";
-                clip_codex_9m119_super.ClipType = clip_9m119_super;
+                clip_codex_9m119m1 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+                clip_codex_9m119m1.name = "clip_9m119m1_refleks";
+                clip_codex_9m119m1.ClipType = clip_9m119m1;
 
-                ammo_9m119_super_vis = GameObject.Instantiate(ammo_3bm15.VisualModel);
-                ammo_9m119_super_vis.name = "9m119_super visual";
-                ammo_9m119_super.VisualModel = ammo_9m119_super_vis;
-                ammo_9m119_super.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m119_super;
-                ammo_9m119_super.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m119_super;
+                ammo_9m119m1_vis = GameObject.Instantiate(ammo_kobra.VisualModel);
+                ammo_9m119m1_vis.name = "9m119m1 visual";
+                ammo_9m119m1.VisualModel = ammo_9m119m1_vis;
+                ammo_9m119m1.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m119m1;
+                ammo_9m119m1.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m119m1;
 
-                FireForget.AddFireForgetAmmo(ammo_9m119_super);  
-                */
+                ammo_9m119 = new AmmoType();
+                Util.ShallowCopy(ammo_9m119, ammo_kobra);
+                ammo_9m119.Name = "9M119 Refleks";
+                ammo_9m119.Caliber = 125;
+                ammo_9m119.RhaPenetration = 750f;
+                ammo_9m119.MuzzleVelocity = 440f;
+                ammo_9m119.RangedFuseTime = 17.7f;
+                ammo_9m119.TntEquivalentKg = 5.72f;
+                ammo_9m119.MaxSpallRha = 12f;
+                ammo_9m119.MinSpallRha = 2f;
+
+                ammo_codex_9m119 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+                ammo_codex_9m119.AmmoType = ammo_9m119;
+                ammo_codex_9m119.name = "ammo_9m119_refleks";
+
+                clip_9m119 = new AmmoType.AmmoClip();
+                clip_9m119.Capacity = 1;
+                clip_9m119.Name = "9M119 Refleks";
+                clip_9m119.MinimalPattern = new AmmoCodexScriptable[1];
+                clip_9m119.MinimalPattern[0] = ammo_codex_9m119;
+
+                clip_codex_9m119 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+                clip_codex_9m119.name = "clip_9m119_refleks";
+                clip_codex_9m119.ClipType = clip_9m119;
+
+                ammo_9m119_vis = GameObject.Instantiate(ammo_kobra.VisualModel);
+                ammo_9m119_vis.name = "9m119 visual";
+                ammo_9m119.VisualModel = ammo_9m119_vis;
+                ammo_9m119.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m119;
+                ammo_9m119.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m119;
             }
         }
     }

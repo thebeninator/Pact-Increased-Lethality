@@ -15,6 +15,7 @@ using MelonLoader.Utils;
 using System.IO;
 using Thermals;
 using NWH.VehiclePhysics;
+using static UnityEngine.GraphicsBuffer;
 
 namespace PactIncreasedLethality
 {
@@ -88,6 +89,10 @@ namespace PactIncreasedLethality
         static GameObject t72m1_composite_cheeks;
         static Mesh t72m1_turret_mesh;
         static GameObject super_comp_cheeks;
+
+        static Mesh t72b_vis_turret;
+        static Mesh t72b_armour_turret;
+        static GameObject t72b_turret_nera;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -207,6 +212,35 @@ namespace PactIncreasedLethality
 
                 vic_go.AddComponent<AlreadyConverted>();
 
+                /*
+                if (vic.UniqueName == "T72M1") {
+                    Transform turret = vic.transform.Find("---MESH---/HULL/TURRET");
+                    Transform turret_rend = turret.Find("T72M1_turret");
+
+                    turret.Find("smoke rack").localScale = Vector3.zero;
+
+                    turret_rend.GetComponent<MeshFilter>().sharedMesh = t72b_vis_turret;
+
+                    Transform turret_armour_transform = turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform.Find("ARMOR/Turret.002");
+                    
+                    VariableArmor turret_armour = turret_armour_transform.GetComponent<VariableArmor>();
+                    GameObject.DestroyImmediate(turret_armour_transform.GetChild(0).gameObject);
+                    turret_armour_transform.GetComponent<MeshCollider>().sharedMesh = t72b_armour_turret;
+                    turret_armour_transform.GetComponent<MeshFilter>().sharedMesh = t72b_armour_turret;
+                    turret_armour.cloneMesh();
+                    turret_armour.invertMesh();
+                    turret_armour.setupCollider();
+                    
+                    GameObject.DestroyImmediate(turret_armour_transform.parent.Find("Composite Armor Array").gameObject);
+
+                    GameObject nera = GameObject.Instantiate(t72b_turret_nera, turret_armour_transform);
+                    nera.GetComponent<VariableArmor>().Unit = vic;
+                    nera.transform.parent = turret_armour_transform.parent;
+
+                    continue; 
+                }
+                */
+
                 if (vic.UniqueName == "T72M1" && t72m1_super_composite_cheeks.Value) {
                     Transform turret = vic.transform.Find("---MESH---/HULL/TURRET");
                     Transform turret_followers = turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform;
@@ -236,7 +270,7 @@ namespace PactIncreasedLethality
                     turret_rend.GetComponent<MeshRenderer>().materials = new Material[] { t72m1_material };
                     turret_rend.gameObject.AddComponent<HeatSource>();
 
-                    vic._friendlyName = "T-72M1";
+                    vic._friendlyName = "KPz T-72M1";
                     vic._uniqueName = "T72M1";
                     vic_go.AddComponent<PreviouslyT72M>();
                 }
@@ -244,7 +278,7 @@ namespace PactIncreasedLethality
                 // SOVIET CREW 
                 if ((soviet_t72m1.Value && vic.UniqueName == "T72M1") || (soviet_t72m.Value && vic.UniqueName == "T72M"))
                 {
-                    vic._friendlyName = vic.FriendlyName == "T-72M1" ? "T-72A" : "T-72";
+                    vic._friendlyName = vic.FriendlyName == "KPz T-72M1" ? "T-72A" : "T-72";
 
                     vic.transform.Find("DE Tank Voice").gameObject.SetActive(false);
                     GameObject crew_voice = GameObject.Instantiate(soviet_crew_voice, vic.transform);
@@ -260,8 +294,8 @@ namespace PactIncreasedLethality
                     vic.AimablePlatforms[1].transform.parent.Find("T72_markings").Find("roundels_72M").gameObject.SetActive(false);
                 }
 
-                if ((era_t72m1.Value && (vic.FriendlyName == "T-72M1" || vic.FriendlyName == "T-72A"))
-                    || (era_t72m.Value && (vic.FriendlyName == "T-72M" || vic.FriendlyName == "T-72")))
+                if ((era_t72m1.Value && (vic.FriendlyName == "KPz T-72M1" || vic.FriendlyName == "T-72A"))
+                    || (era_t72m.Value && (vic.FriendlyName == "KPz T-72M" || vic.FriendlyName == "T-72")))
                 {
                     var hull_late_followers = vic.GetComponent<LateFollowTarget>()._lateFollowers;
                     var turret_late_followers = vic.AimablePlatforms.Where(o => o.name == "---TURRET SCRIPTS---").First().transform.parent.GetComponent<LateFollowTarget>()._lateFollowers;
@@ -276,11 +310,13 @@ namespace PactIncreasedLethality
                     turret_array.transform.localEulerAngles = new Vector3(0f, 90f, 0f);
                     turret_array.transform.localPosition = new Vector3(0.0199f, 2.1973f, -0.8363f);
 
-                    if ((vic.FriendlyName == "T-72M" || vic.FriendlyName == "T-72") && (vic.transform.Find("T72M_gills_rig 1") != null))
+                    /*
+                    if ((vic.FriendlyName == "KPz T-72M" || vic.FriendlyName == "T-72") && (vic.transform.Find("T72M_gills_rig 1") != null))
                     {
                         GameObject.Destroy(hull_array.transform.Find("left side skirt array").gameObject);
                         GameObject.Destroy(hull_array.transform.Find("right side skirt array").gameObject);
                     }
+                    */
 
                     vic.transform.GetChild(0).GetChild(0).gameObject.SetActive(false);
                     vic._friendlyName += "V";
@@ -301,13 +337,18 @@ namespace PactIncreasedLethality
                 }
 
                 string ammo_str = (vic.UniqueName == "T72M") ? t72m_ammo_type.Value : t72m1_ammo_type.Value;
-                int rand = UnityEngine.Random.Range(0, AMMO_125mm.ap.Count);
 
                 if (t72m_random_ammo.Value && vic.UniqueName == "T72M")
+                {
+                    int rand = UnityEngine.Random.Range(0, t72m_random_ammo_pool.Value.Count);
                     ammo_str = t72m_random_ammo_pool.Value.ElementAt(rand);
+                }
 
                 if (t72m1_random_ammo.Value && vic.UniqueName == "T72M1")
+                {
+                    int rand = UnityEngine.Random.Range(0, t72m1_random_ammo_pool.Value.Count);
                     ammo_str = t72m1_random_ammo_pool.Value.ElementAt(rand);
+                }
 
                 string heat_str = (vic.UniqueName == "T72M") ? t72m_heat_type.Value : t72m1_heat_type.Value;
 
@@ -653,6 +694,27 @@ namespace PactIncreasedLethality
 
             if (turret_cleaned_mesh == null)
             {
+                /*
+                AssetBundle t72b_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72b"));
+                t72b_vis_turret = t72b_bundle.LoadAsset<Mesh>("t72b_tur.asset");
+                t72b_vis_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                t72b_armour_turret = t72b_bundle.LoadAsset<Mesh>("t72b_tur_collider.asset");
+                t72b_armour_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                t72b_turret_nera = t72b_bundle.LoadAsset<GameObject>("t72b_tur_nera.prefab");
+                t72b_turret_nera.hideFlags = HideFlags.DontUnloadUnusedAsset;
+                t72b_turret_nera.tag = "Penetrable";
+                t72b_turret_nera.layer = 8;
+                VariableArmor t72b_turret_nera_va = t72b_turret_nera.AddComponent<VariableArmor>();
+                t72b_turret_nera_va.SetName("reflective plate array");
+                t72b_turret_nera_va._armorType = Armour.composite_armor;
+                t72b_turret_nera_va._spallForwardRatio = 0.5f;
+                AarVisual t72b_turret_nera_aar = t72b_turret_nera.AddComponent<AarVisual>();
+                t72b_turret_nera_aar.SwitchMaterials = false;
+                t72b_turret_nera_aar.HideUntilAar = true;
+                */
+
                 var super_comp_cheeks_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "supercompcheeks"));
                 super_comp_cheeks = super_comp_cheeks_bundle.LoadAsset<GameObject>("SUPER CHEEKS.prefab");
                 super_comp_cheeks.hideFlags = HideFlags.DontUnloadUnusedAsset;
@@ -667,7 +729,7 @@ namespace PactIncreasedLethality
                 VariableArmor armor_turret_l_cheek = turret_left_cheek.AddComponent<VariableArmor>();
                 armor_turret_l_cheek.SetName("turret cheek composite array");
                 armor_turret_l_cheek._armorType = Armour.composite_armor;
-                armor_turret_l_cheek._spallForwardRatio = 0.2f;
+                armor_turret_l_cheek._spallForwardRatio = 0.01f;
                 AarVisual aar_l_cheek = turret_left_cheek.AddComponent<AarVisual>();
                 aar_l_cheek.SwitchMaterials = false;
                 aar_l_cheek.HideUntilAar = true;
@@ -676,7 +738,7 @@ namespace PactIncreasedLethality
                 VariableArmor armor_turret_r_cheek = turret_right_cheek.AddComponent<VariableArmor>();
                 armor_turret_r_cheek.SetName("turret cheek composite array");
                 armor_turret_r_cheek._armorType = Armour.composite_armor;
-                armor_turret_r_cheek._spallForwardRatio = 0.2f;
+                armor_turret_r_cheek._spallForwardRatio = 0.01f;
                 AarVisual aar_r_cheek = turret_right_cheek.AddComponent<AarVisual>();
                 aar_r_cheek.SwitchMaterials = false;
                 aar_r_cheek.HideUntilAar = true;
@@ -692,7 +754,6 @@ namespace PactIncreasedLethality
                 var t72_cleaned_hull_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72_hull_cleaned"));
                 hull_cleaned_mesh = t72_cleaned_hull_bundle.LoadAsset<Mesh>("T72M1_hull.asset");
                 hull_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
             }
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);

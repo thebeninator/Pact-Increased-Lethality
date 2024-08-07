@@ -84,7 +84,7 @@ namespace PactIncreasedLethality
                 GameObject vic_go = vic.gameObject;
 
                 if (vic == null) continue;
-                if (!vic.FriendlyName.Contains("T-64A")) continue;
+                if (vic.UniqueName != "T64A") continue;
                 if (vic_go.GetComponent<AlreadyConverted>() != null) continue;
 
                 vic_go.AddComponent<AlreadyConverted>();

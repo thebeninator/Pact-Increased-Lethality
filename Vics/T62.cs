@@ -148,7 +148,7 @@ namespace PactIncreasedLethality
 
                         reticle_cached.tree.lights[0] = ReticleMesh.cachedReticles["T62 Corrected"].tree.lights[0];
                         reticle_cached.tree.lights[1].type = ReticleTree.Light.Type.Powered;
-                        reticle_cached.tree.lights[1].color = new RGB(2f, 0f, 0f, true);
+                        reticle_cached.tree.lights[1].color = new RGB(15f, 0f, 0f, true);
 
                         reticleSO.planes[0].elements.Add(new ReticleTree.Angular(new Vector2(0, 0), null, ReticleTree.GroupBase.Alignment.LasePoint));
                         reticle = reticleSO.planes[0].elements[2] as ReticleTree.Angular;

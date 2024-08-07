@@ -166,13 +166,13 @@ namespace PactIncreasedLethality
                         reticle_cached.tree = reticleSO;
 
                         reticle_cached.tree.lights = new List<ReticleTree.Light>() {
-                        new ReticleTree.Light(),
-                        new ReticleTree.Light()
-                    };
+                            new ReticleTree.Light(),
+                            new ReticleTree.Light()
+                        };
 
                         reticle_cached.tree.lights[0] = ReticleMesh.cachedReticles["T55"].tree.lights[0];
                         reticle_cached.tree.lights[1].type = ReticleTree.Light.Type.Powered;
-                        reticle_cached.tree.lights[1].color = new RGB(2f, 0f, 0f, true);
+                        reticle_cached.tree.lights[1].color = new RGB(15f, 0f, 0f, true);
 
                         reticleSO.planes[0].elements.Add(new ReticleTree.Angular(new Vector2(0, 0), null, ReticleTree.GroupBase.Alignment.LasePoint));
                         reticle = reticleSO.planes[0].elements[2] as ReticleTree.Angular;
@@ -517,19 +517,19 @@ namespace PactIncreasedLethality
                 VariableArmor armor_turret_l_applique = turret_left_applique.AddComponent<VariableArmor>();
                 armor_turret_l_applique.SetName("applique cheek armor");
                 armor_turret_l_applique._armorType = Armour.bdd_cast_armor;
-                armor_turret_l_applique._spallForwardRatio = 0.5f;
+                armor_turret_l_applique._spallForwardRatio = 0.2f;
 
                 GameObject turret_right_applique = armour.transform.Find("R APPLIQUE CHEEK").gameObject;
                 VariableArmor armor_turret_r_applique = turret_right_applique.AddComponent<VariableArmor>();
                 armor_turret_r_applique.SetName("applique cheek armor");
                 armor_turret_r_applique._armorType = Armour.bdd_cast_armor;
-                armor_turret_r_applique._spallForwardRatio = 0.5f;
+                armor_turret_r_applique._spallForwardRatio = 0.2f;
 
                 GameObject hull_mpoly_block = hull_armour.transform.Find("MPOLY BLOCK").gameObject;
                 VariableArmor armor_mpoly_block = hull_mpoly_block.AddComponent<VariableArmor>();
                 armor_mpoly_block.SetName("metal-polymer block");
                 armor_mpoly_block._armorType = Armour.hull_metal_polymer;
-                armor_mpoly_block._spallForwardRatio = 0.2f;
+                armor_mpoly_block._spallForwardRatio = 0.01f;
                 AarVisual aar_mpoly_block = hull_mpoly_block.AddComponent<AarVisual>();
                 aar_mpoly_block.SwitchMaterials = false;
                 aar_mpoly_block.HideUntilAar = true;
@@ -538,7 +538,7 @@ namespace PactIncreasedLethality
                 VariableArmor armor_casing = hull_casing.AddComponent<VariableArmor>();
                 armor_casing.SetName("upper glacis applique armor");
                 armor_casing._armorType = Armour.ru_welded_armor;
-                armor_casing._spallForwardRatio = 0.2f;
+                armor_casing._spallForwardRatio = 0.01f;
 
                 foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
                 {

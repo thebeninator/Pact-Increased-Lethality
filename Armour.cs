@@ -12,6 +12,8 @@ namespace PactIncreasedLethality
         public static ArmorCodexScriptable composite_armor;
         public static ArmorCodexScriptable hull_metal_polymer;
         public static ArmorCodexScriptable cheek_metal_polymer;
+        public static ArmorCodexScriptable ru_hhs_armor;
+        public static ArmorCodexScriptable t80u_composite_armor;
         public static MelonPreferences_Entry<bool> super_mpoly;
 
         public static void Config(MelonPreferences_Category cfg)
@@ -25,6 +27,23 @@ namespace PactIncreasedLethality
         {
             if (ru_welded_armor == null)
             {
+                ru_hhs_armor = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
+                ru_hhs_armor.name = "ru hhs armor";
+                ArmorType ru_hhs = new ArmorType();
+                ru_hhs.Name = "hhs steel";
+                ru_hhs.CanRicochet = true;
+                ru_hhs.CanShatterLongRods = true;
+                ru_hhs.NormalizesHits = true;
+                ru_hhs.ThicknessSource = ArmorType.RhaSource.Multipliers;
+                ru_hhs.SpallAngleMultiplier = 1f;
+                ru_hhs.SpallPowerMultiplier = 1f;
+                ru_hhs.RhaeMultiplierCe = 1.3f;
+                ru_hhs.RhaeMultiplierKe = 1.3f;
+                ru_hhs.CrushThicknessModifier = 1f;
+                ru_hhs.ThicknessSource = ArmorType.RhaSource.BHN;
+                ru_hhs.BHN = 445;
+                ru_hhs_armor.ArmorType = ru_hhs;
+
                 ru_welded_armor = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
                 ru_welded_armor.name = "ru welded armor";
                 ArmorType ru_welded = new ArmorType();
@@ -63,12 +82,27 @@ namespace PactIncreasedLethality
                 composite.CanShatterLongRods = true;
                 composite.NormalizesHits = true;
                 composite.ThicknessSource = ArmorType.RhaSource.Multipliers;
-                composite.SpallAngleMultiplier = 1f;
-                composite.SpallPowerMultiplier = 0.2f;
-                composite.RhaeMultiplierCe = 1.67f;
-                composite.RhaeMultiplierKe = 0.9f;
+                composite.SpallAngleMultiplier = 0.25f;
+                composite.SpallPowerMultiplier = 0.5f;
+                composite.RhaeMultiplierCe = 1.50f;
+                composite.RhaeMultiplierKe = 1.20f;
                 composite.CrushThicknessModifier = 1f;
                 composite_armor.ArmorType = composite;
+
+                t80u_composite_armor = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
+                t80u_composite_armor.name = "t80u ru composite";
+                ArmorType t80u_composite = new ArmorType();
+                t80u_composite.Name = "t80u composite";
+                t80u_composite.CanRicochet = true;
+                t80u_composite.CanShatterLongRods = true;
+                t80u_composite.NormalizesHits = true;
+                t80u_composite.ThicknessSource = ArmorType.RhaSource.Multipliers;
+                t80u_composite.SpallAngleMultiplier = 1f;
+                t80u_composite.SpallPowerMultiplier = 0.5f;
+                t80u_composite.RhaeMultiplierCe = 1.67f;
+                t80u_composite.RhaeMultiplierKe = 0.85f;
+                t80u_composite.CrushThicknessModifier = 1f;
+                t80u_composite_armor.ArmorType = t80u_composite;
 
                 bdd_cast_armor = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
                 bdd_cast_armor.name = "bdd cast armor";
@@ -96,7 +130,7 @@ namespace PactIncreasedLethality
                 mpoly_cheek.SpallAngleMultiplier = 1f;
                 mpoly_cheek.SpallPowerMultiplier = 0.2f;
                 mpoly_cheek.RhaeMultiplierCe = super_mpoly.Value ? 1.8f : 1.45f;
-                mpoly_cheek.RhaeMultiplierKe = super_mpoly.Value ? 1.15f : 1.05f;
+                mpoly_cheek.RhaeMultiplierKe = super_mpoly.Value ? 1.10f : 1.02f;
                 mpoly_cheek.CrushThicknessModifier = 1f;
                 cheek_metal_polymer.ArmorType = mpoly_cheek;
 
@@ -111,7 +145,7 @@ namespace PactIncreasedLethality
                 mpoly_hull.SpallAngleMultiplier = 1f;
                 mpoly_hull.SpallPowerMultiplier = 0.2f;
                 mpoly_hull.RhaeMultiplierCe = super_mpoly.Value ? 2.35f : 2.2f;
-                mpoly_hull.RhaeMultiplierKe = super_mpoly.Value ? 1.15f : 1.05f;
+                mpoly_hull.RhaeMultiplierKe = super_mpoly.Value ? 1.10f : 1.02f;
                 mpoly_hull.CrushThicknessModifier = 1f;
                 hull_metal_polymer.ArmorType = mpoly_hull;
             }

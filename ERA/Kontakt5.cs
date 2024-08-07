@@ -58,7 +58,7 @@ namespace PactIncreasedLethality
         public static ArmorCodexScriptable kontakt5_so = null;
         public static ArmorType kontakt5_armour = new ArmorType();
 
-        private static AmmoType dummy_he; 
+        public static AmmoType dummy_he; 
 
         private static void ERA_Setup(Transform[] era_transforms)
         {
