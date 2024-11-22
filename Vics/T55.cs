@@ -416,6 +416,7 @@ namespace PactIncreasedLethality
                 }
             }
 
+
             if (has_lrf.Value && !ReticleMesh.cachedReticles.ContainsKey("T72"))
             {
                 foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))

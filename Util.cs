@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using GHPC.Equipment.Optics;
 using GHPC.Weapons;
+using Thermals;
 using UnityEngine;
 
 namespace PactIncreasedLethality
@@ -33,6 +34,19 @@ namespace PactIncreasedLethality
             values.Add(new_item);
 
             return values.ToArray();
+        }
+
+        public static void SetupFLIRShaders(GameObject parent) {
+            foreach (MeshRenderer mrend in parent.GetComponentsInChildren<MeshRenderer>(includeInactive: false))
+            {
+                foreach (Material mat in mrend.materials)
+                {
+                    mat.shader = Shader.Find("Standard (FLIR)");
+                }
+            }
+
+            HeatSource src = parent.AddComponent<HeatSource>();
+            src.FetchSwapableMats();
         }
 
         public static void ShallowCopy(System.Object dest, System.Object src)

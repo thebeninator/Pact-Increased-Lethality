@@ -43,8 +43,8 @@ namespace PactIncreasedLethality
 
         public static AmmoType ammo_kobra;
 
-        public static Dictionary<string, AmmoClipCodexScriptable> ap; 
-
+        public static Dictionary<string, AmmoClipCodexScriptable> ap;
+        public static Dictionary<string, AmmoClipCodexScriptable> atgm;
 
         public static void Init() {
             if (ammo_3bm26 == null)
@@ -161,22 +161,22 @@ namespace PactIncreasedLethality
 
                 ammo_3bm46 = new AmmoType();
                 Util.ShallowCopy(ammo_3bm46, ammo_3bm32);
-                ammo_3bm46.Name = "3BM46 APFSDS-T";
+                ammo_3bm46.Name = "3BM60 APFSDS-T";
                 ammo_3bm46.Caliber = 125;
-                ammo_3bm46.RhaPenetration = 675f;
+                ammo_3bm46.RhaPenetration = 728f;
                 ammo_3bm46.Mass = 4.85f;
                 ammo_3bm46.MuzzleVelocity = 1700f;
-                ammo_3bm46.SpallMultiplier = 1f;
+                ammo_3bm46.SpallMultiplier = 1.25f;
                 ammo_3bm46.MaxSpallRha = 24f;
                 ammo_3bm46.MinSpallRha = 6f;
-
+          
                 ammo_codex_3bm46 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
                 ammo_codex_3bm46.AmmoType = ammo_3bm46;
                 ammo_codex_3bm46.name = "ammo_3bm46";
 
                 clip_3bm46 = new AmmoType.AmmoClip();
                 clip_3bm46.Capacity = 1;
-                clip_3bm46.Name = "3BM46 APFSDS-T";
+                clip_3bm46.Name = "3BM60 APFSDS-T";
                 clip_3bm46.MinimalPattern = new AmmoCodexScriptable[1];
                 clip_3bm46.MinimalPattern[0] = ammo_codex_3bm46;
 
@@ -190,22 +190,12 @@ namespace PactIncreasedLethality
                 ammo_3bm46.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm46;
                 ammo_3bm46.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm46;
 
-                if (ap == null)
-                    ap = new Dictionary<string, AmmoClipCodexScriptable>()
-                    {
-                        ["3BM22"] = clip_codex_3bm22,
-                        ["3BM26"] = clip_codex_3bm26,
-                        ["3BM32"] = clip_codex_3bm32,
-                        ["3BM42"] = clip_codex_3bm42,
-                        ["3BM46"] = clip_codex_3bm46,
-                    };
-
                 ammo_9m119m1 = new AmmoType();
                 Util.ShallowCopy(ammo_9m119m1, ammo_kobra);
                 ammo_9m119m1.Name = "9M119M1 Invar-M";
                 ammo_9m119m1.Caliber = 125;
                 ammo_9m119m1.RhaPenetration = 960f;
-                ammo_9m119m1.MuzzleVelocity = 440f;
+                ammo_9m119m1.MuzzleVelocity = 350f;
                 ammo_9m119m1.RangedFuseTime = 17.7f;
                 ammo_9m119m1.TntEquivalentKg = 5.72f;
                 ammo_9m119m1.MaxSpallRha = 12f;
@@ -236,11 +226,13 @@ namespace PactIncreasedLethality
                 ammo_9m119.Name = "9M119 Refleks";
                 ammo_9m119.Caliber = 125;
                 ammo_9m119.RhaPenetration = 750f;
-                ammo_9m119.MuzzleVelocity = 440f;
+                ammo_9m119.MuzzleVelocity = 340f;
                 ammo_9m119.RangedFuseTime = 17.7f;
                 ammo_9m119.TntEquivalentKg = 5.72f;
                 ammo_9m119.MaxSpallRha = 12f;
                 ammo_9m119.MinSpallRha = 2f;
+                ammo_9m119.TurnSpeed = 2f;
+                ammo_9m119.Guidance = AmmoType.GuidanceType.Laser;
 
                 ammo_codex_9m119 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
                 ammo_codex_9m119.AmmoType = ammo_9m119;
@@ -261,6 +253,23 @@ namespace PactIncreasedLethality
                 ammo_9m119.VisualModel = ammo_9m119_vis;
                 ammo_9m119.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m119;
                 ammo_9m119.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m119;
+
+                if (ap == null)
+                    ap = new Dictionary<string, AmmoClipCodexScriptable>()
+                    {
+                        ["3BM22"] = clip_codex_3bm22,
+                        ["3BM26"] = clip_codex_3bm26,
+                        ["3BM32"] = clip_codex_3bm32,
+                        ["3BM42"] = clip_codex_3bm42,
+                        ["3BM46"] = clip_codex_3bm46,
+                    };
+
+                if (atgm == null)
+                    atgm = new Dictionary<string, AmmoClipCodexScriptable>()
+                    {
+                        ["9M119"] = clip_codex_9m119,
+                        ["9M119M1"] = clip_codex_9m119m1,
+                    };
             }
         }
     }

@@ -3,8 +3,11 @@ using GHPC;
 using GHPC.Vehicle;
 using UnityEngine;
 using HarmonyLib;
-using MelonLoader;
 using GHPC.Weapons;
+using MelonLoader;
+using MelonLoader.TinyJSON;
+using static MelonLoader.MelonLogger;
+using GHPC.Player;
 
 namespace PactIncreasedLethality
 {
@@ -12,18 +15,17 @@ namespace PactIncreasedLethality
     {
         public Vehicle target;
         public FireControlSystem fcs;
+        public T72.CustomGuidanceComputer guidance_computer;
         private float cd = 0f;
         public bool engaged = false;
-
-        void Awake() { 
-            fcs = gameObject.GetComponent<FireControlSystem>();
-        }
+        public Vector2 offset; 
 
         public void Update()
         {
             if (fcs == null) return;
 
-            cd -= Time.deltaTime;
+            if (cd > 0f)
+                cd -= Time.deltaTime;
 
             if (Input.GetKey(KeyCode.Mouse2) && cd <= 0f)
             {
@@ -32,37 +34,79 @@ namespace PactIncreasedLethality
                 if (!engaged)
                 {
                     engaged = true;
-                    //fcs._autoDumpViaPalmSwitches = false;
-                    Util.GetDayOptic(fcs).RotateAzimuth = true;
                     fcs.DoLase();
                 }
                 else
                 {
+                    if (target)
+                        fcs.SetAimWorldPosition(target.Center.position);
+
                     target = null;
                     engaged = false;
-                    //fcs._autoDumpViaPalmSwitches = true;
-                    Util.GetDayOptic(fcs).RotateAzimuth = false;
-                    fcs.DumpLead();
+                    guidance_computer.autotrackingEnabled = false;
+                    offset = Vector2.zero;
                 }
             }
 
-            if (target == null)
-            {
-                Util.GetDayOptic(fcs).RotateAzimuth = false;
-                //fcs._autoDumpViaPalmSwitches = true;
+            if (!target) {
+                engaged = false;
+                guidance_computer.autotrackingEnabled = false;
                 return;
             }
 
-            fcs.FinalSetAimWorldPosition(target.Center.position);
+            guidance_computer.autotrackingEnabled = true;
+
+            // adapted from GHPC.AI.BehaviorTrees.ActionBaseLookAt.GetAimPositionAtTarget
+            MissileGuidanceUnit mgu = fcs.CurrentWeaponSystem.GuidanceUnit;
+            AmmoType current_ammo = fcs.CurrentAmmoType;
+            BallisticComputerRepository computer = BallisticComputerRepository.Instance;
+            bool missile_active = current_ammo.Guidance > AmmoType.GuidanceType.Unguided && mgu.CurrentMissiles.Count > 0;
+
+            Vector3 position = missile_active ? mgu.CurrentMissiles[0].transform.position : fcs.ReferenceTransform.transform.position;
+            Vector3 forward = target.Center.position - position;
+            float range = forward.magnitude;
+            float flight_time = computer.GetFlightTime(current_ammo, range);
+
+            Vector3 a = flight_time * (target.Chassis.Velocity - fcs.Mounts[0]._unit.Chassis.Velocity);
+            Vector3 compensated = target.Center.position + a / (current_ammo.Guidance > AmmoType.GuidanceType.Unguided ? current_ammo.TurnSpeed : 1f); 
+            offset += PlayerInput.Instance.VirtualJoystick * (fcs.MainOptic.slot.CurrentFov / 60f * 2f);
+
+            fcs.SetAimWorldPosition(
+                Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(offset)
+            );
+
+            guidance_computer.transform.LookAt(Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(offset));
+
+            fcs.SetRange((target.Center.position - fcs.ReferenceTransform.transform.position).magnitude);
         }
     }
 
+    [HarmonyPatch(typeof(GHPC.Equipment.Optics.UsableOptic), "LateUpdate")]
+    public static class LockReticle
+    {
+        private static bool Prefix(GHPC.Equipment.Optics.UsableOptic __instance)
+        {
+            LockOnLead lead = __instance.FCS.gameObject.GetComponent<LockOnLead>() ?? null;
+
+            if (lead != null && lead.target)
+            {
+                Vector3 forward = lead.target.Center.position - lead.fcs.ReferenceTransform.position;
+
+                __instance.LookAt(
+                    Matrix4x4.TRS(lead.target.Center.position, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(lead.offset)
+                );
+                return false;
+            }
+            return true;
+        }
+    }
+    
     [HarmonyPatch(typeof(GHPC.Weapons.FireControlSystem), "DoLase")]
     public static class LockTarget
     {
         private static void Postfix(GHPC.Weapons.FireControlSystem __instance)
         {
-            LockOnLead lead = __instance.GetComponent<LockOnLead>();
+            LockOnLead lead = __instance.gameObject.GetComponent<LockOnLead>();
 
             if (lead == null) return;
             if (!lead.engaged) return;
@@ -79,9 +123,13 @@ namespace PactIncreasedLethality
                 num = raycastHit.distance;
             }
 
-            GameObject raycast_hit = raycastHit.transform.gameObject;
+            if (raycastHit.transform != null)
+            {
+                GameObject raycast_hit = raycastHit.transform.gameObject;
 
-            lead.target = (Vehicle)raycast_hit.GetComponent<IArmor>().Unit;
+                if (raycast_hit.gameObject != null && raycast_hit.gameObject.GetComponent<IArmor>() != null)
+                    lead.target = (Vehicle)raycast_hit.GetComponent<IArmor>().Unit;
+            }
 
             return;
         }

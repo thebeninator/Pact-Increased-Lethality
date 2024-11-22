@@ -30,11 +30,13 @@ namespace PactIncreasedLethality
         static VehicleController abrams_vic_controller;
         static MelonPreferences_Entry<string> t80_ammo_type;
         static MelonPreferences_Entry<bool> t80_random_ammo;
+        static MelonPreferences_Entry<string> t80_atgm_type;
         static MelonPreferences_Entry<List<string>> t80_random_ammo_pool;
         static MelonPreferences_Entry<bool> thermals;
         static MelonPreferences_Entry<string> thermals_quality;
         static MelonPreferences_Entry<bool> zoom_snapper;
         static MelonPreferences_Entry<bool> super_fcs_t80;
+        static MelonPreferences_Entry<bool> kontakt1;
         static MelonPreferences_Entry<bool> kontakt5;
         static MelonPreferences_Entry<bool> super_comp_cheeks;
 
@@ -48,6 +50,10 @@ namespace PactIncreasedLethality
         static Mesh turret_cleaned_mesh;
         static Mesh hull_cleaned_mesh;
         static Mesh skirts_cleaned_mesh;
+
+        static Mesh t80bv_turret;
+        static Mesh t80bv_hull;
+        static GameObject t80bv_full;
 
         static Material hull_destroyed;
         static Material turret_destroyed;
@@ -173,6 +179,10 @@ namespace PactIncreasedLethality
             t80_random_ammo_pool = cfg.CreateEntry<List<string>>("Random AP Round Pool (T-80B)", random_ammo_pool);
             t80_random_ammo_pool.Comment = "3BM26, 3BM32, 3BM42, 3BM46";
 
+            t80_atgm_type = cfg.CreateEntry<string>("GLATGM (T-80B)", "9M119");
+            t80_atgm_type.Comment = "9M112M, 9M119, 9M119M1";
+            t80_atgm_type.Description = " ";
+
             zoom_snapper = cfg.CreateEntry<bool>("Quick Zoom Switch (T-80B)", true);
             zoom_snapper.Description = " ";
             zoom_snapper.Comment = "Press middle mouse to instantly switch between low and high magnification on the daysight";
@@ -185,8 +195,11 @@ namespace PactIncreasedLethality
             thermals_quality = cfg.CreateEntry<string>("Thermals Quality (T-80B)", "High");
             thermals_quality.Comment = "Low, High";
 
-            kontakt5 = cfg.CreateEntry<bool>("Kontakt-5 ERA (T-80B)", true);
-            kontakt5.Comment = "T-80U conversion (comes with rubber flaps, minor cosmetic changes to default day sight";
+            kontakt1 = cfg.CreateEntry<bool>("Kontakt-1 ERA (T-80B)", true);
+            kontakt1.Comment = "comes with rubber flaps";
+
+            kontakt5 = cfg.CreateEntry<bool>("Kontakt-5 ERA (T-80B)", false);
+            kontakt5.Comment = "T-80U conversion (comes with rubber flaps, minor cosmetic changes to default day sight)";
 
             super_comp_cheeks = cfg.CreateEntry<bool>("Improved Turret Composite (T-80B)", true);
             super_comp_cheeks.Comment = "thicker, more effective turret composite array";
@@ -229,14 +242,22 @@ namespace PactIncreasedLethality
                 try
                 {
                     AmmoClipCodexScriptable codex = AMMO_125mm.ap[ammo_str];
+                    AmmoClipCodexScriptable atgm_codex = null;
+                    if (t80_atgm_type.Value != "9M112M")
+                        atgm_codex  = AMMO_125mm.atgm[t80_atgm_type.Value];
+
                     loadout_manager.LoadedAmmoTypes[0] = codex;
-                    loadout_manager.LoadedAmmoTypes[3] = AMMO_125mm.clip_codex_9m119m1;
+
+                    if (atgm_codex != null)
+                        loadout_manager.LoadedAmmoTypes[3] = atgm_codex;
 
                     for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
                     {
                         GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
                         rack.ClipTypes[0] = codex.ClipType;
-                        rack.ClipTypes[3] = AMMO_125mm.clip_codex_9m119m1.ClipType;
+
+                        if (atgm_codex != null)
+                            rack.ClipTypes[3] = atgm_codex.ClipType;
 
                         Util.EmptyRack(rack);
                     }
@@ -293,6 +314,70 @@ namespace PactIncreasedLethality
                     cheek_inserts.GetComponent<VariableArmor>().setupCollider();
                     cheek_inserts.GetComponent<VariableArmor>()._armorType = Armour.t80u_composite_armor;
                     cheek_inserts.GetComponent<AarVisual>().AarMaterial = t80u_turret_mat;
+                }
+
+
+                if (kontakt1.Value) {
+                    Transform turret_rend = turret.Find("turret");
+                    turret_rend.GetComponent<MeshFilter>().sharedMesh = t80bv_turret;
+                    turret_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0, 0, 0, 0);
+                    turret_rend.gameObject.AddComponent<HeatSource>();
+
+                    turret.Find("turret numbers").gameObject.SetActive(false);
+                    vic.transform.Find("T80B_stowage/towropes_front").gameObject.SetActive(false);
+
+                    for (int i = 1; i <= 5; i++)
+                        turret.Find("smoke_l_" + i).localScale = Vector3.zero;
+                    for (int i = 1; i <= 3; i++)
+                        turret.Find("smoke_r_" + i).localScale = Vector3.zero;
+
+                    Transform hull_rend = vic.transform.Find("T80_mesh/body");
+                    hull_rend.GetComponent<MeshFilter>().sharedMesh = t80bv_hull;
+                    hull_rend.gameObject.AddComponent<HeatSource>();
+
+                    GameObject k1_full = GameObject.Instantiate(t80bv_full, turret.Find("turret"));
+                    k1_full.transform.localEulerAngles = new Vector3(0f, 270f, 90f);
+                    k1_full.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+
+                    LateFollow k1_turret_follow = k1_full.transform.Find("TURRET K1/TURRET K1 ARMOUR").gameObject.AddComponent<LateFollow>();
+                    k1_turret_follow.FollowTarget = turret;
+                    k1_turret_follow.enabled = true;
+                    k1_turret_follow.Awake();
+                    k1_full.transform.Find("TURRET K1/TURRET K1 ARMOUR").parent = null;
+
+                    LateFollow k1_hull_follow = k1_full.transform.Find("HULL K1/HULL K1 ARMOUR").gameObject.AddComponent<LateFollow>();
+                    k1_hull_follow.FollowTarget = turret.parent;
+                    k1_hull_follow.enabled = true;
+                    k1_hull_follow.Awake();
+                    k1_full.transform.Find("HULL K1/HULL K1 ARMOUR").parent = null;
+
+                    k1_full.transform.Find("HULL K1").parent = turret.parent;
+                    k1_full.transform.Find("HULL MOUNTING FRAMES").parent = turret.parent;
+
+                    Material[] smokes_mat = new Material[1];
+                    smokes_mat[0] = vic.transform.Find("T80_mesh/skirts").GetComponent<MeshRenderer>().materials[0];
+                    k1_full.transform.Find("SMOKE TUBES 1").GetComponent<MeshRenderer>().materials = smokes_mat;
+                    k1_full.transform.Find("SMOKE TUBES 2").GetComponent<MeshRenderer>().materials = smokes_mat;
+
+                    foreach (Transform smoke_cap in k1_full.transform.Find("SMOKES")) {
+                        smoke_cap.GetComponent<MeshRenderer>().materials = smokes_mat;
+                    }
+
+                    VehicleSmokeManager smoke_manager = vic.transform.Find("T80 -Smoke Launcher System").GetComponent<VehicleSmokeManager>();
+                    for (int i = 0; i < smoke_manager._smokeSlots.Length; i++)
+                    {
+                        VehicleSmokeManager.SmokeSlot slot = smoke_manager._smokeSlots[i];
+                        Transform smoke_cap = k1_full.transform.Find("SMOKES").GetChild(i);
+                        slot.DisplayBone = smoke_cap;
+                        slot.SpawnLocation.transform.SetParent(smoke_cap);
+                        slot.SpawnLocation.transform.position = smoke_cap.GetComponent<Renderer>().bounds.center;
+                    }
+
+                    vic.transform.Find("T80_camonet").gameObject.SetActive(false);
+                    vic.transform.Find("T80B_rig/HULL/TURRET/---TURRET SCRIPTS---/net_turret").gameObject.SetActive(false);
+                    vic.transform.Find("T80B_rig/HULL/TURRET/gun/---MAIN GUN SCRIPTS---/net_barrel").gameObject.SetActive(false);
+
+                    vic._friendlyName = "T-80BV";
                 }
 
                 if (kontakt5.Value)
@@ -458,6 +543,7 @@ namespace PactIncreasedLethality
             if (turret_cleaned_mesh == null)
             {
                 var t80u_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t80u"));
+                var t80bv_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t80bv"));
 
                 t80u_turret_mat = t80u_bundle.LoadAsset<Material>("inserts mat.mat");
                 t80u_turret_mat.hideFlags = HideFlags.DontUnloadUnusedAsset;
@@ -591,9 +677,23 @@ namespace PactIncreasedLethality
 
                     K5Setup(t80u_hull_sides.transform, armour_transform, "SIDES");
                 }
+
+                t80bv_turret = t80bv_bundle.LoadAsset<Mesh>("t80bv_turret.asset");
+                t80bv_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                t80bv_hull = t80bv_bundle.LoadAsset<Mesh>("t80bv_hull.asset");
+                t80bv_hull.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                t80bv_full = t80bv_bundle.LoadAsset<GameObject>("t80bv_k1_FULL.prefab");
+                t80bv_full.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                Transform hull_k1 = t80bv_full.transform.Find("HULL K1/HULL K1 ARMOUR");
+                Transform turret_k1 = t80bv_full.transform.Find("TURRET K1/TURRET K1 ARMOUR");
+                Kontakt1.Setup(hull_k1, hull_k1.parent);
+                Kontakt1.Setup(turret_k1, turret_k1.parent);
             }
 
-            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
+            StateController.WaitForComplete(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }
     }
 }

@@ -20,14 +20,16 @@ namespace PactIncreasedLethality
         private static GameObject scanline_canvas;
         private static ReticleSO reticleSO_lq;
         private static ReticleMesh.CachedReticle reticle_cached_lq;
+
         private static ReticleSO reticleSO_hq;
         private static ReticleMesh.CachedReticle reticle_cached_hq;
+
         private static ReticleSO reticleSO_tpdk1_hq;
         private static ReticleMesh.CachedReticle reticle_tpdk1_cached_hq;
 
         private static ReticleSO reticleSO_hq_wide;
         private static ReticleMesh.CachedReticle reticle_cached_hq_wide;
-        private static PostProcessVolume post_og; 
+        internal static PostProcessVolume post_og; 
         private static PostProcessVolume post_lq;
         private static PostProcessVolume post_hq;
         private static TMP_FontAsset tpd_etch_sdf;
@@ -143,6 +145,7 @@ namespace PactIncreasedLethality
                 optic.slot.VibrationBlurScale = 0.05f;
                 optic.slot.VibrationShakeMultiplier = 0.01f;
                 optic.slot.VibrationPreBlur = true;
+
                 //optic.slot.SpriteType = GHPC.Camera.CameraSpriteManager.SpriteType.NightVisionGoggles;
             }
         }
@@ -159,7 +162,7 @@ namespace PactIncreasedLethality
             };
 
             reticle_cached_lq.tree.lights[0].type = ReticleTree.Light.Type.Powered;
-            reticle_cached_lq.tree.lights[0].color = new RGB(3f, -0.35f, -0.35f, true);
+            reticle_cached_lq.tree.lights[0].color = new RGB(1f, 1f, 1f, true);
 
             ReticleTree.Angular reticle_lq = (reticleSO_lq.planes[0].elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Angular;
             (reticleSO_lq.planes[0].elements[0] as ReticleTree.Angular).align = ReticleTree.GroupBase.Alignment.Boresight;
@@ -174,12 +177,12 @@ namespace PactIncreasedLethality
             line1.rotation.mrad = 0;
             line1.position.x = 0;
             line1.position.y = 0;
-            line1.length.mrad = 10.0944f;
+            line1.length.mrad = 22.0944f;
             line1.illumination = ReticleTree.Light.Type.Powered;
 
             ReticleTree.Line line2 = reticle_lq.elements[1] as ReticleTree.Line;
             line2.position.y = 0;
-            line2.length.mrad = 4.0944f;
+            line2.length.mrad = 9.0944f;
             line2.illumination = ReticleTree.Light.Type.Powered;
         }
 
@@ -419,14 +422,13 @@ namespace PactIncreasedLethality
             post_hq = PostProcessVolume.Instantiate(post_og);
             color_grading = post_hq.profile.settings[1] as ColorGrading;
             color_grading.postExposure.value = 0f;
-            color_grading.contrast.value = 100f;
-            color_grading.colorFilter.value = new Color(0.65f, 0.90f, 0.65f);
+            color_grading.contrast.value = 55f;
+            color_grading.colorFilter.value = new Color(0.85f, 0.85f, 0.85f);
            //color_grading.lift.value = new Vector4(0f, 0f, 0f, -1.2f);
             color_grading.lift.overrideState = false;
             (post_hq.profile.settings[2] as Grain).intensity.value = 0.111f;
-            (post_hq.profile.settings[0] as Bloom).intensity.value = 1;
+            (post_hq.profile.settings[0] as Bloom).intensity.value = 0.5f;
             post_hq.sharedProfile = post_hq.profile;
-
             post_hq.gameObject.SetActive(false);
 
             foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))

@@ -14,7 +14,7 @@ using GHPC.Vehicle;
 using HarmonyLib;
 using GHPC;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.8.3", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.8.3B", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -47,7 +47,6 @@ namespace PactIncreasedLethality
             BMP1.Config(cfg);
             BMP2.Config(cfg);
             BTR60.Config(cfg);
-            Kontakt1.Config(cfg);
             Drozd.Config(cfg);
             PactThermal.Config(cfg);
             Armour.Config(cfg);
@@ -60,7 +59,7 @@ namespace PactIncreasedLethality
             corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound_exterior);
             BMP2.ReplaceSound.sound_exterior.set3DMinMaxDistance(30f, 1300f);
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.ogg"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound_alt);
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.wav"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound_alt);
             BMP2.ReplaceSound.sound_alt.set3DMinMaxDistance(30f, 1300f);
         }
 
@@ -70,7 +69,7 @@ namespace PactIncreasedLethality
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            Kontakt1.LoadTex();
+            TrackingDimensions.Generate();
 
             if (Util.menu_screens.Contains(sceneName)) return;
 
@@ -80,11 +79,11 @@ namespace PactIncreasedLethality
             camera_manager = game_manager.GetComponent<CameraManager>();
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Medium);
+            Kontakt5.Init();
             BOM.Init();
             Armour.Init();
             CRTShock.Init();
             FireControlSystem1A40.Init();
-            Kontakt1.Init();
             Kontakt5.Init();
             AMMO_125mm.Init();
             AMMO_30MM.Init();

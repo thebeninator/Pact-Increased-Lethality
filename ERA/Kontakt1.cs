@@ -1,164 +1,83 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using GHPC;
-using MelonLoader;
-using MelonLoader.Utils;
-using Thermals;
 using UnityEngine;
 using GHPC.Equipment;
 using HarmonyLib;
 using System.Reflection.Emit;
+using GHPC.Audio;
+using GHPC.Effects;
 
 namespace PactIncreasedLethality
 {
-    public class RandomColor : MonoBehaviour {
-        private static UnityEngine.Color colour_primary = new UnityEngine.Color(0.6165f, 0.6996f, 0.5015f);
-        private static UnityEngine.Color colour_2 = new UnityEngine.Color(0.4565f, 0.5426f, 0.3762f);
-        private static UnityEngine.Color colour_3 = new UnityEngine.Color(0.4565f, 0.5226f, 0.3762f);
-        private static UnityEngine.Color colour_4 = new UnityEngine.Color(0.4565f, 0.5555f, 0.3762f);
-        private static UnityEngine.Color[] colours = new UnityEngine.Color[] {
-            colour_primary, colour_primary, colour_primary, colour_primary, colour_primary, colour_primary, colour_primary,
-            colour_primary, colour_primary, colour_primary, colour_primary, colour_primary, colour_primary, colour_primary,
-            colour_primary, colour_primary, colour_primary, colour_primary, colour_primary, colour_primary, colour_primary,
-            colour_primary, colour_primary, colour_primary, colour_primary, colour_primary, colour_primary, colour_primary,
-            colour_primary, colour_primary, colour_primary, colour_primary, colour_primary, colour_primary, colour_primary,
-            colour_2,
-            colour_3,
-            colour_4,
-        };
-
-        void Awake() { 
-            this.GetComponent<MeshRenderer>().material.color = colours[UnityEngine.Random.Range(0, colours.Length)];
-        }
-    } 
-
     public static class Kontakt1
     {
-        public static GameObject kontakt_1_hull_array;
-        public static GameObject kontakt_1_turret_array;
-        private static Texture concrete_tex;
-        private static Texture concrete_tex_normal;
-        private static GameObject detonate_fx;
-        static MelonPreferences_Entry<bool> sabot_eater;
-        static MelonPreferences_Entry<bool> sphere_colliders;
-
         public static ArmorCodexScriptable kontakt1_so = null;
         public static ArmorType kontakt1_armour = new ArmorType();
 
-        public static void Config(MelonPreferences_Category cfg)
+
+        public class Kontakt1Visual : MonoBehaviour
         {
-            sabot_eater = cfg.CreateEntry<bool>("Super Kontakt-1", false);
-            sabot_eater.Description = "//////////////////////////////////////////////////////////////////////////////////////////";
-            sabot_eater.Comment = "Drastically increases Kontakt-1's ability to stop AP rounds";
-
-            sphere_colliders = cfg.CreateEntry<bool>("Spherical Colliders", false);
-            sphere_colliders.Comment = "Changes how Kontakt-1 handles collisions. FPS increase at the cost of jankier hit detection";
+            public MeshRenderer visual;
         }
 
-        public static void LoadTex() {
-            if (concrete_tex == null)
+        public static void Setup(Transform k1_armour_parent, Transform visual_parent)
+        {
+            if (kontakt1_so == null)
             {
-                foreach (Texture t in Resources.FindObjectsOfTypeAll<Texture>())
-                {
-                    if (t.name == "GHPC_ConcretePanels_Diffuse") concrete_tex = t;
-                    if (t.name == "GHPC_ConcretePanels_Normal") concrete_tex_normal = t;
+                kontakt1_armour.RhaeMultiplierKe = 1f;
+                kontakt1_armour.RhaeMultiplierCe = 1f;
+                kontakt1_armour.CanRicochet = true;
+                kontakt1_armour.CrushThicknessModifier = 1f;
+                kontakt1_armour.NormalizesHits = true;
+                kontakt1_armour.CanShatterLongRods = true;
+                kontakt1_armour.ThicknessSource = ArmorType.RhaSource.Multipliers;
 
-                    if (concrete_tex && concrete_tex_normal) break; 
-                }
+                kontakt1_so = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
+                kontakt1_so.name = "kontakt-1 armour";
+                kontakt1_so.ArmorType = kontakt1_armour;
+            }
+
+            foreach (Transform k1 in k1_armour_parent)
+            {
+                UniformArmor k1_armour = k1.gameObject.AddComponent<UniformArmor>();
+                k1_armour._name = "Kontakt-1";
+                k1_armour.PrimaryHeatRha = 150f;
+                k1_armour.PrimarySabotRha = 20f;
+                k1_armour.SecondaryHeatRha = 0f;
+                k1_armour.SecondarySabotRha = 0f;
+                k1_armour._canShatterLongRods = true;
+                k1_armour._normalizesHits = true;
+                k1_armour.AngleMatters = true;
+                k1_armour._isEra = true;
+                k1_armour._armorType = kontakt1_so;
+
+                k1.gameObject.layer = 8;
+                k1.gameObject.tag = "Penetrable";
+
+                Kontakt1Visual vis = k1.gameObject.AddComponent<Kontakt1Visual>();
+                vis.visual = visual_parent.transform.GetChild(k1.GetSiblingIndex()).GetComponent<MeshRenderer>();
             }
         }
 
-        private static void ERA_Setup(Transform[] era_transforms) {
-            foreach (Transform transform in era_transforms)
+        [HarmonyPatch(typeof(GHPC.UniformArmor), "Detonate")]
+        public static class K1Detonate
+        {
+            private static void Postfix(GHPC.UniformArmor __instance)
             {
-                if (!transform.gameObject.name.Contains("kontakt")) continue;
+                if (__instance.transform.GetComponent<Kontakt1Visual>() == null) return;
+                Kontakt1Visual vis = __instance.transform.GetComponent<Kontakt1Visual>();
 
-                Component.Destroy(transform.gameObject.GetComponent<MeshCollider>());
+                vis.visual.enabled = false;
 
-                if (sphere_colliders.Value)
-                {
-                    transform.gameObject.AddComponent<SphereCollider>();
-                }
-                else
-                {
-                    transform.gameObject.AddComponent<BoxCollider>();
-                }
+                ParticleEffectsManager.Instance.CreateImpactEffectOfType(
+                    Kontakt5.dummy_he, ParticleEffectsManager.FusedStatus.Fuzed, ParticleEffectsManager.SurfaceMaterial.Steel, false, __instance.transform.position);
+                ImpactSFXManager.Instance.PlaySimpleImpactAudio(ImpactAudioType.MainGunHeat, __instance.transform.position);
 
-                transform.gameObject.AddComponent<UniformArmor>();
-                UniformArmor armor = transform.gameObject.GetComponent<UniformArmor>();
-                string name = sabot_eater.Value ? "Kontakt-1 Super" : "Kontakt-1";
-                armor.SetName(name);
-                armor.PrimaryHeatRha = 20f;
-                armor.PrimarySabotRha = sabot_eater.Value ? 40f : 20f;
-                armor.SecondaryHeatRha = 0f;
-                armor.SecondarySabotRha = 0f;
-                armor.ThicknessListed = UniformArmor.ThicknessMode.ActualThickness;
-                armor._canShatterLongRods = false;
-                armor._crushThicknessModifier = 1f;
-                armor._normalizesHits = true;
-                armor._isEra = true;
-
-                armor.DetonateEffect = detonate_fx;
-
-                if (kontakt1_so == null)
-                {
-                    kontakt1_so = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
-                    kontakt1_so.name = "kontakt-1 armour";
-                    kontakt1_armour.RhaeMultiplierKe = sabot_eater.Value ? 1.3f : 0.5f;
-                    kontakt1_armour.RhaeMultiplierCe = 1.75f;
-                    kontakt1_armour.CanRicochet = false;
-                    kontakt1_armour.CrushThicknessModifier = 1f;
-                    kontakt1_armour.NormalizesHits = true;
-                    kontakt1_armour.CanShatterLongRods = false;
-                    kontakt1_armour.ThicknessSource = ArmorType.RhaSource.Multipliers;
-
-                    kontakt1_so.ArmorType = kontakt1_armour;
-                }
-
-                armor._armorType = kontakt1_so;
-
-                armor.UndetonatedObjects = new GameObject[] { armor.gameObject };
-
-                MeshRenderer mesh_renderer = transform.gameObject.GetComponent<MeshRenderer>();
-                mesh_renderer.material = new Material(Shader.Find("Standard (FLIR)"));
-                mesh_renderer.material.mainTexture = concrete_tex;
-                mesh_renderer.material.mainTextureScale = new Vector2(0.07f, 0.07f);
-                mesh_renderer.material.mainTextureOffset = new Vector2(0f, 0f);
-                mesh_renderer.material.EnableKeyword("_NORMALMAP");
-                mesh_renderer.material.SetTexture("_BumpMap", concrete_tex_normal);
-                mesh_renderer.staticShadowCaster = true;
-                mesh_renderer.allowOcclusionWhenDynamic = true;
-                mesh_renderer.receiveShadows = false;
-                transform.gameObject.AddComponent<RandomColor>();
-                transform.gameObject.AddComponent<HeatSource>();
-            }
-        }
-
-        public static void Init() {
-            if (kontakt_1_hull_array == null)
-            {
-                foreach (GameObject s in Resources.FindObjectsOfTypeAll<GameObject>())
-                {
-                    if (s.name == "Autocannon HE Armor Impact") { detonate_fx = s; break; }
-                }
-
-                var kontakt_bundle_hull = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/kontakt1", "hull"));
-                var kontakt_bundle_turret = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/kontakt1", "turret"));
-
-                kontakt_1_hull_array = kontakt_bundle_hull.LoadAsset<GameObject>("hull era array.prefab");
-                kontakt_1_hull_array.transform.localScale = new Vector3(10f, 10f, 10f);
-
-                kontakt_1_turret_array = kontakt_bundle_turret.LoadAsset<GameObject>("turret era array.prefab");
-                kontakt_1_turret_array.transform.localScale = new Vector3(10f, 10f, 10f);
-
-                kontakt_1_hull_array.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                kontakt_1_turret_array.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                ERA_Setup(kontakt_1_hull_array.GetComponentsInChildren<Transform>());
-                ERA_Setup(kontakt_1_turret_array.GetComponentsInChildren<Transform>());
+                __instance.gameObject.SetActive(false);
             }
         }
     }
+
     
     [HarmonyPatch(typeof(GHPC.Weapons.LiveRound), "penCheck")]
     public class InsensitiveERA

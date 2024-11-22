@@ -1,33 +1,150 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using GHPC.Camera;
 using GHPC.Equipment.Optics;
+using GHPC.Player;
+using GHPC.State;
 using GHPC.Utility;
 using GHPC.Vehicle;
 using GHPC.Weapons;
+using MelonLoader.Utils;
 using Reticle;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
+using static UnityEngine.Rendering.PostProcessing.SubpixelMorphologicalAntialiasing;
 
 namespace PactIncreasedLethality
 {
-    public class BLYAT : MonoBehaviour
-    {
-        public GameObject square;
-    }
-
     public class Sosna
     {
         static GameObject range_readout;
         static GameObject thermal_canvas;
 
+        static GameObject sosna_monitor; 
+
         static ReticleSO reticleSO_sosna;
         static ReticleMesh.CachedReticle reticle_cached_sosna;
 
-        static GameObject square;
+        private static ReticleSO reticleSO_sosna_thermal;
+        private static ReticleMesh.CachedReticle reticle_cached_sosna_thermal;
 
-        public static void Add(UsableOptic day_optic, UsableOptic night_optic, WeaponSystemInfo coax) {
+        private static ReticleSO reticleSO_sosna_thermal_wide;
+        private static ReticleMesh.CachedReticle reticle_cached_sosna_thermal_wide;
+
+        private static PostProcessVolume post_sosna;
+
+        private class HasThermalMonitor : MonoBehaviour {
+            public FireControlSystem fcs;
+            Transform crosshair_ui;
+            Transform wfov_ui;
+            Transform ready;
+            Transform cmdr_override;
+            Transform crosshairs;
+            Transform wfov;
+            Transform stab;
+            Transform apfsds;
+            Transform atgm;
+            TextMeshProUGUI range;
+
+            void Awake() {
+                crosshair_ui = ThermalMonitor.monitor_screen.transform.Find("CROSSHAIR UI");
+                wfov_ui = ThermalMonitor.monitor_screen.transform.Find("WFOV UI");
+
+                ready = crosshair_ui.Find("READY");
+                cmdr_override = crosshair_ui.Find("CMDR CONTROL");
+                range = crosshair_ui.Find("RANGE").GetComponentInChildren<TextMeshProUGUI>();
+                apfsds = crosshair_ui.Find("AMMO (AP)");
+                atgm = crosshair_ui.Find("AMMO (ATGM)"); 
+
+                stab = wfov_ui.Find("STAB");
+
+                wfov = ThermalMonitor.monitor_screen.transform.Find("WFOV");
+                crosshairs = ThermalMonitor.monitor_screen.transform.Find("CROSSHAIR");
+            }
+
+            void LateUpdate() {
+                if (PlayerInput.Instance.CurrentPlayerWeapon.Weapon != fcs.CurrentWeaponSystem) return;
+
+                crosshair_ui.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov < 10.52f);
+                crosshairs.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov < 10.52f);
+                ready.gameObject.SetActive(fcs.CurrentWeaponSystem.AbleToFire);
+                cmdr_override.gameObject.SetActive(fcs.IsOverridingNow);
+                range.text = ((int)MathUtil.RoundFloatToMultipleOf(fcs.CurrentRange, 5)).ToString("0000");
+
+                if (fcs.NightOptic.slot.CurrentFov == 2.95f)
+                {
+                    crosshairs.localScale = new Vector3(0.4f, 0.4f, 1f);
+                }
+                else {
+                    crosshairs.localScale = new Vector3(0.3f, 0.3f, 1f);
+                }
+
+                apfsds.gameObject.SetActive(fcs.CurrentAmmoType.Category == AmmoType.AmmoCategory.Penetrator);
+                atgm.gameObject.SetActive(fcs.CurrentAmmoType.Guidance > AmmoType.GuidanceType.Unguided);
+
+                wfov_ui.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov == 10.52f);
+                wfov.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov == 10.52f);
+                stab.gameObject.SetActive(fcs.StabsActive);
+            }
+        }
+
+        private class ThermalMonitor : MonoBehaviour {
+            public RenderTexture monitor_texture;
+            public static GameObject monitor_screen;
+            Camera cam;
+            GameObject scope; 
+
+            void Awake() {
+                cam = CameraManager.MainCam;
+                scope = cam.transform.Find("Scope").gameObject;
+            }
+
+            void LateUpdate()
+            {
+                UsableOptic optic = PlayerInput.Instance.CurrentPlayerWeapon.FCS.MainOptic;
+
+                if (!optic || (!optic.GetComponent<HasThermalMonitor>() || !optic.gameObject.activeSelf))
+                {
+                    cam.targetTexture = null;
+                    monitor_screen.SetActive(false);
+                    scope.gameObject.SetActive(true);
+                    return;
+                };
+
+                if (cam.targetTexture == null)
+                {
+                    scope.gameObject.SetActive(false);
+                    cam.targetTexture = monitor_texture;
+                    monitor_screen.SetActive(true);
+                }
+            }
+        }
+
+        private static IEnumerator AddThermalMonitor(GameState _) {
+            Camera cam = CameraManager.MainCam;
+
+            if (cam.gameObject.GetComponent<ThermalMonitor>()) yield break;
+
+            GameObject monitor_canvas = GameObject.Instantiate(sosna_monitor);
+
+            ThermalMonitor monitor = cam.gameObject.AddComponent<ThermalMonitor>();
+            monitor_canvas.transform.parent = cam.transform;
+            monitor.monitor_texture = (RenderTexture)monitor_canvas.GetComponentInChildren<RawImage>().mainTexture;
+
+            Transform monitor_screen = monitor_canvas.transform.Find("MONITOR SCREEN");
+            ThermalMonitor.monitor_screen = monitor_screen.gameObject;
+            monitor_canvas.transform.parent = PlayerInput.Instance.transform.Find("UIHUDCanvas").parent;
+            monitor_canvas.transform.SetAsFirstSibling();
+
+            yield break;
+        }
+
+        public static void Add(UsableOptic day_optic, UsableOptic night_optic, WeaponSystemInfo coax, bool thermal = false) {
             FireControlSystem fcs = day_optic.FCS;
             fcs._fixParallaxForVectorMode = true;
             fcs.SuperelevateWeapon = true;
@@ -42,8 +159,6 @@ namespace PactIncreasedLethality
             fcs.UseDeltaD = false;
             fcs.ActiveDeltaD = false;
             fcs.ImperfectDeltaD = false;
-            fcs.RegisteredRangeLimits = new Vector2(0f, 4000f);
-            fcs._currentRange = 0f;
             fcs.ManualModeTriggers = new GHPC.Equipment.FcsManualModeStartTrigger[] { };
             fcs.AutoModeTriggers = new GHPC.Equipment.FcsManualModeCancelTrigger[] { };
             fcs.GatedAimablePlatforms = fcs.Mounts;
@@ -54,10 +169,6 @@ namespace PactIncreasedLethality
             fcs._autoDumpViaPalmSwitches = true;
             fcs._autoModeOnLase = false;
             fcs.IgnoreHorizontalForFireGating = true;
-            //fcs.transform.localPosition = new Vector3(-0.603f, 0.6288f, -5.547f);
-            //fcs.transform.localPosition = new Vector3(-0.803f, 0.32f, -5.547f);
-            //fcs.LaserOrigin = fcs.transform;
-
             coax.ExcludeFromFcsUpdates = false;
             coax.PreAimWeapon = WeaponSystemRole.Coaxial;
 
@@ -67,7 +178,6 @@ namespace PactIncreasedLethality
             night_optic.CantCorrectMaxSpeed = 5f;
 
             day_optic.slot.DefaultFov = 15f;
-            //day_optic.slot.SpriteType = CameraSpriteManager.SpriteType.NightVisionGoggles;
 
             List<float> fovs = new List<float>();
             for (float i = 12; i >= 4; i--)
@@ -76,10 +186,11 @@ namespace PactIncreasedLethality
             }
             day_optic.slot.OtherFovs = fovs.ToArray<float>();
 
+            /*
             if (day_optic.GetComponent<DigitalZoomSnapper>() == null) 
                 day_optic.gameObject.AddComponent<DigitalZoomSnapper>();
+            */
 
-            day_optic.UseRotationForShake = true;
             day_optic.CantCorrect = true;
             day_optic.CantCorrectMaxSpeed = 5f;
             day_optic.Alignment = OpticAlignment.BoresightStabilized;
@@ -88,6 +199,7 @@ namespace PactIncreasedLethality
             day_optic.slot.fovAspect = false;
             day_optic.RotateAzimuth = true;
             day_optic.ForceHorizontalReticleAlign = false;
+            day_optic.ZeroOutInvalidRange = true;
             day_optic.reticleMesh.reticleSO = reticleSO_sosna;
             day_optic.reticleMesh.reticle = reticle_cached_sosna;
             day_optic.reticleMesh.SMR = null;
@@ -99,8 +211,6 @@ namespace PactIncreasedLethality
             rangebox.SetActive(true);
             rangebox.transform.localPosition = new Vector3(0f, 0f, 0f);
             rangebox.transform.GetChild(0).transform.localPosition = new Vector3(-2.1709f, -350.7738f, 0f);
-            //rangebox.transform.GetChild(0).transform.localEulerAngles = new Vector3(0f, 0f, 180f);
-            //rangebox.transform.GetChild(0).transform.localScale = new Vector3(1f, 1f, 1f);
 
             GameObject range = GameObject.Instantiate(range_readout);
             range.GetComponent<Reparent>().NewParent = rangebox.transform;
@@ -129,12 +239,55 @@ namespace PactIncreasedLethality
 
             day_optic.ReadyToFireObject = ready.gameObject;
 
-           
-            GameObject _square = GameObject.Instantiate(square, rangebox.transform);
+            if (thermal) {
+                CRTShock.Add(night_optic.slot.transform, 0f, new Vector3(1f, 1f, 1f));
+                night_optic.slot.VisionType = NightVisionType.Thermal;
+                night_optic.slot.BaseBlur = 0f;
+                PostProcessVolume vol = PostProcessVolume.Instantiate(post_sosna);
+                vol.gameObject.SetActive(true);
+                night_optic.post = vol;
 
-            BLYAT b = fcs.gameObject.AddComponent<BLYAT>();
-            b.square = _square;
-            _square.SetActive(false);           
+                night_optic.reticleMesh.reticleSO = reticleSO_sosna_thermal;
+                night_optic.reticleMesh.reticle = reticle_cached_sosna_thermal;
+                night_optic.reticleMesh.SMR = null;
+                night_optic.reticleMesh.Load();
+
+                night_optic.reticleMesh.Clear();
+
+                GameObject wide = GameObject.Instantiate(night_optic.reticleMesh.gameObject, night_optic.transform);
+                wide.gameObject.SetActive(true);
+                ReticleMesh wide_reticle_mesh = wide.GetComponent<ReticleMesh>();
+                wide_reticle_mesh.reticleSO = reticleSO_sosna_thermal_wide;
+                wide_reticle_mesh.reticle = reticle_cached_sosna_thermal_wide;
+                wide_reticle_mesh.SMR = null;
+                wide_reticle_mesh.Load();
+                wide_reticle_mesh.Clear();
+
+                UsableOptic.FovLimitedItem wide_lim = new UsableOptic.FovLimitedItem();
+                wide_lim.FovRange = new Vector2(9f, 360f);
+                wide_lim.ExclusiveObjects = new GameObject[] { wide };
+                UsableOptic.FovLimitedItem zoomed_lim = new UsableOptic.FovLimitedItem();
+                zoomed_lim.FovRange = new Vector2(0f, 8f);
+                zoomed_lim.ExclusiveObjects = new GameObject[] { night_optic.reticleMesh.gameObject };
+
+                night_optic._reticleMeshLocalPositions = new Vector2[] { Vector3.zero, Vector3.zero };
+                night_optic.FovLimitedItems = new UsableOptic.FovLimitedItem[] { wide_lim, zoomed_lim };
+                night_optic.AdditionalReticleMeshes = new ReticleMesh[] { wide_reticle_mesh };
+                night_optic.reticleMesh = null;
+
+                night_optic.slot.DefaultFov = 10.52f;
+                night_optic.slot.OtherFovs = new float[2] { 6.25f, 2.95f };
+                night_optic.slot.VibrationBlurScale = 0.05f;
+                night_optic.slot.VibrationShakeMultiplier = 0.01f;
+                night_optic.slot.VibrationPreBlur = true;
+
+                HasThermalMonitor therm = night_optic.gameObject.AddComponent<HasThermalMonitor>();
+                therm.fcs = fcs;
+            }
+
+            fcs.RegisteredRangeLimits = new Vector2(100f, 4000f);
+            fcs._currentRange = 100f;
+            fcs.UpdateRange();
         }
 
         private static void Reticle() {
@@ -255,19 +408,76 @@ namespace PactIncreasedLethality
             reticleSO_sosna.planes[0].elements.Add(impact);         
         }
 
+        private static void ThermalReticle()
+        {
+            // WFOV
+            reticleSO_sosna_thermal_wide = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["WFOV"].tree);
+            reticleSO_sosna_thermal_wide.name = "PACT-SOSNA-WFOV";
+
+            Util.ShallowCopy(reticle_cached_sosna_thermal_wide, ReticleMesh.cachedReticles["WFOV"]);
+            reticle_cached_sosna_thermal_wide.tree = reticleSO_sosna_thermal_wide;
+
+            reticle_cached_sosna_thermal_wide.tree.lights = new List<ReticleTree.Light>() {
+                new ReticleTree.Light()
+            };
+
+            reticle_cached_sosna_thermal_wide.tree.lights[0].type = ReticleTree.Light.Type.Powered;
+            reticle_cached_sosna_thermal_wide.tree.lights[0].color = new RGB(1f, 1f, 1f, true);
+
+            ReticleTree.Angular wfov_angular = (reticleSO_sosna_thermal_wide.planes[0].elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Angular;
+
+            for (int i = 0; i <= 3; i++) {
+                (wfov_angular.elements[i] as ReticleTree.Line).length.mrad = 9.8175f;
+            }
+
+
+            // CROSSHAIRS
+            reticleSO_sosna_thermal = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55-NVS"].tree);
+            reticleSO_sosna_thermal.name = "PACT-SOSNA-CROSSHAIRS";
+
+            Util.ShallowCopy(reticle_cached_sosna_thermal, ReticleMesh.cachedReticles["T55-NVS"]);
+            reticle_cached_sosna_thermal.tree = reticleSO_sosna_thermal;
+
+            reticle_cached_sosna_thermal.tree.lights = new List<ReticleTree.Light>() {
+                new ReticleTree.Light()
+            };
+
+            reticle_cached_sosna_thermal.tree.lights[0].type = ReticleTree.Light.Type.Powered;
+            reticle_cached_sosna_thermal.tree.lights[0].color = new RGB(1f, 1f, 1f, true);
+
+            ReticleTree.Angular reticle_sosna_cross = (reticleSO_sosna_thermal.planes[0].elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Angular;
+            (reticleSO_sosna_thermal.planes[0].elements[0] as ReticleTree.Angular).align = ReticleTree.GroupBase.Alignment.Boresight;
+            reticle_sosna_cross.align = ReticleTree.GroupBase.Alignment.Boresight;
+            reticle_cached_sosna_thermal.mesh = null;
+
+            reticle_sosna_cross.elements.RemoveAt(4);
+            reticle_sosna_cross.elements.RemoveAt(1);
+            reticle_sosna_cross.elements.RemoveAt(0);
+
+            ReticleTree.Line line1 = reticle_sosna_cross.elements[0] as ReticleTree.Line;
+            line1.rotation.mrad = 0;
+            line1.position.x = 0;
+            line1.position.y = 0;
+            line1.length.mrad = 22.0944f;
+            line1.illumination = ReticleTree.Light.Type.Powered;
+
+            ReticleTree.Line line2 = reticle_sosna_cross.elements[1] as ReticleTree.Line;
+            line2.position.y = 0;
+            line2.length.mrad = 9.0944f;
+            line2.illumination = ReticleTree.Light.Type.Powered;
+        }
+
         public static void Init() {
-            if (reticleSO_sosna != null) return;
-
-            Reticle();
-
-            if (!range_readout)
+            if (reticleSO_sosna == null)
             {
+                AssetBundle bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "sosna_monitor"));
+                sosna_monitor = bundle.LoadAsset<GameObject>("MONITOR CANVAS.prefab");
+                sosna_monitor.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
                 foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
                 {
                     if (obj.gameObject.name == "M1IP")
                     {
-                        square = obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas/ready indicator").gameObject;
-
                         range_readout = GameObject.Instantiate(obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas").gameObject);
                         GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
                         //GameObject.Destroy(range_readout.transform.GetChild(0).gameObject);
@@ -280,6 +490,11 @@ namespace PactIncreasedLethality
                         text.color = new Color(255f, 0f, 0f);
                         text.faceColor = new Color(255f, 0f, 0f);
                         text.outlineColor = new Color(100f, 0f, 0f, 0.5f);
+
+                        if (!ReticleMesh.cachedReticles.ContainsKey("WFOV"))
+                        {
+                            obj.transform.Find("Turret Scripts/GPS/FLIR/Reticle Mesh WFOV").GetComponent<ReticleMesh>().Load();
+                        }
                     }
 
                     if (obj.gameObject.name == "M2 Bradley")
@@ -292,9 +507,26 @@ namespace PactIncreasedLethality
                         thermal_canvas.name = "t72 thermal canvas";
                     }
 
-                    if (thermal_canvas && range_readout) break; 
+                    if (thermal_canvas && range_readout) break;
                 }
+
+                Reticle();
+                ThermalReticle();
+
+                post_sosna = PostProcessVolume.Instantiate(PactThermal.post_og);
+                ColorGrading color_grading = post_sosna.profile.settings[1] as ColorGrading;
+                color_grading.postExposure.overrideState = false;
+                color_grading.contrast.value = 2f;
+                color_grading.colorFilter.value = new Color(0.4227f, 0.4227f, 0.4227f);
+                color_grading.lift.overrideState = false;
+                (post_sosna.profile.settings[2] as Grain).intensity.value = 0.111f;
+                (post_sosna.profile.settings[0] as Bloom).intensity.value = 0.5f;
+                post_sosna.sharedProfile = post_sosna.profile;
+                post_sosna.gameObject.SetActive(false);
             }
+
+
+            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(AddThermalMonitor), GameStatePriority.Medium);
         }
     }
 }

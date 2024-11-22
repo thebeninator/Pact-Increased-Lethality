@@ -108,10 +108,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ERA\Relikt.cs" />
     <Compile Include="Sights\1A40.cs" />
     <Compile Include="AMMO_30MM.cs" />
     <Compile Include="AMMO_125mm.cs" />
     <Compile Include="Armour.cs" />
+    <Compile Include="Sights\TrackingDimensions.cs" />
     <Compile Include="Vics\BMP1.cs" />
     <Compile Include="Vics\BMP2.cs" />
     <Compile Include="Sights\BOM.cs" />
