@@ -14,6 +14,23 @@ To regenerate the config:
 2) Launch the game
 3) Quit the game using the main menu exit button
 
+# T-72
+T-72AV, T-72B obr.1984/85/89, T-72B3, T72B3M
+
+![Screenshot_2](https://github.com/user-attachments/assets/8c01c43f-b7b0-46dc-8594-ec5917023588)
+![image](https://github.com/user-attachments/assets/bf97e6fb-5518-460f-9a75-d3728ae0e975)
+![Screenshot_1](https://github.com/user-attachments/assets/d94852cc-31b4-4bd9-81e8-0b4fe6d8487b)
+![image](https://github.com/user-attachments/assets/cf2e6076-e3e9-4635-a2ad-0ac0a71e7c2e)
+![image](https://github.com/user-attachments/assets/c2c2c6eb-b3fe-494a-b363-6c3be4a88f0c)
+![image](https://github.com/user-attachments/assets/5c442f56-fa6e-4437-9521-bda3439c1ac1)
+
+# T-80
+T-80BV, T-80U
+
+![image](https://github.com/user-attachments/assets/53dcae33-b917-4d71-a12a-4bf1081b9820)
+![image](https://github.com/user-attachments/assets/99dd7066-a4d8-4ca9-b599-e7d56484be55)
+
+
 # BDD Applique Armour
 - Can be equipped on the T-55 and T-62
 - Composite armour that is effective against HEAT rounds and lesser AP rounds
@@ -28,13 +45,6 @@ To regenerate the config:
 
 ![DROZD](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/747c0b97-42a7-4aea-b5b5-fd0b329ce99c)
 
-# Kontakt-5 ERA
-- Can be equipped on the T-72M/1 and T-80B
-- Capable of stopping APFSDS rounds like M833
-
-![image](https://github.com/user-attachments/assets/99dd7066-a4d8-4ca9-b599-e7d56484be55)
-![K%55](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e3bf6124-99af-4449-8dcc-c3bc2d3ec441)
-
 # T-55
 - 3BK17M HEAT-FS-T
   - Better ballistics and negligibly better penetration compared to 3BK5M
@@ -47,35 +57,6 @@ To regenerate the config:
  
 ![Screenshot_3](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/9c494b20-3291-40f4-9be5-f75ac587caa4)
 ![Screenshot_8](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e1979d6a-327c-47e5-94a6-acf1d42c7d59)
-
-# T-72M/1 
-- New APFSDS rounds
-  - 3BM22 (better penetration compared to 3BM15)
-  - 3BM26 (slightly better penetration compared to 3BM15, effective against composites)
-  - 3BM32
-  - 3BM42 (very effective against composites)
-  - Option to randomize ammo selection
-- Thermal sight
-  - Very blurry
-  - Extremely limited FOV
-  - Completely blinded by gun smoke
-- Kontakt-1 ERA
-  - Consumes HEAT rounds
-  - Poor performance against AP
-  - Only applied to T-72M1s by default
-- Sosna-U (disabled by default)
-  - 4x-12x digital zoom (press MIDDLE MOUSE to instantly switch between 4x and 12x) 
-  - 2-axis stabilizer w/ lead
-  - Point-n-Shoot
-- Soviet crews (disabled by default)
-- Select which ammo racks to load (disabled by default)
-  - Reduces probability that penetrating hits will hit and detonate ammo
- 
-Demo vid: https://youtu.be/lpvLtdIQ-js
-
-![Screenshot_7](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/d5fb1292-9fcb-45e7-95ad-8c32a3924468)
-![Screenshot_12](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/33877b32-ca41-420b-881d-37e7dc78c886)
-![Screenshot_11](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/b2a5aa15-5d7b-4596-98fa-6aacd54e2626)
 
 # BMP-1
 - AGS-17D Coaxial
