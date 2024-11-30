@@ -108,7 +108,7 @@ namespace PactIncreasedLethality
                 }
                 catch (Exception)
                 {
-                    MelonLogger.Msg("Loading default 3BM32 for " + vic.FriendlyName);
+                    MelonLogger.Msg("Loading default ammo for " + vic.FriendlyName);
                 }
 
                 Transform canvas = vic.transform.Find("T64B_rig/HULL/TURRET/Main gun/---MAIN GUN SCRIPTS---/2A46/1G42 gunner's sight/GPS/1G42 Canvas/GameObject");

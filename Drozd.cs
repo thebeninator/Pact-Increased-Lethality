@@ -184,15 +184,20 @@ namespace PactIncreasedLethality
                         if (__instance._isPureAp)
                         {
                             // hoping the GC takes care of the copy lol 
-                            __instance.Info = AmmoType.CopyOf(__instance.Info);
-                            __instance.Info.RhaPenetration /= 1.8f;
+                            AmmoType copy = new AmmoType();
+                            Util.ShallowCopy(copy, __instance.Info);
+                            copy.RhaPenetration /= 1.8f;
+                            __instance.Info = copy;
                         }
                         else {
-                            __instance.Info = AmmoType.CopyOf(__instance.Info);
-                            __instance.Info.RhaPenetration /= 2f;
-                            __instance.Info.TntEquivalentKg /= 1.3f;
-                            __instance.Info.ShatterOnRicochet = true;
-                            __instance.Info.CertainRicochetAngle = 20f;
+                            AmmoType copy = new AmmoType();
+                            Util.ShallowCopy(copy, __instance.Info);
+
+                            copy.RhaPenetration /= 2f;
+                            copy.TntEquivalentKg /= 1.3f;
+                            copy.ShatterOnRicochet = true;
+                            copy.CertainRicochetAngle = 20f;
+                            __instance.Info = copy;
                         }
 
                         return true;

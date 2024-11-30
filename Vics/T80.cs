@@ -20,6 +20,7 @@ using GHPC.Effects;
 using GHPC.Equipment;
 using Reticle;
 using static UnityEngine.GraphicsBuffer;
+using static PactIncreasedLethality.T72;
 
 namespace PactIncreasedLethality
 {
@@ -101,14 +102,15 @@ namespace PactIncreasedLethality
         static void K5Setup(Transform vis_transform, Transform k5_t, string type) {
             UniformArmor k5_armour = k5_t.gameObject.AddComponent<UniformArmor>();
             k5_armour._name = "Kontakt-5";
-            k5_armour.PrimaryHeatRha = 430f;
-            k5_armour.PrimarySabotRha = 150f;
-            k5_armour.SecondaryHeatRha = 10f;
-            k5_armour.SecondarySabotRha = 10f;
+            k5_armour.PrimaryHeatRha = 250f;
+            k5_armour.PrimarySabotRha = 120f;
+            k5_armour.SecondaryHeatRha = 0f;
+            k5_armour.SecondarySabotRha = 0f;
             k5_armour._canShatterLongRods = true;
-            k5_armour._normalizesHits = true;
-            k5_armour.AngleMatters = true;
+            k5_armour._normalizesHits = false;
+            k5_armour.AngleMatters = false;
             k5_armour._isEra = true;
+            k5_armour._armorType = Kontakt5.kontakt5_so;
 
             Kontakt5Visual vis = k5_t.gameObject.AddComponent<Kontakt5Visual>();
             vis.visual = vis_transform.transform.GetChild(k5_t.GetSiblingIndex()).GetComponent<MeshRenderer>();
@@ -163,7 +165,8 @@ namespace PactIncreasedLethality
                 "3BM26",
                 "3BM32",
                 "3BM42",
-                "3BM46"
+                "3BM46",
+                "3BM60"
             };
 
             t80_patch = cfg.CreateEntry<bool>("T-80B Patch", true);
@@ -172,12 +175,12 @@ namespace PactIncreasedLethality
             super_engine.Comment = "vrrrrrrrrrrooooooooom";
 
             t80_ammo_type = cfg.CreateEntry<string>("AP Round (T-80B)", "3BM32");
-            t80_ammo_type.Comment = "3BM32, 3BM26 (composite optimized), 3BM42 (composite optimized), 3BM46";
+            t80_ammo_type.Comment = "3BM32, 3BM26 (composite optimized), 3BM42 (composite optimized), 3BM46, 3BM60";
             t80_ammo_type.Description = " ";
 
             t80_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-80B)", false);
             t80_random_ammo_pool = cfg.CreateEntry<List<string>>("Random AP Round Pool (T-80B)", random_ammo_pool);
-            t80_random_ammo_pool.Comment = "3BM26, 3BM32, 3BM42, 3BM46";
+            t80_random_ammo_pool.Comment = "3BM26, 3BM32, 3BM42, 3BM46, 3B60";
 
             t80_atgm_type = cfg.CreateEntry<string>("GLATGM (T-80B)", "9M119");
             t80_atgm_type.Comment = "9M112M, 9M119, 9M119M1";
@@ -188,20 +191,20 @@ namespace PactIncreasedLethality
             zoom_snapper.Comment = "Press middle mouse to instantly switch between low and high magnification on the daysight";
 
             super_fcs_t80 = cfg.CreateEntry<bool>("Super FCS (T-80B)", false);
-            super_fcs_t80.Comment = "basically sosna-u lol (digital 4x-12x zoom, 2-axis stabilizer w/ lead, point-n-shoot)";
+            super_fcs_t80.Comment = "Sosna-U: point-n-shoot, thermal sight, autotracking";
 
-            thermals = cfg.CreateEntry<bool>("Has Thermals (T-80B)", true);
+            thermals = cfg.CreateEntry<bool>("Has Thermals (T-80B)", false);
             thermals.Comment = "Replaces night vision sight with thermal sight";
             thermals_quality = cfg.CreateEntry<string>("Thermals Quality (T-80B)", "High");
             thermals_quality.Comment = "Low, High";
 
             kontakt1 = cfg.CreateEntry<bool>("Kontakt-1 ERA (T-80B)", true);
-            kontakt1.Comment = "comes with rubber flaps";
+            kontakt1.Comment = "bricks";
 
             kontakt5 = cfg.CreateEntry<bool>("Kontakt-5 ERA (T-80B)", false);
             kontakt5.Comment = "T-80U conversion (comes with rubber flaps, minor cosmetic changes to default day sight)";
 
-            super_comp_cheeks = cfg.CreateEntry<bool>("Improved Turret Composite (T-80B)", true);
+            super_comp_cheeks = cfg.CreateEntry<bool>("Improved Turret Composite (T-80B)", false);
             super_comp_cheeks.Comment = "thicker, more effective turret composite array";
         }
 
@@ -222,7 +225,7 @@ namespace PactIncreasedLethality
                 UsableOptic day_optic = Util.GetDayOptic(weapon.FCS);
                 Transform turret = vic.transform.Find("T80B_rig/HULL/TURRET");
 
-                if (zoom_snapper.Value)
+                if (zoom_snapper.Value && !super_fcs_t80.Value)
                     day_optic.gameObject.AddComponent<DigitalZoomSnapper>();
 
                 int rand = UnityEngine.Random.Range(0, AMMO_125mm.ap.Count);
@@ -230,7 +233,7 @@ namespace PactIncreasedLethality
 
                 vic.AimablePlatforms[1].transform.Find("optic cover parent").gameObject.SetActive(false);
 
-                if (thermals.Value)
+                if (thermals.Value && !super_fcs_t80.Value)
                 {
                     PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower(), true);
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
@@ -269,7 +272,7 @@ namespace PactIncreasedLethality
                 }
                 catch (Exception)
                 {
-                    MelonLogger.Msg("Loading default 3BM32 for " + vic.FriendlyName);
+                    MelonLogger.Msg("Loading default ammo for " + vic.FriendlyName);
                 }
 
                 Transform canvas = vic.transform.Find("T80B_rig/HULL/TURRET/gun/---MAIN GUN SCRIPTS---/2A46-2/1G42 gunner's sight/GPS/1G42 Canvas/GameObject");
@@ -300,7 +303,18 @@ namespace PactIncreasedLethality
                 if (super_fcs_t80.Value)
                 {
                     weapon.FCS.transform.Find("GPS/1G42 Canvas").gameObject.SetActive(false);
-                    Sosna.Add(day_optic, weapon.FCS.NightOptic, vic.WeaponsManager.Weapons[1]);
+                    Sosna.Add(day_optic, weapon.FCS.NightOptic, vic.WeaponsManager.Weapons[1], true);
+
+                    CustomGuidanceComputer gc = weapon.FCS.gameObject.AddComponent<CustomGuidanceComputer>();
+                    gc.fcs = weapon.FCS;
+                    gc.mgu = weapon.FCS.GetComponent<MissileGuidanceUnit>();
+
+                    LockOnLead s = weapon.FCS.gameObject.AddComponent<LockOnLead>();
+                    s.fcs = weapon.FCS;
+                    s.guidance_computer = gc;
+
+                    day_optic.transform.Find("Quad").gameObject.SetActive(false);
+                    vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
                 }
 
 
@@ -315,7 +329,6 @@ namespace PactIncreasedLethality
                     cheek_inserts.GetComponent<VariableArmor>()._armorType = Armour.t80u_composite_armor;
                     cheek_inserts.GetComponent<AarVisual>().AarMaterial = t80u_turret_mat;
                 }
-
 
                 if (kontakt1.Value) {
                     Transform turret_rend = turret.Find("turret");
@@ -691,6 +704,8 @@ namespace PactIncreasedLethality
                 Transform turret_k1 = t80bv_full.transform.Find("TURRET K1/TURRET K1 ARMOUR");
                 Kontakt1.Setup(hull_k1, hull_k1.parent);
                 Kontakt1.Setup(turret_k1, turret_k1.parent);
+
+                Util.SetupFLIRShaders(t80bv_full);
             }
 
             StateController.WaitForComplete(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);

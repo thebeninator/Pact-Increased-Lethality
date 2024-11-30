@@ -44,7 +44,7 @@ namespace PactIncreasedLethality
                 UniformArmor k5_armour = k5.gameObject.AddComponent<UniformArmor>();
                 k5_armour._name = "Kontakt-5";
                 k5_armour.PrimaryHeatRha = 250f;
-                k5_armour.PrimarySabotRha = 120f;
+                k5_armour.PrimarySabotRha = 200f;
                 k5_armour.SecondaryHeatRha = 0f;
                 k5_armour.SecondarySabotRha = 0f;
                 k5_armour._canShatterLongRods = true;

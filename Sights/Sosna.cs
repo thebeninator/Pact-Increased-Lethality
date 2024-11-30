@@ -38,8 +38,14 @@ namespace PactIncreasedLethality
 
         private static PostProcessVolume post_sosna;
 
-        private class HasThermalMonitor : MonoBehaviour {
-            public FireControlSystem fcs;
+        private class HasThermalMonitor : MonoBehaviour {}
+
+        public class ThermalMonitor : MonoBehaviour {
+            public RenderTexture monitor_texture;
+            GameObject monitor_screen;
+            Camera cam;
+            GameObject scope;
+
             Transform crosshair_ui;
             Transform wfov_ui;
             Transform ready;
@@ -48,64 +54,42 @@ namespace PactIncreasedLethality
             Transform wfov;
             Transform stab;
             Transform apfsds;
+            Transform heat;
+            Transform pk;
+            Transform he;
             Transform atgm;
+            static public Transform tracking_gates;
             TextMeshProUGUI range;
 
             void Awake() {
-                crosshair_ui = ThermalMonitor.monitor_screen.transform.Find("CROSSHAIR UI");
-                wfov_ui = ThermalMonitor.monitor_screen.transform.Find("WFOV UI");
+                cam = CameraManager.MainCam;
+                scope = cam.transform.Find("Scope").gameObject;
+
+                monitor_screen = transform.Find("MONITOR SCREEN").gameObject;
+
+                crosshair_ui = monitor_screen.transform.Find("CROSSHAIR UI");
+                wfov_ui = monitor_screen.transform.Find("WFOV UI");
 
                 ready = crosshair_ui.Find("READY");
                 cmdr_override = crosshair_ui.Find("CMDR CONTROL");
                 range = crosshair_ui.Find("RANGE").GetComponentInChildren<TextMeshProUGUI>();
                 apfsds = crosshair_ui.Find("AMMO (AP)");
-                atgm = crosshair_ui.Find("AMMO (ATGM)"); 
+                atgm = crosshair_ui.Find("AMMO (ATGM)");
+                heat = crosshair_ui.Find("AMMO (HEAT)");
+                he = crosshair_ui.Find("AMMO (HE)");
+                pk = crosshair_ui.Find("AMMO (COAX)");
+
+                tracking_gates = crosshair_ui.Find("TRACKING GATE HOLDER");
 
                 stab = wfov_ui.Find("STAB");
 
-                wfov = ThermalMonitor.monitor_screen.transform.Find("WFOV");
-                crosshairs = ThermalMonitor.monitor_screen.transform.Find("CROSSHAIR");
-            }
-
-            void LateUpdate() {
-                if (PlayerInput.Instance.CurrentPlayerWeapon.Weapon != fcs.CurrentWeaponSystem) return;
-
-                crosshair_ui.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov < 10.52f);
-                crosshairs.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov < 10.52f);
-                ready.gameObject.SetActive(fcs.CurrentWeaponSystem.AbleToFire);
-                cmdr_override.gameObject.SetActive(fcs.IsOverridingNow);
-                range.text = ((int)MathUtil.RoundFloatToMultipleOf(fcs.CurrentRange, 5)).ToString("0000");
-
-                if (fcs.NightOptic.slot.CurrentFov == 2.95f)
-                {
-                    crosshairs.localScale = new Vector3(0.4f, 0.4f, 1f);
-                }
-                else {
-                    crosshairs.localScale = new Vector3(0.3f, 0.3f, 1f);
-                }
-
-                apfsds.gameObject.SetActive(fcs.CurrentAmmoType.Category == AmmoType.AmmoCategory.Penetrator);
-                atgm.gameObject.SetActive(fcs.CurrentAmmoType.Guidance > AmmoType.GuidanceType.Unguided);
-
-                wfov_ui.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov == 10.52f);
-                wfov.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov == 10.52f);
-                stab.gameObject.SetActive(fcs.StabsActive);
-            }
-        }
-
-        private class ThermalMonitor : MonoBehaviour {
-            public RenderTexture monitor_texture;
-            public static GameObject monitor_screen;
-            Camera cam;
-            GameObject scope; 
-
-            void Awake() {
-                cam = CameraManager.MainCam;
-                scope = cam.transform.Find("Scope").gameObject;
+                wfov = monitor_screen.transform.Find("WFOV");
+                crosshairs = monitor_screen.transform.Find("CROSSHAIR");
             }
 
             void LateUpdate()
             {
+                FireControlSystem fcs = PlayerInput.Instance.CurrentPlayerWeapon.FCS;
                 UsableOptic optic = PlayerInput.Instance.CurrentPlayerWeapon.FCS.MainOptic;
 
                 if (!optic || (!optic.GetComponent<HasThermalMonitor>() || !optic.gameObject.activeSelf))
@@ -114,30 +98,53 @@ namespace PactIncreasedLethality
                     monitor_screen.SetActive(false);
                     scope.gameObject.SetActive(true);
                     return;
-                };
-
-                if (cam.targetTexture == null)
+                } else if (cam.targetTexture == null)
                 {
                     scope.gameObject.SetActive(false);
                     cam.targetTexture = monitor_texture;
                     monitor_screen.SetActive(true);
                 }
+
+                crosshair_ui.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov < 10.52f);
+                crosshairs.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov < 10.52f);
+                ready.gameObject.SetActive(fcs.CurrentWeaponSystem.AbleToFire);
+                cmdr_override.gameObject.SetActive(fcs.IsOverridingNow);
+                tracking_gates.gameObject.SetActive(fcs.GetComponent<LockOnLead>().target != null);
+                range.text = ((int)MathUtil.RoundFloatToMultipleOf(fcs.CurrentRange, 5)).ToString("0000");
+
+                if (fcs.NightOptic.slot.CurrentFov == 2.95f)
+                {
+                    crosshairs.localScale = new Vector3(0.4f, 0.4f, 1f);
+                }
+                else
+                {
+                    crosshairs.localScale = new Vector3(0.3f, 0.3f, 1f);
+                }
+
+                apfsds.gameObject.SetActive(fcs.CurrentAmmoType.Category == AmmoType.AmmoCategory.Penetrator);
+                heat.gameObject.SetActive(fcs.CurrentAmmoType.Category == AmmoType.AmmoCategory.ShapedCharge && fcs.CurrentAmmoType.Guidance == AmmoType.GuidanceType.Unguided);
+                he.gameObject.SetActive(fcs.CurrentAmmoType.Category == AmmoType.AmmoCategory.Explosive);
+                atgm.gameObject.SetActive(fcs.CurrentAmmoType.Guidance > AmmoType.GuidanceType.Unguided);
+                pk.gameObject.SetActive(fcs.CurrentWeaponSystem.MetaName == "Coaxial MG");
+
+                wfov_ui.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov == 10.52f);
+                wfov.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov == 10.52f);
+                stab.gameObject.SetActive(fcs.StabsActive);
             }
         }
 
         private static IEnumerator AddThermalMonitor(GameState _) {
             Camera cam = CameraManager.MainCam;
 
-            if (cam.gameObject.GetComponent<ThermalMonitor>()) yield break;
+            if (PlayerInput.Instance.transform.Find("UIHUDCanvas").parent.Find("MONITOR CANVAS(Clone)")) yield break;
 
             GameObject monitor_canvas = GameObject.Instantiate(sosna_monitor);
 
-            ThermalMonitor monitor = cam.gameObject.AddComponent<ThermalMonitor>();
-            monitor_canvas.transform.parent = cam.transform;
+            ThermalMonitor monitor = monitor_canvas.AddComponent<ThermalMonitor>();
+            monitor.enabled = true;
             monitor.monitor_texture = (RenderTexture)monitor_canvas.GetComponentInChildren<RawImage>().mainTexture;
 
             Transform monitor_screen = monitor_canvas.transform.Find("MONITOR SCREEN");
-            ThermalMonitor.monitor_screen = monitor_screen.gameObject;
             monitor_canvas.transform.parent = PlayerInput.Instance.transform.Find("UIHUDCanvas").parent;
             monitor_canvas.transform.SetAsFirstSibling();
 
@@ -177,14 +184,9 @@ namespace PactIncreasedLethality
             night_optic.CantCorrect = true;
             night_optic.CantCorrectMaxSpeed = 5f;
 
-            day_optic.slot.DefaultFov = 15f;
+            day_optic.slot.DefaultFov = 10f;
 
-            List<float> fovs = new List<float>();
-            for (float i = 12; i >= 4; i--)
-            {
-                fovs.Add(i);
-            }
-            day_optic.slot.OtherFovs = fovs.ToArray<float>();
+            day_optic.slot.OtherFovs = new float[] { 4f };
 
             /*
             if (day_optic.GetComponent<DigitalZoomSnapper>() == null) 
@@ -281,8 +283,7 @@ namespace PactIncreasedLethality
                 night_optic.slot.VibrationShakeMultiplier = 0.01f;
                 night_optic.slot.VibrationPreBlur = true;
 
-                HasThermalMonitor therm = night_optic.gameObject.AddComponent<HasThermalMonitor>();
-                therm.fcs = fcs;
+                night_optic.gameObject.AddComponent<HasThermalMonitor>();
             }
 
             fcs.RegisteredRangeLimits = new Vector2(100f, 4000f);
@@ -429,7 +430,6 @@ namespace PactIncreasedLethality
             for (int i = 0; i <= 3; i++) {
                 (wfov_angular.elements[i] as ReticleTree.Line).length.mrad = 9.8175f;
             }
-
 
             // CROSSHAIRS
             reticleSO_sosna_thermal = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55-NVS"].tree);

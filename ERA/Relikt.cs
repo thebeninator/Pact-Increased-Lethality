@@ -14,7 +14,7 @@ namespace PactIncreasedLethality
         public static ArmorType rlkt_armour = new ArmorType();
 
 
-        public class Relikt5Visual : MonoBehaviour
+        public class ReliktVisual : MonoBehaviour
         {
             public MeshRenderer visual;
             public Material destroyed_mat;
@@ -41,9 +41,9 @@ namespace PactIncreasedLethality
             foreach (Transform rlkt in rlkt_armour_parent)
             {
                 UniformArmor rlkt_armour = rlkt.gameObject.AddComponent<UniformArmor>();
-                rlkt_armour._name = "4S22";
-                rlkt_armour.PrimaryHeatRha = 350f;
-                rlkt_armour.PrimarySabotRha = 180f;
+                rlkt_armour._name = "Relikt";
+                rlkt_armour.PrimaryHeatRha = 400f;
+                rlkt_armour.PrimarySabotRha = 250f;
                 rlkt_armour.SecondaryHeatRha = 0f;
                 rlkt_armour.SecondarySabotRha = 0f;
                 rlkt_armour._canShatterLongRods = true;
@@ -55,7 +55,7 @@ namespace PactIncreasedLethality
                 rlkt.gameObject.layer = 8;
                 rlkt.gameObject.tag = "Penetrable";
 
-                Relikt5Visual vis = rlkt.gameObject.AddComponent<Relikt5Visual>();
+                ReliktVisual vis = rlkt.gameObject.AddComponent<ReliktVisual>();
 
                 if (!hide_on_detonate) {
                     vis.hide_on_detonate = false;
@@ -71,8 +71,8 @@ namespace PactIncreasedLethality
         {
             private static void Postfix(GHPC.UniformArmor __instance)
             {
-                if (__instance.transform.GetComponent<Relikt5Visual>() == null) return;
-                Relikt5Visual vis = __instance.transform.GetComponent<Relikt5Visual>();
+                if (__instance.transform.GetComponent<ReliktVisual>() == null) return;
+                ReliktVisual vis = __instance.transform.GetComponent<ReliktVisual>();
 
                 vis.visual.enabled = !vis.hide_on_detonate;
 

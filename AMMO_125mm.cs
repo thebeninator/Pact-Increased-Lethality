@@ -26,6 +26,12 @@ namespace PactIncreasedLethality
         public static AmmoType ammo_3bm46;
         public static GameObject ammo_3bm46_vis = null;
 
+        public static AmmoClipCodexScriptable clip_codex_3bm60;
+        public static AmmoType.AmmoClip clip_3bm60;
+        public static AmmoCodexScriptable ammo_codex_3bm60;
+        public static AmmoType ammo_3bm60;
+        public static GameObject ammo_3bm60_vis = null;
+
         public static AmmoClipCodexScriptable clip_codex_3bm22;
         public static AmmoClipCodexScriptable clip_codex_3bm32;
 
@@ -161,9 +167,9 @@ namespace PactIncreasedLethality
 
                 ammo_3bm46 = new AmmoType();
                 Util.ShallowCopy(ammo_3bm46, ammo_3bm32);
-                ammo_3bm46.Name = "3BM60 APFSDS-T";
+                ammo_3bm46.Name = "3BM46 APFSDS-T";
                 ammo_3bm46.Caliber = 125;
-                ammo_3bm46.RhaPenetration = 728f;
+                ammo_3bm46.RhaPenetration = 615f;
                 ammo_3bm46.Mass = 4.85f;
                 ammo_3bm46.MuzzleVelocity = 1700f;
                 ammo_3bm46.SpallMultiplier = 1.25f;
@@ -176,7 +182,7 @@ namespace PactIncreasedLethality
 
                 clip_3bm46 = new AmmoType.AmmoClip();
                 clip_3bm46.Capacity = 1;
-                clip_3bm46.Name = "3BM60 APFSDS-T";
+                clip_3bm46.Name = "3BM46 APFSDS-T";
                 clip_3bm46.MinimalPattern = new AmmoCodexScriptable[1];
                 clip_3bm46.MinimalPattern[0] = ammo_codex_3bm46;
 
@@ -190,6 +196,37 @@ namespace PactIncreasedLethality
                 ammo_3bm46.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm46;
                 ammo_3bm46.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm46;
 
+                ammo_3bm60 = new AmmoType();
+                Util.ShallowCopy(ammo_3bm60, ammo_3bm32);
+                ammo_3bm60.Name = "3BM60 APFSDS-T";
+                ammo_3bm60.Caliber = 125;
+                ammo_3bm60.RhaPenetration = 728f;
+                ammo_3bm60.Mass = 4.85f;
+                ammo_3bm60.MuzzleVelocity = 1700f;
+                ammo_3bm60.SpallMultiplier = 1.25f;
+                ammo_3bm60.MaxSpallRha = 24f;
+                ammo_3bm60.MinSpallRha = 6f;
+
+                ammo_codex_3bm60 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+                ammo_codex_3bm60.AmmoType = ammo_3bm60;
+                ammo_codex_3bm60.name = "ammo_3bm60";
+
+                clip_3bm60 = new AmmoType.AmmoClip();
+                clip_3bm60.Capacity = 1;
+                clip_3bm60.Name = "3BM60 APFSDS-T";
+                clip_3bm60.MinimalPattern = new AmmoCodexScriptable[1];
+                clip_3bm60.MinimalPattern[0] = ammo_codex_3bm60;
+
+                clip_codex_3bm60 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+                clip_codex_3bm60.name = "clip_3bm60";
+                clip_codex_3bm60.ClipType = clip_3bm60;
+
+                ammo_3bm60_vis = GameObject.Instantiate(ammo_3bm32.VisualModel);
+                ammo_3bm60_vis.name = "3bm60 visual";
+                ammo_3bm60.VisualModel = ammo_3bm60_vis;
+                ammo_3bm60.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm60;
+                ammo_3bm60.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm60;
+
                 ammo_9m119m1 = new AmmoType();
                 Util.ShallowCopy(ammo_9m119m1, ammo_kobra);
                 ammo_9m119m1.Name = "9M119M1 Invar-M";
@@ -200,6 +237,8 @@ namespace PactIncreasedLethality
                 ammo_9m119m1.TntEquivalentKg = 5.72f;
                 ammo_9m119m1.MaxSpallRha = 12f;
                 ammo_9m119m1.MinSpallRha = 2f;
+                ammo_9m119m1.TurnSpeed = 2f;
+                ammo_9m119m1.Guidance = AmmoType.GuidanceType.Laser;
 
                 ammo_codex_9m119m1 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
                 ammo_codex_9m119m1.AmmoType = ammo_9m119m1;
@@ -262,6 +301,7 @@ namespace PactIncreasedLethality
                         ["3BM32"] = clip_codex_3bm32,
                         ["3BM42"] = clip_codex_3bm42,
                         ["3BM46"] = clip_codex_3bm46,
+                        ["3BM60"] = clip_codex_3bm60,
                     };
 
                 if (atgm == null)

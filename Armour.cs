@@ -84,8 +84,8 @@ namespace PactIncreasedLethality
                 composite.ThicknessSource = ArmorType.RhaSource.Multipliers;
                 composite.SpallAngleMultiplier = 0.25f;
                 composite.SpallPowerMultiplier = 0.25f;
-                composite.RhaeMultiplierCe = 1.50f;
-                composite.RhaeMultiplierKe = 0.90f;
+                composite.RhaeMultiplierCe = 1.55f;
+                composite.RhaeMultiplierKe = 0.80f;
                 composite.CrushThicknessModifier = 1f;
                 composite_armor.ArmorType = composite;
 

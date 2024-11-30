@@ -14,7 +14,7 @@ using GHPC.Vehicle;
 using HarmonyLib;
 using GHPC;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.8.3B", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.9.3", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -84,7 +84,6 @@ namespace PactIncreasedLethality
             Armour.Init();
             CRTShock.Init();
             FireControlSystem1A40.Init();
-            Kontakt5.Init();
             AMMO_125mm.Init();
             AMMO_30MM.Init();
             PactThermal.Init();

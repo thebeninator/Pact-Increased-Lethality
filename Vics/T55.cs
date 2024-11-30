@@ -24,6 +24,12 @@ namespace PactIncreasedLethality
         static ReticleSO reticleSO;
         static ReticleMesh.CachedReticle reticle_cached;
 
+        static AmmoClipCodexScriptable clip_codex_3bm25;
+        static AmmoType.AmmoClip clip_3bm25;
+        static AmmoCodexScriptable ammo_codex_3bm25;
+        static AmmoType ammo_3bm25;
+        static GameObject ammo_3bm25_vis = null;
+
         static AmmoClipCodexScriptable clip_codex_3bk17m;
         static AmmoType.AmmoClip clip_3bk17m;
         static AmmoCodexScriptable ammo_codex_3bk17m;
@@ -39,9 +45,11 @@ namespace PactIncreasedLethality
         static AmmoType ammo_3bk5m;
         static AmmoType ammo_3of412;
         static AmmoType ammo_9m111;
+        static AmmoType ammo_3bm20;
 
         static MelonPreferences_Entry<bool> t55_patch;
         static MelonPreferences_Entry<bool> use_3bk17m;
+        static MelonPreferences_Entry<bool> use_3bm25;
         static MelonPreferences_Entry<bool> use_br412d;
         static MelonPreferences_Entry<bool> use_9m117;
         static MelonPreferences_Entry<bool> better_stab;
@@ -63,6 +71,10 @@ namespace PactIncreasedLethality
         public static void Config(MelonPreferences_Category cfg)
         {
             t55_patch = cfg.CreateEntry<bool>("T-55 Patch", true);
+
+            use_3bm25 = cfg.CreateEntry<bool>("Use 3BM25", true);
+            use_3bm25.Comment = "Replaces 3BM20 (improved penetration)";
+
             use_3bk17m = cfg.CreateEntry<bool>("Use 3BK17M", true);
             use_3bk17m.Comment = "Replaces 3BK5M (improved ballistics, marginally better penetration)";
 
@@ -236,13 +248,15 @@ namespace PactIncreasedLethality
                     loadout_manager.TotalAmmoCounts = new int[] { 16, 18, 6, 3 };
                 }
 
+                if (use_3bm25.Value) loadout_manager.LoadedAmmoTypes[0] = clip_codex_3bm25;
                 if (use_br412d.Value) loadout_manager.LoadedAmmoTypes[2] = clip_codex_br412d;
                 if (use_3bk17m.Value) loadout_manager.LoadedAmmoTypes[1] = clip_codex_3bk17m;
 
                 for (int i = 0; i <= 4; i++)
                 {
                     GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
-                    if (use_br412d.Value)  rack.ClipTypes[2] = clip_codex_br412d.ClipType;
+                    if (use_3bm25.Value) rack.ClipTypes[0] = clip_codex_3bm25.ClipType;
+                    if (use_br412d.Value) rack.ClipTypes[2] = clip_codex_br412d.ClipType;
                     if (use_3bk17m.Value) rack.ClipTypes[1] = clip_codex_3bk17m.ClipType;
 
                     if (use_9m117.Value)
@@ -546,14 +560,40 @@ namespace PactIncreasedLethality
                     if (s.AmmoType.Name == "3BK5M HEAT-FS-T") ammo_3bk5m = s.AmmoType;
                     if (s.AmmoType.Name == "9M111 Fagot") ammo_9m111 = s.AmmoType;
                     if (s.AmmoType.Name == "3OF412 HE-T") ammo_3of412 = s.AmmoType;
+                    if (s.AmmoType.Name == "3BM20 APFSDS-T") ammo_3bm20 = s.AmmoType;
 
-                    if (ammo_3bk5m != null && ammo_9m111 != null && ammo_3of412 != null) break;
+                    if (ammo_3bm20 != null && ammo_3bk5m != null && ammo_9m111 != null && ammo_3of412 != null) break;
                 }
 
                 foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
                 {
                     if (s.name == "clip_BR-412D") { clip_codex_br412d = s; break; }
                 }
+
+                ammo_3bm25 = new AmmoType();
+                Util.ShallowCopy(ammo_3bm25, ammo_3bm20);
+                ammo_3bm25.Name = "3BM25 APFSDS-T";
+                ammo_3bm25.RhaPenetration = 380f;
+
+                ammo_codex_3bm25 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+                ammo_codex_3bm25.AmmoType = ammo_3bm25;
+                ammo_codex_3bm25.name = "ammo_3bm25";
+
+                clip_3bm25 = new AmmoType.AmmoClip();
+                clip_3bm25.Capacity = 1;
+                clip_3bm25.Name = "3BM25 APFSDS-T";
+                clip_3bm25.MinimalPattern = new AmmoCodexScriptable[1];
+                clip_3bm25.MinimalPattern[0] = ammo_codex_3bm25;
+
+                clip_codex_3bm25 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+                clip_codex_3bm25.name = "clip_3bm25";
+                clip_codex_3bm25.ClipType = clip_3bm25;
+
+                ammo_3bm25_vis = GameObject.Instantiate(ammo_3bm20.VisualModel);
+                ammo_3bm25_vis.name = "3bm25 visual";
+                ammo_3bm25.VisualModel = ammo_3bm25_vis;
+                ammo_3bm25.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm25;
+                ammo_3bm25.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm25;
 
                 ammo_3bk17m = new AmmoType();
                 Util.ShallowCopy(ammo_3bk17m, ammo_3bk5m);

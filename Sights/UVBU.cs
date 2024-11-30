@@ -42,9 +42,9 @@ namespace PactIncreasedLethality
 
             uvbu.readout_go.SetActive(true);
 
-            float flight_time = __instance._bc.GetFlightTime(__instance._bcAmmo, __instance._currentRange);
-            float x = __instance._averageTraverseRate.x * 0.017453292f * __instance._currentRange * flight_time * -10f;
-            x /= (1f - __instance.transform.localPosition.x) * Mathf.Clamp(__instance._currentRange / 1500f, 0f, 1f);
+            float flight_time = __instance._bc.GetFlightTime(__instance._bcAmmo, __instance.TargetRange);
+            float x = __instance._averageTraverseRate.x * 0.017453292f * __instance.TargetRange * flight_time * -10f;
+            x /= (1f - __instance.transform.localPosition.x) * Mathf.Clamp(__instance.TargetRange / 1500f, 0f, 1f);
             string sign = Math.Sign(x) > 0 ? "+" : "-";
 
             int lead = (int)Math.Abs(MathUtil.RoundIntToMultipleOf((int)x, 5));

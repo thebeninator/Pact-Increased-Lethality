@@ -148,7 +148,7 @@ namespace PactIncreasedLethality
                 }
                 catch (Exception)
                 {
-                    MelonLogger.Msg("Loading default 3BM32 for " + vic.FriendlyName);
+                    MelonLogger.Msg("Loading default ammo for " + vic.FriendlyName);
                 }
 
                 if (super_engine.Value)

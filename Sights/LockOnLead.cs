@@ -8,21 +8,70 @@ using MelonLoader;
 using MelonLoader.TinyJSON;
 using static MelonLoader.MelonLogger;
 using GHPC.Player;
+using System;
+using GHPC.Camera;
 
 namespace PactIncreasedLethality
 {
     public class LockOnLead : MonoBehaviour
     {
         public Vehicle target;
+        public Renderer tracking_center;
         public FireControlSystem fcs;
         public T72.CustomGuidanceComputer guidance_computer;
         private float cd = 0f;
         public bool engaged = false;
-        public Vector2 offset; 
+        public Vector2 offset;
+        static Vector2 monitor_dims = new Vector2(1024f, 576f);
 
-        public void Update()
+        void LateUpdate() {
+            if (!target) return;
+
+            Transform tracking_object = target.gameObject.transform.Find("TRACKING OBJECT");
+
+            if (tracking_object == null) return;
+
+            Camera camera = CameraManager.MainCam;
+            Bounds bounds = tracking_object.GetComponent<MeshRenderer>().bounds;
+            Vector3[] ss_corners = new Vector3[8];
+            ss_corners[0] = camera.WorldToScreenPoint(new Vector3(bounds.max.x, bounds.max.y, bounds.max.z));
+            ss_corners[1] = camera.WorldToScreenPoint(new Vector3(bounds.max.x, bounds.max.y, bounds.min.z));
+            ss_corners[2] = camera.WorldToScreenPoint(new Vector3(bounds.max.x, bounds.min.y, bounds.max.z));
+            ss_corners[3] = camera.WorldToScreenPoint(new Vector3(bounds.max.x, bounds.min.y, bounds.min.z));
+            ss_corners[4] = camera.WorldToScreenPoint(new Vector3(bounds.min.x, bounds.max.y, bounds.max.z));
+            ss_corners[5] = camera.WorldToScreenPoint(new Vector3(bounds.min.x, bounds.max.y, bounds.min.z));
+            ss_corners[6] = camera.WorldToScreenPoint(new Vector3(bounds.min.x, bounds.min.y, bounds.max.z));
+            ss_corners[7] = camera.WorldToScreenPoint(new Vector3(bounds.min.x, bounds.min.y, bounds.min.z));
+
+            float min_x = ss_corners[0].x;
+            float min_y = ss_corners[0].y;
+            float max_x = ss_corners[0].x;
+            float max_y = ss_corners[0].y;
+
+            for (int i = 1; i < 8; i++)
+            {
+                min_x = Mathf.Min(min_x, ss_corners[i].x);
+                min_y = Mathf.Min(min_y, ss_corners[i].y);
+                max_x = Mathf.Max(max_x, ss_corners[i].x);
+                max_y = Mathf.Max(max_y, ss_corners[i].y);
+            }
+
+            RectTransform rt = Sosna.ThermalMonitor.tracking_gates.GetComponent<RectTransform>();
+            rt.position = new Vector2(min_x, min_y) / monitor_dims * new Vector2(Screen.width, Screen.height);
+            rt.sizeDelta = new Vector2(max_x - min_x, max_y - min_y) / monitor_dims * new Vector2(Screen.width, Screen.height) * new Vector2(768f / Screen.width, 465f / Screen.height);
+        }
+
+        void ResetTracking() {
+            target = null;
+            engaged = false;
+            guidance_computer.autotrackingEnabled = false;
+            offset = Vector2.zero;
+        }
+
+        void Update()
         {
             if (fcs == null) return;
+            if (PlayerInput.Instance.CurrentPlayerWeapon.FCS != fcs) return;
 
             if (cd > 0f)
                 cd -= Time.deltaTime;
@@ -31,53 +80,80 @@ namespace PactIncreasedLethality
             {
                 cd = 0.2f;
 
-                if (!engaged)
+                if (!engaged && target != null)
                 {
                     engaged = true;
-                    fcs.DoLase();
                 }
                 else
                 {
-                    if (target)
-                        fcs.SetAimWorldPosition(target.Center.position);
-
-                    target = null;
-                    engaged = false;
-                    guidance_computer.autotrackingEnabled = false;
-                    offset = Vector2.zero;
+                    ResetTracking();
                 }
             }
 
-            if (!target) {
-                engaged = false;
-                guidance_computer.autotrackingEnabled = false;
-                return;
+            Ray ray = new Ray();
+            if (!target || (target && !engaged))
+            {
+                ray = new Ray(fcs.ReferenceTransform.position, fcs.AimWorldVector);
+            }
+            if (engaged) 
+            {
+                Vector3 forward = tracking_center.bounds.center - fcs.ReferenceTransform.position;
+                ray = new Ray(fcs.ReferenceTransform.position, Matrix4x4.TRS(forward, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(offset));
             }
 
-            guidance_computer.autotrackingEnabled = true;
+            RaycastHit raycastHit; 
+            Physics.Raycast(ray, out raycastHit, 5000f, 1 << 14);
 
-            // adapted from GHPC.AI.BehaviorTrees.ActionBaseLookAt.GetAimPositionAtTarget
-            MissileGuidanceUnit mgu = fcs.CurrentWeaponSystem.GuidanceUnit;
-            AmmoType current_ammo = fcs.CurrentAmmoType;
-            BallisticComputerRepository computer = BallisticComputerRepository.Instance;
-            bool missile_active = current_ammo.Guidance > AmmoType.GuidanceType.Unguided && mgu.CurrentMissiles.Count > 0;
+            if (raycastHit.transform != null)
+            {
+                GameObject raycast_hit = raycastHit.transform.gameObject;
 
-            Vector3 position = missile_active ? mgu.CurrentMissiles[0].transform.position : fcs.ReferenceTransform.transform.position;
-            Vector3 forward = target.Center.position - position;
-            float range = forward.magnitude;
-            float flight_time = computer.GetFlightTime(current_ammo, range);
+                if (raycast_hit.gameObject != null)
+                {
+                    target = raycast_hit.GetComponentInParent<Vehicle>();
+                    Transform tracking_object = target.gameObject.transform.Find("TRACKING OBJECT");
+                    tracking_center = tracking_object.GetComponent<Renderer>();
+                }
+                else if (!engaged)
+                {
+                    ResetTracking();
+                }
+            }
+            else if (!engaged)
+            {
+                ResetTracking();
+            }
 
-            Vector3 a = flight_time * (target.Chassis.Velocity - fcs.Mounts[0]._unit.Chassis.Velocity);
-            Vector3 compensated = target.Center.position + a / (current_ammo.Guidance > AmmoType.GuidanceType.Unguided ? current_ammo.TurnSpeed : 1f); 
-            offset += PlayerInput.Instance.VirtualJoystick * (fcs.MainOptic.slot.CurrentFov / 60f * 2f);
+            if (engaged && target)
+            {
 
-            fcs.SetAimWorldPosition(
-                Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(offset)
-            );
+                guidance_computer.autotrackingEnabled = true;
 
-            guidance_computer.transform.LookAt(Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(offset));
+                // adapted from GHPC.AI.BehaviorTrees.ActionBaseLookAt.GetAimPositionAtTarget
+                MissileGuidanceUnit mgu = fcs.CurrentWeaponSystem.GuidanceUnit;
+                AmmoType current_ammo = fcs.CurrentAmmoType;
+                BallisticComputerRepository computer = BallisticComputerRepository.Instance;
+                bool missile_active = current_ammo.Guidance > AmmoType.GuidanceType.Unguided && mgu.CurrentMissiles.Count > 0;
 
-            fcs.SetRange((target.Center.position - fcs.ReferenceTransform.transform.position).magnitude);
+                Vector3 position = missile_active ? mgu.CurrentMissiles[0].transform.position : fcs.ReferenceTransform.transform.position;
+                Vector3 forward = tracking_center.bounds.center - position;
+                float range = forward.magnitude;
+                float flight_time = computer.GetFlightTime(current_ammo, range);
+
+                Vector3 target_velocity = target.Aircraft != null ? target.Aircraft.VelocityNormalized : target.Chassis.Velocity;
+
+                Vector3 a = flight_time * (target_velocity - fcs.Mounts[0]._unit.Chassis.Velocity);
+                Vector3 compensated = tracking_center.bounds.center + a / (current_ammo.Guidance > AmmoType.GuidanceType.Unguided ? current_ammo.TurnSpeed : 1f);
+                offset += PlayerInput.Instance.VirtualJoystick * (fcs.MainOptic.slot.CurrentFov / 60f * 2f);
+
+                fcs.SetAimWorldPosition(
+                    Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(offset)
+                );
+
+                guidance_computer.transform.LookAt(Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(offset));
+
+                fcs.SetRange((tracking_center.bounds.center - fcs.ReferenceTransform.transform.position).magnitude);
+            }
         }
     }
 
@@ -88,50 +164,16 @@ namespace PactIncreasedLethality
         {
             LockOnLead lead = __instance.FCS.gameObject.GetComponent<LockOnLead>() ?? null;
 
-            if (lead != null && lead.target)
+            if (lead != null && lead.target && lead.engaged)
             {
-                Vector3 forward = lead.target.Center.position - lead.fcs.ReferenceTransform.position;
+                Vector3 forward = lead.tracking_center.bounds.center - lead.fcs.ReferenceTransform.position;
 
                 __instance.LookAt(
-                    Matrix4x4.TRS(lead.target.Center.position, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(lead.offset)
+                    Matrix4x4.TRS(lead.tracking_center.bounds.center, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(lead.offset)
                 );
                 return false;
             }
             return true;
-        }
-    }
-    
-    [HarmonyPatch(typeof(GHPC.Weapons.FireControlSystem), "DoLase")]
-    public static class LockTarget
-    {
-        private static void Postfix(GHPC.Weapons.FireControlSystem __instance)
-        {
-            LockOnLead lead = __instance.gameObject.GetComponent<LockOnLead>();
-
-            if (lead == null) return;
-            if (!lead.engaged) return;
-
-            float num = -1f;
-            int layerMask = 1 << CodeUtils.LAYER_MASK_VISIBILITYONLY;
-            RaycastHit raycastHit;
-            if (Physics.Raycast(__instance.LaserOrigin.position, __instance.LaserOrigin.forward, out raycastHit, __instance.MaxLaserRange, layerMask) && raycastHit.collider.tag == "Smoke")
-            {
-                return;
-            }
-            if (Physics.Raycast(__instance.LaserOrigin.position, __instance.LaserOrigin.forward, out raycastHit, __instance.MaxLaserRange, ConstantsAndInfoManager.Instance.LaserRangefinderLayerMask.value) && (raycastHit.distance < num || num == -1f))
-            {
-                num = raycastHit.distance;
-            }
-
-            if (raycastHit.transform != null)
-            {
-                GameObject raycast_hit = raycastHit.transform.gameObject;
-
-                if (raycast_hit.gameObject != null && raycast_hit.gameObject.GetComponent<IArmor>() != null)
-                    lead.target = (Vehicle)raycast_hit.GetComponent<IArmor>().Unit;
-            }
-
-            return;
         }
     }
 }

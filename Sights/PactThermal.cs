@@ -422,12 +422,11 @@ namespace PactIncreasedLethality
             post_hq = PostProcessVolume.Instantiate(post_og);
             color_grading = post_hq.profile.settings[1] as ColorGrading;
             color_grading.postExposure.value = 0f;
-            color_grading.contrast.value = 55f;
-            color_grading.colorFilter.value = new Color(0.85f, 0.85f, 0.85f);
-           //color_grading.lift.value = new Vector4(0f, 0f, 0f, -1.2f);
+            color_grading.contrast.value = 100f;
+            color_grading.colorFilter.value = new Color(0.65f, 0.90f, 0.65f);
             color_grading.lift.overrideState = false;
             (post_hq.profile.settings[2] as Grain).intensity.value = 0.111f;
-            (post_hq.profile.settings[0] as Bloom).intensity.value = 0.5f;
+            (post_hq.profile.settings[0] as Bloom).intensity.value = 1f;
             post_hq.sharedProfile = post_hq.profile;
             post_hq.gameObject.SetActive(false);
 

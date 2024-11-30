@@ -16,6 +16,7 @@ using Thermals;
 using GHPC.Camera;
 using UnityEngine.Rendering.PostProcessing;
 using GHPC.AI.Platoons;
+using GHPC.Effects;
 
 namespace PactIncreasedLethality
 {
