@@ -17,6 +17,8 @@ To regenerate the config:
 3) Quit the game using the main menu exit button
 
 # T-72
+https://www.youtube.com/watch?v=dvheOjTjuSg
+
 T-72AV, T-72B obr.1984/85/89, T-72B3, T72B3M
 
 ![Screenshot_2](https://github.com/user-attachments/assets/8c01c43f-b7b0-46dc-8594-ec5917023588)
