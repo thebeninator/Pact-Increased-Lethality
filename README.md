@@ -76,8 +76,9 @@ T-80BV, T-80U
 - 9M113AS Konkurs
   - Overfly-top-attack ATGM
   - Dual EFP warhead
+- 9M133 Kornet
 
-[Desktop 2024.02.10 - 14.36.30.05.DVR.webm](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e9d0899a-9e91-44e4-9877-e7d2a6786a36)
+![image](https://github.com/user-attachments/assets/1ebbfd0a-10dc-4248-af68-dd5dc13a156d)
 
 # BTR-60
 - Stabilizer
