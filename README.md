@@ -1,6 +1,8 @@
 # Attributions
 Turret model for BTR-60A from https://sketchfab.com/3d-models/btr-80a-5e4b7a1b18c04ac68fcd76036feebfc8 by Alexandr Zhilkin
 
+Kornet launchers and Sodema sight models for the BMP-2M from https://marketplace.vigilante.us/product/bmp2m-east/ by Vigilante
+
 # Pact Increased Lethality
 
 All features listed below can be toggled on/off.
