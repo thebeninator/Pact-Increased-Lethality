@@ -52,7 +52,7 @@ namespace PactIncreasedLethality
             if (Physics.SphereCast(pos, 3.5f, live_round.transform.forward, out hit, 0.1f, 1 << 8))
             {
                 if (hit.collider.CompareTag("Penetrable"))
-                    Invoke("Detonate", (3.5f / live_round.CurrentSpeed)); 
+                    Detonate();
             }
         }
 

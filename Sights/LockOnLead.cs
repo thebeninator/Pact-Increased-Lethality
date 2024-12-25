@@ -126,7 +126,6 @@ namespace PactIncreasedLethality
 
             if (engaged && target)
             {
-
                 guidance_computer.autotrackingEnabled = true;
 
                 // adapted from GHPC.AI.BehaviorTrees.ActionBaseLookAt.GetAimPositionAtTarget

@@ -48,8 +48,8 @@ namespace PactIncreasedLethality
                 k5_armour.SecondaryHeatRha = 0f;
                 k5_armour.SecondarySabotRha = 0f;
                 k5_armour._canShatterLongRods = true;
-                k5_armour._normalizesHits = false;
-                k5_armour.AngleMatters = false;
+                k5_armour._normalizesHits = true;
+                k5_armour.AngleMatters = true;
                 k5_armour._isEra = true;
                 k5_armour._armorType = kontakt5_so;
 
@@ -64,6 +64,7 @@ namespace PactIncreasedLethality
                 }
 
                 vis.visual = visual_parent.transform.GetChild(k5.GetSiblingIndex()).GetComponent<MeshRenderer>();
+                vis.enabled = false;
             }
         }
 

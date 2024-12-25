@@ -13,8 +13,6 @@ namespace PactIncreasedLethality
     {
         public static ArmorCodexScriptable kontakt1_so = null;
         public static ArmorType kontakt1_armour = new ArmorType();
-
-
         public class Kontakt1Visual : MonoBehaviour
         {
             public MeshRenderer visual;
@@ -56,6 +54,7 @@ namespace PactIncreasedLethality
 
                 Kontakt1Visual vis = k1.gameObject.AddComponent<Kontakt1Visual>();
                 vis.visual = visual_parent.transform.GetChild(k1.GetSiblingIndex()).GetComponent<MeshRenderer>();
+                vis.enabled = false;
             }
         }
 

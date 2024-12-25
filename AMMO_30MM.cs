@@ -78,6 +78,7 @@ namespace PactIncreasedLethality
                 ammo_3uof8.Name = "3UOF8 HEFI";
                 ammo_3uof8.UseTracer = false;
                 ammo_3uof8.TntEquivalentKg = 0.049f;
+
                 ammo_3uof8.VisualType = GHPC.Weapons.LiveRoundMarshaller.LiveRoundVisualType.Custom;
 
                 ammo_codex_3uof8 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();

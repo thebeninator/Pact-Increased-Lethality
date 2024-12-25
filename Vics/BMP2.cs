@@ -17,6 +17,14 @@ using UnityEngine;
 using FMOD;
 using FMODUnity;
 using GHPC.Crew;
+using MelonLoader.Utils;
+using System.IO;
+using GHPC;
+using static Reticle.LinearLength;
+using GHPC.Player;
+using GHPC.Equipment;
+using GHPC.Equipment.Lamps;
+using GHPC.Effects;
 
 namespace PactIncreasedLethality
 {
@@ -104,6 +112,11 @@ namespace PactIncreasedLethality
         static AmmoCodexScriptable ammo_codex_9m113_as;
         static AmmoType ammo_9m113_as;
 
+        static AmmoClipCodexScriptable clip_codex_9m133;
+        static AmmoType.AmmoClip clip_9m133;
+        static AmmoCodexScriptable ammo_codex_9m133;
+        static AmmoType ammo_9m133;
+
         static AmmoType ammo_9m113;
 
         static AmmoClipCodexScriptable clip_codex_bzt;
@@ -126,6 +139,10 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> use_3ubr8;
         static MelonPreferences_Entry<bool> use_3uof8;
         static MelonPreferences_Entry<bool> use_9m113as;
+        static MelonPreferences_Entry<bool> has_lrf;
+        static MelonPreferences_Entry<bool> has_thermals;
+        static MelonPreferences_Entry<string> thermals_quality;
+        static MelonPreferences_Entry<bool> has_kornets;
         static MelonPreferences_Entry<bool> zsu_conversion;
         static MelonPreferences_Entry<int> zsu_conversion_chance;
 
@@ -137,6 +154,33 @@ namespace PactIncreasedLethality
         static ReticleSO reticleSO;
         static ReticleMesh.CachedReticle reticle_cached;
 
+        static ReticleSO reticleSO_lrf;
+        static ReticleMesh.CachedReticle reticle_cached_lrf;
+        static Mesh turret_no_smokes;
+        static Mesh bmp2m_turret;
+        static Mesh turret_only_thermals;
+        static GameObject bmp2m_kit;
+
+        public class MultiBarrelFix : MonoBehaviour {
+            public AmmoFeed feed;
+            public GameObject[] loaded_objects;
+            public int max_ammo;
+            public WeaponSystem weapon;
+
+            void Update() {
+                weapon.FireWhileGuidingMissile = PlayerInput.Instance.CurrentPlayerWeapon.Weapon == weapon;
+
+                if (feed.CurrentClipRemainingCount == max_ammo) {
+                    foreach (GameObject obj in loaded_objects) { obj.SetActive(true); }
+                    return;
+                }
+
+                for (int i = 0; i < max_ammo - feed.CurrentClipRemainingCount; i++) {
+                    loaded_objects[i].SetActive(false);
+                }
+            }
+        }
+
         public static void Config(MelonPreferences_Category cfg)
         {
             bmp2_patch = cfg.CreateEntry<bool>("BMP-2 Patch", true);
@@ -146,6 +190,16 @@ namespace PactIncreasedLethality
 
             use_3uof8 = cfg.CreateEntry<bool>("Use 3UOF8", true);
             use_3uof8.Comment = "Mixed belt of 3UOR6 and 3UOF8 (1:2); 3UOF8 has more explosive filler but no tracer";
+
+            has_kornets = cfg.CreateEntry<bool>("Use 9M133 Kornet", false);
+            has_kornets.Comment = "4x ready-to-fire missiles w/ 1 reload; stabilized launchers; 40 second reload time";
+
+            has_lrf = cfg.CreateEntry<bool>("Laser Rangefinder (BMP-2)", false);
+            has_lrf.Comment = "Point-n-shoot; automatic lead";
+
+            has_thermals = cfg.CreateEntry<bool>("Has Thermals (BMP-2)", false);
+            thermals_quality = cfg.CreateEntry<string>("Thermals Quality (BMP-2)", "High");
+            thermals_quality.Comment = "Low, High";
 
             use_9m113as = cfg.CreateEntry<bool>("Use 9M113AS", false);
             use_9m113as.Comment = "Fictional overfly-top-attack ATGM with dual warhead; aim above target";
@@ -176,6 +230,16 @@ namespace PactIncreasedLethality
 
                 LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
                 WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
+                WeaponSystemInfo atgm_info = loadout_manager._weaponsManager.Weapons[1];
+                WeaponSystem atgm = atgm_info.Weapon;
+
+                UsableOptic day_optic = Util.GetDayOptic(weapon.FCS);
+                UsableOptic night_optic = day_optic.slot.LinkedNightSight.PairedOptic;
+
+                Transform vis_turret = vic.transform.Find("BMP2_visual/turret");
+                Transform turret = vic.transform.Find("BMP2_rig/HULL/TURRET");
+                SkinnedMeshRenderer turret_smr = vis_turret.GetComponent<SkinnedMeshRenderer>();
+
                 vic.gameObject.AddComponent<AlreadyConverted>();
 
                 int rand = UnityEngine.Random.Range(1, 100);
@@ -241,7 +305,6 @@ namespace PactIncreasedLethality
                     vic.transform.Find("BMP2_rig/HULL/TURRET/konkurs_azimuth").gameObject.SetActive(false);
                     vic.transform.Find("BMP2_rig/HULL/TURRET/konkurs_azimuth").localScale = new Vector3(0f, 0f, 0f);
 
-                    UsableOptic day_optic = Util.GetDayOptic(weapon.FCS);
                     vic.AimablePlatforms[1].LocalEulerLimits.x = -5f;
 
                     day_optic.Alignment = OpticAlignment.FcsRange;
@@ -291,6 +354,176 @@ namespace PactIncreasedLethality
                     ap = clip_codex_ofz;
                 }
 
+                if (has_lrf.Value) {
+                    LRFReticle();
+
+                    day_optic.Alignment = OpticAlignment.FcsRange;
+                    day_optic.ForceHorizontalReticleAlign = true;
+                    day_optic.slot.LinkedNightSight.PairedOptic.Alignment = OpticAlignment.FcsRange;
+                    day_optic.RotateAzimuth = true;
+                    day_optic.slot.VibrationBlurScale = 0.01f;
+                    day_optic.slot.VibrationShakeMultiplier = 0f;
+                    day_optic.slot.DefaultFov = 9f;
+                    day_optic.slot.OtherFovs = new float[] { 6f };
+                    weapon.FCS.MaxLaserRange = 4000f;
+                    weapon.FCS._currentRange = 200f;
+                    weapon.FCS.SuperleadWeapon = true;
+                    weapon.FCS.SuperelevateWeapon = true;
+                    weapon.FCS.TraverseBufferSeconds = 1f;
+                    weapon.FCS.RegisteredRangeLimits = new Vector2(200, 4000);
+                    weapon.FCS.RecordTraverseRateBuffer = true;
+                    weapon.FCS._autoDumpViaPalmSwitches = true;
+                    weapon.FCS.WeaponAuthoritative = false;
+                    weapon.FCS.InertialCompensation = false;
+                    weapon.FCS.LaserAim = LaserAimMode.ImpactPoint;
+                    weapon.FCS._fixParallaxForVectorMode = true;
+
+                    night_optic.RotateAzimuth = true;
+
+                    day_optic.reticleMesh.reticleSO = reticleSO_lrf ;
+                    day_optic.reticleMesh.reticle = reticle_cached_lrf;
+                    day_optic.reticleMesh.SMR = null;
+                    day_optic.reticleMesh.Load();
+
+                    if (!has_thermals.Value)
+                    {
+                        night_optic.reticleMesh.reticleSO = reticleSO_lrf;
+                        night_optic.reticleMesh.reticle = reticle_cached_lrf;
+                        night_optic.reticleMesh.SMR = null;
+                        night_optic.reticleMesh.Load();
+                    }
+                }
+
+                if (has_thermals.Value) {
+                    PactThermal.Add(night_optic, thermals_quality.Value.ToLower(), is_point_n_shoot: true);
+                    night_optic.slot.SpriteType = GHPC.Camera.CameraSpriteManager.SpriteType.DefaultScope;
+                    turret_smr.sharedMesh = turret_only_thermals;
+                    vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
+                    foreach (LightBandExclusiveItem lamp in vic._equipmentManager.AllLamps[0].Lamps)
+                    {
+                        lamp.gameObject.SetActive(false);
+                    }
+                }
+
+                if (has_kornets.Value)
+                {
+                    vic._friendlyName = "BMP-2M";
+
+                    turret_smr.sharedMesh = bmp2m_turret;
+
+                    turret.Find("konkurs_azimuth/konkurs_elevation/launcher_ramp/launcher_tube/konk001").gameObject.SetActive(false);
+
+                    GameObject _bmp2m_kit = GameObject.Instantiate(bmp2m_kit, vis_turret);
+                    _bmp2m_kit.transform.localEulerAngles = new Vector3(270f, 180f, 0f);
+                    _bmp2m_kit.transform.parent = turret;
+                    _bmp2m_kit.transform.localEulerAngles = new Vector3(0f, 90f, 0f);
+
+                    Transform launcher = _bmp2m_kit.transform.Find("launcher");
+                    launcher.parent = turret.Find("konkurs_azimuth/konkurs_elevation/launcher elevation");
+
+                    Material mat = turret_smr.materials[0];
+                    Transform smoke_launcher = _bmp2m_kit.transform.Find("bmp2_front_smokes");
+
+                    for (int i = 0; i < smoke_launcher.childCount; i++)
+                    {
+                        Transform smoke = smoke_launcher.GetChild(i);
+                        Material[] smokes_mat = smoke.GetComponent<MeshRenderer>().materials;
+                        smokes_mat[0] = mat;
+                        smoke.GetComponent<MeshRenderer>().materials = smokes_mat;
+                    }
+
+                    VehicleSmokeManager smoke_manager = vic.transform.Find("BMP2 -Smoke Launcher System").GetComponent<VehicleSmokeManager>();
+                    for (int i = 0; i < 6; i++)
+                    {
+                        VehicleSmokeManager.SmokeSlot slot = smoke_manager._smokeSlots[i];
+                        Transform smoke_cap = smoke_launcher.transform.GetChild(i + 1);
+                        slot.DisplayBone = smoke_cap;
+                        slot.ScaleBoneToZero = true;
+                        slot.SpawnLocation.transform.SetParent(smoke_cap);
+                        slot.SpawnLocation.transform.position = smoke_cap.GetComponent<Renderer>().bounds.center;
+                    }
+
+                    AimablePlatform[] new_mounts = new AimablePlatform[] { weapon.FCS.Mounts[0], weapon.FCS.Mounts[1], atgm.FCS.Mounts[1] };
+                    weapon.FCS.Mounts = new_mounts;
+                    atgm.FCS.Mounts[0].enabled = false;
+                    atgm.FCS.enabled = false;
+                    atgm.FCS.gameObject.transform.SetParent(weapon.FCS.transform, false);
+                    atgm.GuidanceUnit.AimElement = weapon.FCS.transform;
+
+                    atgm_info.FCS = weapon.FCS;
+                    atgm_info.ExcludeFromFcsUpdates = false;
+                    atgm.FCS = weapon.FCS;
+                    atgm.FCS.Mounts[2].StabilizerActive = true;
+                    atgm.FCS.Mounts[2].Stabilized = true;
+                    atgm.WireGuided = false;
+                    atgm_info.Name = "Twin ATGM Launchers";
+                    atgm._isMultiBarrel = true;
+                    atgm.FireWhileGuidingMissile = true;
+                    atgm.TriggerHoldTime = 0.35f;
+                    atgm.TriggerAudioController.enabled = false;
+                    atgm.TriggerAudioController.gameObject.SetActive(false);
+
+                    atgm.Feed.RoundCycleStages[0].Duration = 40f;
+                    AmmoFeed.ReloadStage[] temp = atgm.Feed.ClipReloadStages;
+                    temp[0].Duration = 10f;
+                    atgm.Feed.ClipReloadStages = new AmmoFeed.ReloadStage[] {
+                        temp[0],
+                        temp[0],
+                        temp[0],
+                        temp[0],
+                    };
+                    atgm.Feed._totalReloadTime = 40f;
+
+                    GameObject missile_fx = vic.transform.Find("BMP2_rig/HULL/TURRET/konkurs_azimuth/konkurs_elevation/launcher elevation/Launcher 9P135M/Effects").gameObject;
+
+                    MultiBarrelFix mbf = atgm.gameObject.AddComponent<MultiBarrelFix>();
+                    mbf.feed = atgm.Feed;
+                    mbf.max_ammo = 4;
+                    mbf.loaded_objects = new GameObject[] {
+                        launcher.Find("cap0").gameObject,
+                        launcher.Find("cap1").gameObject,
+                        launcher.Find("cap2").gameObject,
+                        launcher.Find("cap3").gameObject
+                    };
+
+                    mbf.weapon = atgm;
+
+                    missile_fx.transform.SetParent(launcher.Find("effect0"), false);
+                    GameObject.Instantiate(missile_fx, launcher.Find("effect1"));
+                    GameObject.Instantiate(missile_fx, launcher.Find("effect2"));
+                    GameObject.Instantiate(missile_fx, launcher.Find("effect3"));
+
+                    List<BarrelInfo> atgm_barrels = new List<BarrelInfo>() { };
+
+                    for (int i = 0; i <= 3; i++)
+                    {
+                        BarrelInfo barrel_info = new BarrelInfo();
+                        barrel_info.RoundLoadedObject = mbf.loaded_objects[i];
+                        barrel_info.MuzzleIdentity = launcher.Find("cap" + i + "/muzzle");
+                        barrel_info.MuzzleEffects = new ParticleSystem[] {
+                        launcher.transform.Find("effect" + i).GetChild(0).Find("TOW Backblast FX").GetComponent<ParticleSystem>(),
+                        launcher.transform.Find("effect" + i).GetChild(0).Find("TOW Front FX").GetComponent<ParticleSystem>()
+                    };
+                        atgm_barrels.Add(barrel_info);
+                    }
+
+                    atgm.MultiBarrels = atgm_barrels.ToArray();
+
+                    day_optic.slot.ExclusiveWeapons = new WeaponSystem[] { weapon, loadout_manager._weaponsManager.Weapons[2].Weapon, atgm };
+                    weapon.FCS.LinkedWeaponSystems = day_optic.slot.ExclusiveWeapons;
+
+                    GHPC.Weapons.AmmoRack atgm_rack = atgm.Feed.ReadyRack;
+                    atgm_rack.ClipTypes[0] = clip_9m133;
+                    atgm_rack.StoredClips = new List<AmmoType.AmmoClip>()
+                    {
+                        clip_9m133,
+                        clip_9m133,
+                    };
+
+                    atgm.Feed.AmmoTypeInBreech = null;
+                    atgm.Feed.Start();
+                }
+
                 loadout_manager.LoadedAmmoTypes = new AmmoClipCodexScriptable[] { ap, he };
 
                 GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[0].Rack;
@@ -303,10 +536,9 @@ namespace PactIncreasedLethality
                 weapon.Feed.LoadedClipType = null;
                 weapon.Feed.Start();
                 loadout_manager.RegisterAllBallistics();
-
-                if (use_9m113as.Value)
+                
+                if (use_9m113as.Value && !has_kornets.Value)
                 {
-                    WeaponSystem atgm = vic.GetComponent<WeaponsManager>().Weapons[1].Weapon;
                     GHPC.Weapons.AmmoRack atgm_rack = atgm.Feed.ReadyRack;
 
                     atgm_rack.ClipTypes[0] = clip_9m113_as;
@@ -327,9 +559,103 @@ namespace PactIncreasedLethality
             yield break;
         }
 
+        public static void LRFReticle() {
+            if (!reticleSO_lrf)
+            {
+                reticleSO_lrf = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["BMP-2_BPK-1-42"].tree);
+                reticleSO_lrf.name = "bmp2_lrf_ac";
+
+                Util.ShallowCopy(reticle_cached_lrf, ReticleMesh.cachedReticles["BMP-2_BPK-1-42"]);
+                reticle_cached_lrf.tree = reticleSO_lrf;
+
+                reticleSO_lrf.lights = new List<ReticleTree.Light>
+                {
+                    new ReticleTree.Light()
+                };
+
+                reticleSO_lrf.lights[0].color = new RGB(3f, 3f, 0f);
+                reticleSO_lrf.lights[0].type = ReticleTree.Light.Type.Powered;
+
+                ReticleTree.Angular angular = (reticle_cached_lrf.tree.planes[0].elements[1] as ReticleTree.Angular);
+                ReticleTree.Angular angular2 = (reticle_cached_lrf.tree.planes[0].elements[0] as ReticleTree.Angular);
+
+                angular2.elements.RemoveRange(0, 2);
+
+                angular.align = ReticleTree.GroupBase.Alignment.Impact;
+                angular.elements.RemoveRange(0, 3);
+                angular.elements.RemoveAt(1);
+
+                ReticleTree.Angular sight_picture = angular.elements[0] as ReticleTree.Angular;
+
+                for (int i = 1; i < sight_picture.elements.Count; i++) {
+                    ReticleTree.Line line = (sight_picture.elements[i] as ReticleTree.Angular).elements[0] as ReticleTree.Line;
+                    line.length.mrad *= 0.66f;
+                    line.position.y *= 0.66f;
+                    line.roundness = 0f;
+                }
+
+                foreach (ReticleTree.Line line in (sight_picture.elements[0] as ReticleTree.Angular).elements) {
+                    line.length.mrad *= 0.66f;
+                    line.position.y *= 0.66f;
+                    line.position.x *= 0.66f;
+                }
+
+                for (int i = 1; i >= -1; i -= 2)
+                {
+                    ReticleTree.Line l1 = new ReticleTree.Line();
+                    l1.thickness.mrad = 0.2094f;
+                    l1.roundness = 0f;
+                    l1.illumination = ReticleTree.Light.Type.Powered;
+                    l1.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+                    l1.rotation.mrad = 4712.389f;
+                    l1.length.mrad = 4f;
+                    l1.position = new ReticleTree.Position(-7.854f * i, -0.5896f);
+
+                    ReticleTree.Line l2 = new ReticleTree.Line();
+                    l2.thickness.mrad = 0.2094f;
+                    l2.roundness = 0f;
+                    l2.illumination = ReticleTree.Light.Type.Powered;
+                    l2.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+                    l2.length.mrad = 1f;
+                    l2.position = new ReticleTree.Position(-7.854f * i + 0.5f * i, -0.5896f + 2f);
+
+                    ReticleTree.Line l3 = new ReticleTree.Line();
+                    l3.thickness.mrad = 0.2094f;
+                    l3.roundness = 0f;
+                    l3.illumination = ReticleTree.Light.Type.Powered;
+                    l3.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+                    l3.length.mrad = 1f;
+                    l3.position = new ReticleTree.Position(-7.854f * i + 0.5f * i, -0.5896f - 2f);
+
+                    sight_picture.elements.Add(l1);
+                    sight_picture.elements.Add(l2);
+                    sight_picture.elements.Add(l3);
+                }
+
+                //////////////////////////////////////////////////////////////////////////////////////////////////////
+            }
+        }
+
         public static void Init()
         {
             if (!bmp2_patch.Value) return;
+
+            if (turret_no_smokes == null) {
+                AssetBundle bmp2m_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "bmp2m"));
+                turret_no_smokes = bmp2m_bundle.LoadAsset<Mesh>("bmp2_no_smokes.asset");
+                turret_no_smokes.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                bmp2m_turret = bmp2m_bundle.LoadAsset<Mesh>("bmp2m_turret.asset");
+                bmp2m_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                turret_only_thermals = bmp2m_bundle.LoadAsset<Mesh>("turret_thermals_only.asset");
+                turret_only_thermals.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                bmp2m_kit = bmp2m_bundle.LoadAsset<GameObject>("BMP2M_KIT.prefab");
+                bmp2m_kit.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+                Util.SetupFLIRShaders(bmp2m_kit);
+            }
 
             if (zsu_conversion.Value && brdm_nsv_barrel_mat == null)
             {
@@ -406,8 +732,8 @@ namespace PactIncreasedLethality
                 ammo_9m113_as.Name = "9M113AS Konkurs";
                 ammo_9m113_as.Category = AmmoType.AmmoCategory.Explosive;
                 ammo_9m113_as.RhaPenetration = 10f;
-                ammo_9m113_as.NoisePowerX = 1f;
-                ammo_9m113_as.NoisePowerY = 1f;
+                ammo_9m113_as.NoisePowerX = 0f;
+                ammo_9m113_as.NoisePowerY = 0f;
 
                 ammo_codex_9m113_as = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
                 ammo_codex_9m113_as.AmmoType = ammo_9m113_as;
@@ -435,7 +761,37 @@ namespace PactIncreasedLethality
 
                 EFP.AddEFP(ammo_9m113_as, ammo_9m113_efp, true);
 
-                ////////////////////
+                //////////////////////
+
+                ammo_9m133 = new AmmoType();
+                Util.ShallowCopy(ammo_9m133, ammo_9m113);
+                ammo_9m133.Name = "9M133 Kornet";
+                ammo_9m133.Category = AmmoType.AmmoCategory.ShapedCharge;
+                ammo_9m133.RhaPenetration = 1500f;
+                ammo_9m133.MuzzleVelocity = 300f;
+                ammo_9m133.SpiralPower = 20f;
+                ammo_9m133.TntEquivalentKg = 6.5f;
+                ammo_9m133.SpallMultiplier = 2.3f;
+                ammo_9m133._radius = 0.076f;
+                ammo_9m133.SectionalArea = 0.018146f;
+                ammo_9m133.Guidance = AmmoType.GuidanceType.Laser;
+
+                ammo_codex_9m133 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+                ammo_codex_9m133.AmmoType = ammo_9m133;
+                ammo_codex_9m133.name = "ammo_9m133";
+
+                clip_9m133 = new AmmoType.AmmoClip();
+                clip_9m133.Capacity = 4;
+                clip_9m133.Name = "9M133 Kornet";
+                clip_9m133.MinimalPattern = new AmmoCodexScriptable[] { ammo_codex_9m133 };
+                clip_9m133.MinimalPattern[0] = ammo_codex_9m133;
+
+                clip_codex_9m133 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+                clip_codex_9m133.name = "clip_9m133";
+                clip_codex_9m133.ClipType = clip_9m133;
+
+
+                /////////////////////
 
                 ammo_apds = new AmmoType();
                 Util.ShallowCopy(ammo_apds, AMMO_30MM.ammo_3ubr6);

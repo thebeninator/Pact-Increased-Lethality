@@ -51,10 +51,10 @@ namespace PactIncreasedLethality
             RaycastHit hit;
             Vector3 pos = live_round.transform.position;
 
-            if (Physics.Raycast(pos, Vector3.down, out hit, 1.8f, 1 << 8))
+            if (Physics.Raycast(pos, Vector3.down, out hit, 1.8f, 1 << 14))
             {
-                if (hit.collider.CompareTag("Penetrable"))
-                    Invoke("Detonate", 0.05f);
+                if (hit.transform.gameObject != null)
+                    Detonate();
                     //Invoke("Detonate", 0.85f / (live_round.CurrentSpeed + hit.distance));
                 
             }

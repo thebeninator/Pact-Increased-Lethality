@@ -78,7 +78,7 @@ namespace PactIncreasedLethality
         };
 
         public static void Add(UsableOptic optic, string quality, bool is_point_n_shoot = false) {
-            CRTShock.Add(optic.slot.transform, 0f, new Vector3(1f, 1f, 1f));
+            CRTShock.Add(optic.transform, 0f, new Vector3(1f, 1f, 1f));
             optic.slot.VisionType = NightVisionType.Thermal;
             optic.slot.BaseBlur = quality == "low" ? lq_blur.Value : hq_blur.Value;
             PostProcessVolume vol = PostProcessVolume.Instantiate(quality == "low" ? post_lq : post_hq, optic.transform);
@@ -246,7 +246,7 @@ namespace PactIncreasedLethality
 
             ReticleTree.Line line1 = reticle_hq.elements[0] as ReticleTree.Line;
             line1.rotation.mrad = 0;
-            line1.position.x = -9;
+            line1.position.x = -8f;
             line1.position.y = 0;
             line1.length.mrad = 15.0944f;
             line1.thickness.mrad /= 1.7f;
@@ -254,7 +254,7 @@ namespace PactIncreasedLethality
             line1.visualType = ReticleTree.VisualElement.Type.Painted;
 
             ReticleTree.Line line2 = reticle_hq.elements[1] as ReticleTree.Line;
-            line2.position.y = 6;
+            line2.position.y = 5.5f;
             line2.length.mrad = 10.0944f;
             line2.thickness.mrad /= 1.7f;
             line2.illumination = ReticleTree.Light.Type.Powered;
@@ -267,7 +267,7 @@ namespace PactIncreasedLethality
             line3.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
             line3.length.unit = AngularLength.AngularUnit.MIL_USSR;
             line3.rotation.mrad = 0f;
-            line3.position = new ReticleTree.Position(9f, 0, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+            line3.position = new ReticleTree.Position(8f, 0, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
             line3.visualType = ReticleTree.VisualElement.Type.Painted;
             line3.illumination = ReticleTree.Light.Type.Powered;
 
@@ -278,10 +278,11 @@ namespace PactIncreasedLethality
             line4.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
             line4.length.unit = AngularLength.AngularUnit.MIL_USSR;
             line4.rotation.mrad = line2.rotation.mrad;
-            line4.position = new ReticleTree.Position(0f, -6f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
+            line4.position = new ReticleTree.Position(0f, -5.5f, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
             line4.visualType = ReticleTree.VisualElement.Type.Painted;
             line4.illumination = ReticleTree.Light.Type.Powered;
 
+            /*
             List<Vector3> box_pos = new List<Vector3>() {
                 new Vector3(0, -13.344f),
                 new Vector3(0, 13.344f),
@@ -304,6 +305,7 @@ namespace PactIncreasedLethality
 
                 reticle_hq.elements.Add(box);
             }
+            */
 
             ReticleTree.Line centre = new ReticleTree.Line();
             centre.roundness = 0f;
@@ -328,7 +330,7 @@ namespace PactIncreasedLethality
             circle.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
             circle.visualType = ReticleTree.VisualElement.Type.Painted;
             circle.illumination = ReticleTree.Light.Type.Powered;
-            reticle_hq.elements.Add(circle);
+            //reticle_hq.elements.Add(circle);
             
             reticleSO_hq_wide = ScriptableObject.Instantiate(reticleSO_hq);
             reticleSO_hq_wide.name = "PACT-TIS-HQ-WIDE";
@@ -337,7 +339,7 @@ namespace PactIncreasedLethality
             reticle_cached_hq_wide.mesh = null;
 
             ReticleTree.Angular reticle_hq_wide = (reticleSO_hq_wide.planes[0].elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Angular;
-            reticle_hq_wide.elements.RemoveRange(0, reticle_hq_wide.elements.Count - 1);
+            reticle_hq_wide.elements.RemoveRange(0, reticle_hq_wide.elements.Count);
 
             ReticleTree.Line l1 = new ReticleTree.Line();
             l1.length = new AngularLength(3f, unit: AngularLength.AngularUnit.MIL_USSR);
@@ -359,7 +361,7 @@ namespace PactIncreasedLethality
 
             reticle_hq_wide.elements.Add(l1);
             reticle_hq_wide.elements.Add(l2);
-            reticle_hq.elements.RemoveAt(1);
+            //reticle_hq.elements.RemoveAt(1);
         }
 
         public static void Init() {

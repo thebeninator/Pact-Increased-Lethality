@@ -291,8 +291,9 @@ namespace PactIncreasedLethality
                 bool was_t72m = vic.GetComponent<PreviouslyT72M>() != null;
                 bool is_t72m = vic.UniqueName == "T72M" || was_t72m;
                 bool is_t72m1 = vic.UniqueName == "T72M1" && !was_t72m;
-                bool has_k1 = (era_t72m1.Value && is_t72m1) || (era_t72m.Value && is_t72m);
                 bool has_k5 = (k5_t72m1.Value && is_t72m1) || (k5_t72m.Value && is_t72m);
+                bool has_k1 = (era_t72m1.Value && is_t72m1) || (era_t72m.Value && is_t72m);
+                has_k1 = has_k1 && !has_k5;
                 bool has_reflective_plates = (t72m1_super_composite_cheeks.Value && is_t72m1) || (t72m_super_composite_cheeks.Value && is_t72m);
                 bool has_sosna = (super_fcs_t72m1.Value && is_t72m1) || (super_fcs_t72m.Value && is_t72m);
                 bool is_soviet = (soviet_t72m1.Value && is_t72m1) || (soviet_t72m.Value && is_t72m);
@@ -304,6 +305,10 @@ namespace PactIncreasedLethality
                 LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
                 UsableOptic night_optic = fcs.NightOptic;
                 UsableOptic day_optic = Util.GetDayOptic(fcs);
+
+                day_optic.reticleMesh.smoothTime = 0.1f;
+                day_optic.reticleMesh.maxSpeed = 1000f;
+                day_optic.reticleMesh.rotaryCoef = -0.0015f;
 
                 // SOVIET CREW 
                 if (is_soviet)
@@ -416,12 +421,16 @@ namespace PactIncreasedLethality
                     TPN3.Add(fcs, day_optic.slot.LinkedNightSight.PairedOptic, day_optic.slot.LinkedNightSight);
                 }
                
-                if ((thermals_t72m1.Value && is_t72m1) || (thermals_t72m.Value && is_t72m) && !has_sosna)
+                if (((thermals_t72m1.Value && is_t72m1) || (thermals_t72m.Value && is_t72m)) && !has_sosna)
                 {
                     PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower());
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
                 }
-                
+
+                if (has_sosna) {
+                    day_optic.transform.parent.localPosition = new Vector3(-0.727f, 0.4631f, -5.9849f);
+                    night_optic.transform.localPosition = new Vector3(-0.727f, 0.4631f, -5.9849f);
+                }
 
                 weapon.Feed.ReloadDuringMissileTracking = true;
                 weapon.FireWhileGuidingMissile = false;
@@ -433,9 +442,6 @@ namespace PactIncreasedLethality
 
                 if (has_sosna)
                 {
-                    day_optic.transform.parent.localPosition = new Vector3(-0.727f, 0.4631f, -5.9849f);
-                    night_optic.transform.localPosition = new Vector3(-0.727f, 0.4631f, -5.9849f);
-
                     Sosna.Add(day_optic, night_optic, vic.WeaponsManager.Weapons[1], true);
 
                     CustomGuidanceComputer gc = guidance_computer_obj.AddComponent<CustomGuidanceComputer>();
@@ -455,7 +461,7 @@ namespace PactIncreasedLethality
                     late_follow.Find("ARMOR/Night Sight Cover").gameObject.SetActive(false);
                     late_follow.Find("ARMOR/Night Sight Glass").gameObject.SetActive(false);
                     late_follow.Find("ARMOR/NightSight Housing").gameObject.SetActive(false);
-                }
+                }               
 
                 if (super_engine.Value)
                 {
@@ -472,7 +478,7 @@ namespace PactIncreasedLethality
                     this_vic_controller.transmission.Initialize(this_vic_controller);
 
                     chassis._maxForwardSpeed = 22f;
-                    chassis._maxReverseSpeed = 5.176f;
+                    chassis._maxReverseSpeed = 2.0f;
                     chassis._originalEnginePower = 1400.99f;
                 }
 
@@ -482,6 +488,9 @@ namespace PactIncreasedLethality
                 ){
                     FireControlSystem1A40.Add(fcs, day_optic, new Vector3(-308.8629f, -6.6525f, 0f));
                 }
+
+                BOM.Add(day_optic.transform);
+
 
                 if (vic.UniqueName == "T72M1")
                 {
@@ -608,7 +617,7 @@ namespace PactIncreasedLethality
                                 mantlet_k1 = kontakt.transform.Find("MANTLET MOUNT");
                                 mantlet_k1.parent = vic.transform.Find("---MESH---/HULL/TURRET/GUN");
 
-                                if (!has_sosna) {
+                                if (!has_sosna && has_reflective_plates) {
                                     turret_kontakt.Find("Cube.052 (2)").gameObject.SetActive(false);
                                     turret_kontakt.Find("Cube.053 (2)").gameObject.SetActive(false);
                                     turret_kontakt.Find("ARMOUR/Cube.052 (1)").gameObject.SetActive(false);
@@ -714,8 +723,9 @@ namespace PactIncreasedLethality
                             if (has_k1 && !has_reflective_plates) name = "KPz T-72M1V";
                             if (has_k5) name = "KPz T-72M1M";
                             if (!has_k5 && !has_k1 && has_reflective_plates) name = "T-72M1M";
+                            if (!has_k5 && has_k1 && has_reflective_plates) name = "T-72M1M";
                         }
-                   
+
                         if (has_k5 && has_sosna) name = "T-72B3";
                         if (has_k1 && has_sosna && has_reflective_plates) name = "T-72B1MS";
                         if (name == "T-72B3" && has_ubh) name = "T-72B3M";
@@ -762,8 +772,7 @@ namespace PactIncreasedLethality
             }
 
             if (t72b_k5_plate_destroyed == null)
-            {
-                
+            {       
                 AssetBundle t72b_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72b"));
                 AssetBundle t72av_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72av"));
 

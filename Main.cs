@@ -13,8 +13,10 @@ using FMOD;
 using GHPC.Vehicle;
 using HarmonyLib;
 using GHPC;
+using GHPC.Weapons;
+using static PactIncreasedLethality.ScreenShake;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "1.9.3", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.3", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -32,8 +34,32 @@ namespace PactIncreasedLethality
         public IEnumerator GetVics(GameState _) {
             vics = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
 
+            /*
+            if (!CameraManager._mainCamera.GetComponent<ScreenShake.CameraShake>())
+            {
+                CameraManager._mainCamera.gameObject.AddComponent<ScreenShake.CameraShake>();
+                CameraManager._mainCamera.nearClipPlane = 0.5f;
+            }
+            */
+
             yield break;
         }
+
+        /*
+        [HarmonyPatch(typeof(GHPC.Weapons.WeaponSystem), "Fire")]
+        public static class FURE
+        {
+            public static bool Prefix(WeaponSystem __instance)
+            {
+                if (!__instance.AbleToFire) return true;
+
+                CameraManager._mainCamera.GetComponent<CameraShake>().shakeAmount = 0.35f;
+                CameraManager._mainCamera.GetComponent<CameraShake>().shakeDuration = 0.25f;
+
+                return true;
+            }
+        }
+        */
 
         public override void OnInitializeMelon()
         {
@@ -59,7 +85,7 @@ namespace PactIncreasedLethality
             corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound_exterior);
             BMP2.ReplaceSound.sound_exterior.set3DMinMaxDistance(30f, 1300f);
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.wav"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound_alt);
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.ogg"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound_alt);
             BMP2.ReplaceSound.sound_alt.set3DMinMaxDistance(30f, 1300f);
         }
 

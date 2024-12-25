@@ -248,6 +248,9 @@ namespace PactIncreasedLethality
                 PostProcessVolume vol = PostProcessVolume.Instantiate(post_sosna);
                 vol.gameObject.SetActive(true);
                 night_optic.post = vol;
+                DepthOfFieldCustomSort dof;
+                vol.profile.TryGetSettings<DepthOfFieldCustomSort>(out dof);
+                dof.enabled.value = false;
 
                 night_optic.reticleMesh.reticleSO = reticleSO_sosna_thermal;
                 night_optic.reticleMesh.reticle = reticle_cached_sosna_thermal;

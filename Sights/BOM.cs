@@ -23,7 +23,8 @@ namespace PactIncreasedLethality
             ATGMSight sight = optic.gameObject.AddComponent<ATGMSight>(); 
             sight.original_reticle_mesh = optic.Find("Reticle Mesh").GetComponent<ReticleMesh>();
             sight.atgm_reticle_mesh = reticle_mesh_atgm.GetComponent<ReticleMesh>();
-            sight.laser_canvas = laser_canvas;
+            if (laser_canvas)
+                sight.laser_canvas = laser_canvas;
             sight.enabled = true;
         }
 
@@ -43,15 +44,17 @@ namespace PactIncreasedLethality
                 original_other_fovs = (float[])optic.slot.OtherFovs.Clone();
             }
 
-            void Update() {
+            void LateUpdate() {
                 if (fcs.CurrentAmmoType.ShortName == AmmoType.AmmoShortName.Missile)
                 {
                     if (optic.slot.DefaultFov == 4.2f) return;
 
-                    laser_canvas?.gameObject.SetActive(false);
+                    if (laser_canvas)
+                        laser_canvas.gameObject.SetActive(false);
 
                     optic.slot.DefaultFov = 4.2f;
-                    optic.slot.OtherFovs[0] = 4.2f;
+                    if (optic.slot.OtherFovs.Length > 0)
+                        optic.slot.OtherFovs[0] = 4.2f;
                     optic.reticleMesh = atgm_reticle_mesh;
                     original_reticle_mesh.gameObject.SetActive(false);
                     atgm_reticle_mesh.gameObject.SetActive(true);
@@ -60,7 +63,8 @@ namespace PactIncreasedLethality
                 else {
                     if (optic.slot.DefaultFov == original_default_fov) return;
 
-                    laser_canvas?.gameObject.SetActive(true);
+                    if (laser_canvas)
+                        laser_canvas.gameObject.SetActive(true);
 
                     optic.slot.DefaultFov = original_default_fov;
                     optic.slot.OtherFovs = original_other_fovs;
