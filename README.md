@@ -17,7 +17,7 @@ To regenerate the config:
 3) Quit the game using the main menu exit button
 
 # T-72
-https://www.youtube.com/watch?v=dvheOjTjuSg
+T-72B/T-72B3 Gunnery Guide: https://www.youtube.com/watch?v=dvheOjTjuSg
 
 T-72AV, T-72B obr.1984/85/89, T-72B3, T72B3M
 
