@@ -24,13 +24,13 @@ T-72B/T-72B3 Gunnery Guide: https://www.youtube.com/watch?v=dvheOjTjuSg
   
 | Soviet / NVA             |                   |                   |                  |                  |
 |--------------------------|-------------------|-------------------|------------------|------------------|
-| T-72AV / T-72M1V         | Kontakt 1         |                   |                  |                  |
-| T-72B obr.1984 / T-72M1M | Super Comp Cheeks | *TPN-3            | *Lead Calculator |                  |
-| T-72B obr.1985 / T-72M1M | Kontakt-1         | Super Comp Cheeks | *TPN-3           | *Lead Calculator |
-| T-72B obr.1989 / T-72M1M | Kontakt-5         | Super Comp Cheeks | *TPN-3           | *Lead Calculator |
-| T-72B1MS                 | Kontakt-1         | Super Comp Cheeks | Super FCS        |                  |
-| T-72B3                   | Kontakt-5         | Super Comp Cheeks | Super FCS        |                  |
-| T-72B3M                  | Kontakt-5         | Super Comp Cheeks | Super FCS        | UBH Package      |
+| T-72AV / T-72M1V          | Kontakt 1         |                   |                  |                  |
+| T-72B obr.1984 / T-72M1M  | Super Comp Cheeks | *TPN-3            | *Lead Calculator |                  |
+| T-72B obr.1985 / T-72M1M  | Kontakt-1         | Super Comp Cheeks | *TPN-3           | *Lead Calculator |
+| T-72B obr.1989 / T-72M1M  | Kontakt-5         | Super Comp Cheeks | *TPN-3           | *Lead Calculator |
+| T-72B1MS                  | Kontakt-1         | Super Comp Cheeks | Super FCS        |                  |
+| T-72B3                    | Kontakt-5         | Super Comp Cheeks | Super FCS        |                  |
+| T-72B3M                   | Kontakt-5         | Super Comp Cheeks | Super FCS        | UBH Package      |
 
 
 T-72Ms will be automatically be converted to T-72M1s if equipped with Kontakt-1/5
