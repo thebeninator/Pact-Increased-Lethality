@@ -16,7 +16,7 @@ using GHPC;
 using GHPC.Weapons;
 using static PactIncreasedLethality.ScreenShake;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.3", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.4", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -33,15 +33,13 @@ namespace PactIncreasedLethality
 
         public IEnumerator GetVics(GameState _) {
             vics = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
-
             /*
             if (!CameraManager._mainCamera.GetComponent<ScreenShake.CameraShake>())
             {
                 CameraManager._mainCamera.gameObject.AddComponent<ScreenShake.CameraShake>();
                 CameraManager._mainCamera.nearClipPlane = 0.5f;
             }
-            */
-
+            */   
             yield break;
         }
 
@@ -105,6 +103,7 @@ namespace PactIncreasedLethality
             camera_manager = game_manager.GetComponent<CameraManager>();
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Medium);
+            
             Kontakt5.Init();
             BOM.Init();
             Armour.Init();
@@ -122,10 +121,10 @@ namespace PactIncreasedLethality
             T55.Init();
             BMP1.Init();
             T64A.Init();
-            T64B.Init();
-            T62.Init();
+            T64B.Init();        
+            T62.Init();        
             T80.Init();
-            BTR60.Init();
+            BTR60.Init();            
         }
     }
 }

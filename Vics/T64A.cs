@@ -214,7 +214,7 @@ namespace PactIncreasedLethality
 
                 if (thermals.Value)
                 {
-                    PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower());
+                    PactThermal.Add(day_optic.slot.LinkedNightSight.PairedOptic, thermals_quality.Value.ToLower());
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
                 }
             }

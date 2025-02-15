@@ -604,6 +604,17 @@ namespace PactIncreasedLethality
 
                         smoke_manager._smokeGroups = patterns;
 
+                        if (has_sosna)
+                        {
+                            GameObject _sosna_u = GameObject.Instantiate(sosna_u, vic.transform.Find("T72M1_mesh (1)/T72M1_hull"));
+                            _sosna_u.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+                            _sosna_u.transform.parent = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret");
+                            _sosna_u.transform.Find("SOSNA U").parent = turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform;
+
+                            turret.Find("LUNA").localScale = new Vector3(0f, 0f, 0f);
+                            turret.Find("night sight cover").localScale = new Vector3(0f, 0f, 0f);
+                        }
+
                         if (!only_smoke)
                         {
                             Transform hull_kontakt = kontakt.transform.Find("HULL ERA");
@@ -637,17 +648,6 @@ namespace PactIncreasedLethality
                             turret_follow.enabled = true;
                             turret_follow.Awake();
                             turret_kontakt.Find("ARMOUR").parent = null;
-
-                            if (has_sosna)
-                            {
-                                GameObject _sosna_u = GameObject.Instantiate(sosna_u, vic.transform.Find("T72M1_mesh (1)/T72M1_hull"));
-                                _sosna_u.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-                                _sosna_u.transform.parent = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret");
-                                _sosna_u.transform.Find("SOSNA U").parent = turret_follow.transform;
-
-                                turret.Find("LUNA").localScale = new Vector3(0f, 0f, 0f);
-                                turret.Find("night sight cover").localScale = new Vector3(0f, 0f, 0f);
-                            }
 
                             if (has_k5)
                             {

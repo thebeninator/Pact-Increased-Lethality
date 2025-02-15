@@ -168,7 +168,7 @@ namespace PactIncreasedLethality
             public WeaponSystem weapon;
 
             void Update() {
-                weapon.FireWhileGuidingMissile = PlayerInput.Instance.CurrentPlayerWeapon.Weapon == weapon;
+                weapon.FireWhileGuidingMissile = PlayerInput.Instance?.CurrentPlayerWeapon?.Weapon == weapon;
 
                 if (feed.CurrentClipRemainingCount == max_ammo) {
                     foreach (GameObject obj in loaded_objects) { obj.SetActive(true); }

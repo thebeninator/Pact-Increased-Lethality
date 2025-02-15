@@ -71,7 +71,7 @@ namespace PactIncreasedLethality
         void Update()
         {
             if (fcs == null) return;
-            if (PlayerInput.Instance.CurrentPlayerWeapon.FCS != fcs) return;
+            if (PlayerInput.Instance?.CurrentPlayerWeapon?.FCS != fcs) return;
 
             if (cd > 0f)
                 cd -= Time.deltaTime;
@@ -161,6 +161,8 @@ namespace PactIncreasedLethality
     {
         private static bool Prefix(GHPC.Equipment.Optics.UsableOptic __instance)
         {
+            if (__instance.FCS == null) return true;
+
             LockOnLead lead = __instance.FCS.gameObject.GetComponent<LockOnLead>() ?? null;
 
             if (lead != null && lead.target && lead.engaged)

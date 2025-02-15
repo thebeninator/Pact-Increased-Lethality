@@ -81,11 +81,13 @@ namespace PactIncreasedLethality
                 WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
                 LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
 
+
                 int rand = UnityEngine.Random.Range(0, AMMO_125mm.ap.Count);
                 string ammo_str = t64_random_ammo.Value ? t64_random_ammo_pool.Value.ElementAt(rand) : t64_ammo_type.Value;
 
                 FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
                 UsableOptic day_optic = Util.GetDayOptic(fcs);
+                UsableOptic night_optic = day_optic.slot.LinkedNightSight.PairedOptic;
 
                 if (zoom_snapper.Value)
                     day_optic.gameObject.AddComponent<DigitalZoomSnapper>();
@@ -180,11 +182,11 @@ namespace PactIncreasedLethality
 
                 if (thermals.Value)
                 {
-                    PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower(), true);
+                    PactThermal.Add(night_optic, thermals_quality.Value.ToLower(), true);
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
 
-                    weapon.FCS.NightOptic.Alignment = OpticAlignment.BoresightStabilized;
-                    weapon.FCS.NightOptic.RotateAzimuth = true;
+                    night_optic.Alignment = OpticAlignment.BoresightStabilized;
+                    night_optic.RotateAzimuth = true;
                 }
             }
 

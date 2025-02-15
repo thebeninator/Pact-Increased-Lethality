@@ -41,10 +41,16 @@ namespace PactIncreasedLethality
             CreateTrackingObject("M60A3", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
             CreateTrackingObject("M60A3 TTS", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
 
+            CreateTrackingObject("LEO1A1A1", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
+            CreateTrackingObject("LEO1A1A2", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
+            CreateTrackingObject("LEO1A1A3", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
+            CreateTrackingObject("LEO1A1A4", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
+
             CreateTrackingObject("M1", new Vector3(0f, 1.21f, -0.25f), new Vector3(3.5f, 2.4f, 7.8f));
             CreateTrackingObject("M1IP", new Vector3(0f, 1.21f, -0.25f), new Vector3(3.5f, 2.4f, 7.8f));
 
             CreateTrackingObject("M113", new Vector3(0f, 1.17f, 0.35f), new Vector3(2.5f, 2.4f, 4.7f));
+            CreateTrackingObject("M113G", new Vector3(0f, 1.17f, 0.35f), new Vector3(2.5f, 2.4f, 4.7f));
             CreateTrackingObject("M901", new Vector3(0f, 1.17f, 0.35f), new Vector3(2.5f, 2.4f, 4.7f));
 
             CreateTrackingObject("M923", new Vector3(0f, 1.37f, -0.78f), new Vector3(2.3f, 2.8f, 7.5f));

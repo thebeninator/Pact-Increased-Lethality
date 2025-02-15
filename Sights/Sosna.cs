@@ -89,8 +89,8 @@ namespace PactIncreasedLethality
 
             void LateUpdate()
             {
-                FireControlSystem fcs = PlayerInput.Instance.CurrentPlayerWeapon.FCS;
-                UsableOptic optic = PlayerInput.Instance.CurrentPlayerWeapon.FCS.MainOptic;
+                FireControlSystem fcs = PlayerInput.Instance?.CurrentPlayerWeapon?.FCS;
+                UsableOptic optic = fcs?.MainOptic;
 
                 if (!optic || (!optic.GetComponent<HasThermalMonitor>() || !optic.gameObject.activeSelf))
                 {

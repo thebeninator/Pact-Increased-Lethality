@@ -30,7 +30,6 @@ namespace PactIncreasedLethality
             uvrs.reticle = optic.reticleMesh;
             optic.reticleMesh.smoothTime = 0.1f;
             optic.reticleMesh.maxSpeed = 2000f;
-
         }
 
         public static void Init()
