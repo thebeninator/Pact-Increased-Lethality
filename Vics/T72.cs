@@ -436,6 +436,7 @@ namespace PactIncreasedLethality
                 weapon.FireWhileGuidingMissile = false;
                 GameObject guidance_computer_obj = GameObject.Instantiate(new GameObject("guidance computer"), fcs.transform.parent);
                 guidance_computer_obj.transform.localPosition = fcs.transform.localPosition + new Vector3(0, 0, 5f);
+                guidance_computer_obj.transform.SetParent(day_optic.transform, true);
                 MissileGuidanceUnit computer = guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
                 computer.AimElement = guidance_computer_obj.transform;
                 weapon.GuidanceUnit = computer;

@@ -445,6 +445,7 @@ namespace PactIncreasedLethality
 
                     AimablePlatform[] new_mounts = new AimablePlatform[] { weapon.FCS.Mounts[0], weapon.FCS.Mounts[1], atgm.FCS.Mounts[1] };
                     weapon.FCS.Mounts = new_mounts;
+                    weapon.FCS.LaserAim = LaserAimMode.ImpactPoint;
                     atgm.FCS.Mounts[0].enabled = false;
                     atgm.FCS.enabled = false;
                     atgm.FCS.gameObject.transform.SetParent(weapon.FCS.transform, false);

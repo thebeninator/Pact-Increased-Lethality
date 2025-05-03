@@ -55,7 +55,7 @@ namespace PactIncreasedLethality
                     Detonate();
             }
         }
-
+        
         [HarmonyPatch(typeof(GHPC.Weapons.LiveRound), "Start")]
         public static class SpawnProximityFuse
         {
@@ -72,5 +72,6 @@ namespace PactIncreasedLethality
                 }
             }
         }
+        
     }
 }

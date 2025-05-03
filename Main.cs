@@ -16,7 +16,7 @@ using GHPC;
 using GHPC.Weapons;
 using static PactIncreasedLethality.ScreenShake;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.4", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.5", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -32,6 +32,10 @@ namespace PactIncreasedLethality
         public static CameraManager camera_manager;
 
         public IEnumerator GetVics(GameState _) {
+            game_manager = GameObject.Find("_APP_GHPC_");
+            audio_settings_manager = game_manager.GetComponent<AudioSettingsManager>();
+            player_manager = game_manager.GetComponent<PlayerInput>();
+            camera_manager = game_manager.GetComponent<CameraManager>();
             vics = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
             /*
             if (!CameraManager._mainCamera.GetComponent<ScreenShake.CameraShake>())
@@ -97,34 +101,50 @@ namespace PactIncreasedLethality
 
             if (Util.menu_screens.Contains(sceneName)) return;
 
-            game_manager = GameObject.Find("_APP_GHPC_");
-            audio_settings_manager = game_manager.GetComponent<AudioSettingsManager>();
-            player_manager = game_manager.GetComponent<PlayerInput>();
-            camera_manager = game_manager.GetComponent<CameraManager>();
-
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Medium);
             
             Kontakt5.Init();
+            
             BOM.Init();
+            
             Armour.Init();
+           
             CRTShock.Init();
+            
             FireControlSystem1A40.Init();
+       
             AMMO_125mm.Init();
+            
             AMMO_30MM.Init();
+            
             PactThermal.Init();
+            
             Sosna.Init();
+            
             Drozd.Init();
+
             ProximityFuse.Init();
+            
             EFP.Init();
+            
             T72.Init();
+            
             BMP2.Init();
+
             T55.Init();
+
             BMP1.Init();
+
             T64A.Init();
-            T64B.Init();        
-            T62.Init();        
+
+            T64B.Init();     
+            
+            T62.Init();     
+            
             T80.Init();
-            BTR60.Init();            
+
+            BTR60.Init();        
+            
         }
     }
 }

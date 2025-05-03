@@ -115,6 +115,7 @@ namespace PactIncreasedLethality
             Kontakt5Visual vis = k5_t.gameObject.AddComponent<Kontakt5Visual>();
             vis.visual = vis_transform.transform.GetChild(k5_t.GetSiblingIndex()).GetComponent<MeshRenderer>();
             vis.type = type;
+            vis.enabled = false;
         }
 
         public class UpdateAmmoTypeUI : MonoBehaviour

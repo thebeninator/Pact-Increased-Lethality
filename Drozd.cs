@@ -11,6 +11,7 @@ using GHPC.Effects;
 using GHPC.Audio;
 using GHPC;
 using System.Xml.Linq;
+using FMOD;
 
 namespace PactIncreasedLethality
 {
@@ -32,8 +33,8 @@ namespace PactIncreasedLethality
     {
         static float MIN_ENGAGEMENT_SPEED = 70f;
         static float MAX_ENGAGEMENT_SPEED = 700f;
-        static float MIN_ENGAGEMENT_ANGLE = 3f;
-        static float MAX_ENGAGEMENT_ANGLE = 22f;
+        static float MIN_ENGAGEMENT_ANGLE = 4f;
+        static float MAX_ENGAGEMENT_ANGLE = 60f;
         static float INTERCEPTION_COOLDOWN = 2f;
         static string[] FAILURES = new string[4] { "ignore", "ignore", "miss", "miss" };
 
@@ -88,7 +89,7 @@ namespace PactIncreasedLethality
             drozd_go.name = "drozd";
             drozd_go.layer = 7;
             drozd_go.tag = "Untagged";
-            drozd_go.GetComponent<MeshRenderer>().enabled = false;   
+            drozd_go.GetComponent<MeshRenderer>().enabled = true;   
             drozd_go.AddComponent<Drozd>();
             drozd_go.AddComponent<LateFollow>();
 
@@ -118,13 +119,13 @@ namespace PactIncreasedLethality
 
             if (cd < 0f) cd = 0f;
         }
-        
+              
         [HarmonyPatch(typeof(GHPC.Weapons.LiveRound), "penCheck")]
         public static class Interception
         {
             private static bool Prefix(GHPC.Weapons.LiveRound __instance, object[] __args)
             {
-                /*
+                /*   
                 if (!__instance.IsSpall && ((Collider)__args[0]).GetComponent<IArmor>() != null) {
                     __instance.doRicochet((Collider)__args[0], ((Collider)__args[0]).GetComponent<IArmor>(), (Vector3)__args[2], (Vector3)__args[1], 90f, false);
                     return true;
@@ -140,7 +141,6 @@ namespace PactIncreasedLethality
 
                 if (!collider.gameObject.name.Contains("drozd")) return true;
                 if (drozd == null || drozd.cd > 0 || drozd.unit.Neutralized) return true;
-
                 if (drozd.l_launchers.IsEmpty && drozd.r_launchers.IsEmpty) return true;
 
                 Vector3 impact_point = (Vector3)__args[3];
@@ -149,9 +149,12 @@ namespace PactIncreasedLethality
 
                 bool hit_front_face = Vector3.Angle(normal, collider.gameObject.transform.forward) == 0;
                 bool hit_side_face = Vector3.Angle(normal, collider.gameObject.transform.forward) == 90;
-                float angle_of_impact = Vector3.SignedAngle(impact_path, drozd.unit.transform.position - impact_point, Vector3.up);
+                float angle_of_impact = Vector3.SignedAngle(impact_path, collider.gameObject.transform.position - impact_point, Vector3.up);
 
-                if ((hit_front_face || hit_side_face) && Math.Abs(angle_of_impact) >= MIN_ENGAGEMENT_ANGLE && Math.Abs(angle_of_impact) <= MAX_ENGAGEMENT_ANGLE)
+                if ((hit_front_face || hit_side_face) && 
+                    (90f - Math.Abs(angle_of_impact)) >= MIN_ENGAGEMENT_ANGLE && 
+                    (90f - Math.Abs(angle_of_impact)) <= MAX_ENGAGEMENT_ANGLE
+                )
                 {
                     string failure = "";
                     LauncherArray launcher_array = Math.Sign(angle_of_impact) == -1 ? drozd.l_launchers : drozd.r_launchers;
@@ -217,8 +220,9 @@ namespace PactIncreasedLethality
 
                 return true;
             }
-        }
+        }  
     }
+
     public class DrozdLauncher : MonoBehaviour
     {
         public static GameObject drozd_launcher_visual;
@@ -269,8 +273,8 @@ namespace PactIncreasedLethality
                 bradley_launcher_mesh = Mesh.Instantiate(rig_renderer.sharedMesh);
 
                 fx = GameObject.Instantiate(s.transform.Find("Gun Scripts/Launcher M2 TOW/muzzle effects L").gameObject);
-                GameObject.Destroy(fx.transform.GetChild(0).GetChild(6).gameObject);
-                GameObject.Destroy(fx.transform.GetChild(1).GetChild(7).gameObject);
+                GameObject.DestroyImmediate(fx.transform.GetChild(0).GetChild(6).gameObject);
+                GameObject.DestroyImmediate(fx.transform.GetChild(1).GetChild(5).gameObject);
 
                 drozd_rocket = s.transform.Find("placeholder missile R/lp_rocket").gameObject;
 

@@ -86,7 +86,8 @@ namespace PactIncreasedLethality
             optic.post = vol;
 
             if (quality == "low") {
-                GameObject s = GameObject.Instantiate(scanline_canvas, optic.transform);          
+                GameObject s = GameObject.Instantiate(scanline_canvas, optic.transform);
+                optic.Alignment = OpticAlignment.BoresightStabilized;
                 s.SetActive(true);
             }
 
@@ -139,6 +140,7 @@ namespace PactIncreasedLethality
                 optic._reticleMeshLocalPositions = new Vector2[] { Vector3.zero, Vector3.zero };
                 optic.FovLimitedItems = new UsableOptic.FovLimitedItem[] { wide_lim, zoomed_lim };
                 optic.AdditionalReticleMeshes = new ReticleMesh[] { wide_reticle_mesh };
+                optic.Alignment = OpticAlignment.BoresightStabilized;
 
                 optic.slot.DefaultFov = 9.5f;
                 optic.slot.OtherFovs = new float[1] { 4.04f };
@@ -414,7 +416,7 @@ namespace PactIncreasedLethality
 
             post_lq = PostProcessVolume.Instantiate(post_og);
             ColorGrading color_grading = post_lq.profile.settings[1] as ColorGrading;
-            color_grading.postExposure.value = 2f;
+            color_grading.postExposure.value = 0.5f;
             color_grading.colorFilter.value = new Color(0.70f, 0.75f, 0.70f);
             color_grading.lift.value = new Vector4(0f, 0f, 0f, -1.2f);
             color_grading.lift.overrideState = true;

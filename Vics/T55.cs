@@ -319,7 +319,7 @@ namespace PactIncreasedLethality
                     }
 
                     Drozd.AttachDrozd(
-                        vic.transform.Find("T55A_skeleton/HULL/Turret"), vic, new Vector3(0f, 0f, 3f),
+                        vic.transform.Find("T55A_skeleton/HULL/Turret"), vic, new Vector3(0f, 0f, 5f),
                         launchers.GetRange(0, 2).ToArray(), launchers.GetRange(2, 2).ToArray()
                     );
 

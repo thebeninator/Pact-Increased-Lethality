@@ -69,7 +69,7 @@ namespace PactIncreasedLethality
                 live_round.Detonate();
             }
         }
-
+        
         [HarmonyPatch(typeof(GHPC.Weapons.LiveRound), "Start")]
         public static class SpawnEFPSensor
         {
@@ -91,8 +91,8 @@ namespace PactIncreasedLethality
                     GameObject.DestroyImmediate(__instance.gameObject.transform.Find("efp sensor(Clone)").gameObject);
                 }
             }
-        }
-
+        }     
+        
         [HarmonyPatch(typeof(GHPC.Weapons.LiveRound), "createExplosion")]
         public static class DetonateEFP
         {
@@ -137,6 +137,6 @@ namespace PactIncreasedLethality
                 }
             }
         }
-
+        
     }
 }

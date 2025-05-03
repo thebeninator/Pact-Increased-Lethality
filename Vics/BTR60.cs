@@ -199,7 +199,6 @@ namespace PactIncreasedLethality
                     weapon.WeaponSound.SingleShotByDefault = true;
                     weapon.WeaponSound.SingleShotMode = true;
                     weapon.WeaponSound.SingleShotEventPaths = new string[] { "event:/Weapons/autocannon_2a42_single_actually_2a72" };
-                    weapon.FCS.RegisteredRangeLimits = new Vector2(0f, 4000f);
                     day_optic.FCS = weapon.FCS;
                     weapon.FCS.RegisterOptic(day_optic);
                     UpdateVerticalRangeScale uvrs = day_optic.gameObject.AddComponent<UpdateVerticalRangeScale>();
@@ -207,6 +206,8 @@ namespace PactIncreasedLethality
                     uvrs.fcs = weapon.FCS;
                     weapon._impulseLocation = btr_gun.Find("gun_recoil");
                     weapon.Impulse = 35f;
+                    weapon.FCS.RegisteredRangeLimits = new Vector2(0f, 4000f);
+                    weapon.FCS._originalRangeLimits = new Vector2(0f, 4000f);
 
                     GameObject nvs = GameObject.Instantiate(m60a1_nvs, day_optic.transform);
                     nvs.SetActive(true);
