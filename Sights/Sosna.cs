@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using GHPC.Camera;
 using GHPC.Equipment.Optics;
 using GHPC.Player;
-using GHPC.State;
 using GHPC.Utility;
 using GHPC.Vehicle;
 using GHPC.Weapons;
@@ -16,7 +12,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
-using static UnityEngine.Rendering.PostProcessing.SubpixelMorphologicalAntialiasing;
 
 namespace PactIncreasedLethality
 {
@@ -38,87 +33,45 @@ namespace PactIncreasedLethality
 
         private static PostProcessVolume post_sosna;
 
-        private class HasThermalMonitor : MonoBehaviour {}
-
         public class ThermalMonitor : MonoBehaviour {
-            public RenderTexture monitor_texture;
-            GameObject monitor_screen;
-            Camera cam;
-            GameObject scope;
-
-            Transform crosshair_ui;
             Transform wfov_ui;
-            Transform ready;
-            Transform cmdr_override;
+            Transform crosshair_ui;
             Transform crosshairs;
-            Transform wfov;
             Transform stab;
             Transform apfsds;
             Transform heat;
             Transform pk;
             Transform he;
             Transform atgm;
-            static public Transform tracking_gates;
             TextMeshProUGUI range;
+            public Transform tracking_gates;
 
             void Awake() {
-                cam = CameraManager.MainCam;
-                scope = cam.transform.Find("Scope").gameObject;
+                crosshair_ui = transform.Find("CROSSHAIR UI");
+                wfov_ui = transform.Find("WFOV UI");
+                crosshairs = transform.Find("CROSSHAIR");
 
-                monitor_screen = transform.Find("MONITOR SCREEN").gameObject;
-
-                crosshair_ui = monitor_screen.transform.Find("CROSSHAIR UI");
-                wfov_ui = monitor_screen.transform.Find("WFOV UI");
-
-                ready = crosshair_ui.Find("READY");
-                cmdr_override = crosshair_ui.Find("CMDR CONTROL");
-                range = crosshair_ui.Find("RANGE").GetComponentInChildren<TextMeshProUGUI>();
                 apfsds = crosshair_ui.Find("AMMO (AP)");
                 atgm = crosshair_ui.Find("AMMO (ATGM)");
                 heat = crosshair_ui.Find("AMMO (HEAT)");
                 he = crosshair_ui.Find("AMMO (HE)");
                 pk = crosshair_ui.Find("AMMO (COAX)");
-
-                tracking_gates = crosshair_ui.Find("TRACKING GATE HOLDER");
-
+                range = crosshair_ui.Find("RANGE").GetComponentInChildren<TextMeshProUGUI>();
                 stab = wfov_ui.Find("STAB");
-
-                wfov = monitor_screen.transform.Find("WFOV");
-                crosshairs = monitor_screen.transform.Find("CROSSHAIR");
+                tracking_gates = crosshair_ui.Find("TRACKING GATE HOLDER");
             }
 
             void LateUpdate()
             {
                 FireControlSystem fcs = PlayerInput.Instance?.CurrentPlayerWeapon?.FCS;
-                UsableOptic optic = fcs?.MainOptic;
-
-                if (!optic || (!optic.GetComponent<HasThermalMonitor>() || !optic.gameObject.activeSelf))
-                {
-                    cam.targetTexture = null;
-                    monitor_screen.SetActive(false);
-                    scope.gameObject.SetActive(true);
-                    return;
-                } else if (cam.targetTexture == null)
-                {
-                    scope.gameObject.SetActive(false);
-                    cam.targetTexture = monitor_texture;
-                    monitor_screen.SetActive(true);
-                }
-
-                crosshair_ui.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov < 10.52f);
-                crosshairs.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov < 10.52f);
-                ready.gameObject.SetActive(fcs.CurrentWeaponSystem.AbleToFire);
-                cmdr_override.gameObject.SetActive(fcs.IsOverridingNow);
-                tracking_gates.gameObject.SetActive(fcs.GetComponent<LockOnLead>().target != null);
-                range.text = ((int)MathUtil.RoundFloatToMultipleOf(fcs.CurrentRange, 5)).ToString("0000");
 
                 if (fcs.NightOptic.slot.CurrentFov == 2.95f)
                 {
-                    crosshairs.localScale = new Vector3(0.4f, 0.4f, 1f);
+                    crosshairs.localScale = new Vector3(0.5f, 0.5f, 1f);
                 }
                 else
                 {
-                    crosshairs.localScale = new Vector3(0.3f, 0.3f, 1f);
+                    crosshairs.localScale = new Vector3(0.42f, 0.42f, 1f);
                 }
 
                 apfsds.gameObject.SetActive(fcs.CurrentAmmoType.Category == AmmoType.AmmoCategory.Penetrator);
@@ -126,32 +79,13 @@ namespace PactIncreasedLethality
                 he.gameObject.SetActive(fcs.CurrentAmmoType.Category == AmmoType.AmmoCategory.Explosive);
                 atgm.gameObject.SetActive(fcs.CurrentAmmoType.Guidance > AmmoType.GuidanceType.Unguided);
                 pk.gameObject.SetActive(fcs.CurrentWeaponSystem.MetaName == "Coaxial MG");
-
-                wfov_ui.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov == 10.52f);
-                wfov.gameObject.SetActive(fcs.NightOptic.slot.CurrentFov == 10.52f);
+                tracking_gates.gameObject.SetActive(fcs.GetComponent<LockOnLead>().target != null);
+                range.text = ((int)MathUtil.RoundFloatToMultipleOf(fcs.CurrentRange, 5)).ToString("0000");
                 stab.gameObject.SetActive(fcs.StabsActive);
             }
         }
 
-        private static IEnumerator AddThermalMonitor(GameState _) {
-            Camera cam = CameraManager.MainCam;
-
-            if (PlayerInput.Instance.transform.Find("UIHUDCanvas").parent.Find("MONITOR CANVAS(Clone)")) yield break;
-
-            GameObject monitor_canvas = GameObject.Instantiate(sosna_monitor);
-
-            ThermalMonitor monitor = monitor_canvas.AddComponent<ThermalMonitor>();
-            monitor.enabled = true;
-            monitor.monitor_texture = (RenderTexture)monitor_canvas.GetComponentInChildren<RawImage>().mainTexture;
-
-            Transform monitor_screen = monitor_canvas.transform.Find("MONITOR SCREEN");
-            monitor_canvas.transform.parent = PlayerInput.Instance.transform.Find("UIHUDCanvas").parent;
-            monitor_canvas.transform.SetAsFirstSibling();
-
-            yield break;
-        }
-
-        public static void Add(UsableOptic day_optic, UsableOptic night_optic, WeaponSystemInfo coax, bool thermal = false) {
+        public static void Add(UsableOptic day_optic, UsableOptic night_optic, WeaponSystemInfo coax, WeaponSystemInfo main, CustomGuidanceComputer mgu) {
             FireControlSystem fcs = day_optic.FCS;
             fcs._fixParallaxForVectorMode = true;
             fcs.SuperelevateWeapon = true;
@@ -241,53 +175,59 @@ namespace PactIncreasedLethality
 
             day_optic.ReadyToFireObject = ready.gameObject;
 
-            if (thermal) {
-                CRTShock.Add(night_optic.slot.transform, 0f, new Vector3(1f, 1f, 1f));
-                night_optic.slot.VisionType = NightVisionType.Thermal;
-                night_optic.slot.BaseBlur = 0f;
-                PostProcessVolume vol = PostProcessVolume.Instantiate(post_sosna);
-                vol.gameObject.SetActive(true);
-                night_optic.post = vol;
-                DepthOfFieldCustomSort dof;
-                vol.profile.TryGetSettings<DepthOfFieldCustomSort>(out dof);
-                dof.enabled.value = false;
+            //CRTShock.Add(night_optic.slot.transform, 0f, new Vector3(1f, 1f, 1f));
+            night_optic.slot.VisionType = NightVisionType.Thermal;
+            night_optic.slot.BaseBlur = 0f;
+            night_optic.post = null;
+            night_optic.reticleMesh.Clear();
+            night_optic.reticleMesh = null;
+            night_optic.slot.FLIRBlitMaterialOverride = PactThermal.white_flir_mat_no_scope;
 
-                night_optic.reticleMesh.reticleSO = reticleSO_sosna_thermal;
-                night_optic.reticleMesh.reticle = reticle_cached_sosna_thermal;
-                night_optic.reticleMesh.SMR = null;
-                night_optic.reticleMesh.Load();
+            night_optic.slot.DefaultFov = 10.52f;
+            night_optic.slot.OtherFovs = new float[2] { 6.25f, 2.95f };
+            night_optic.slot.VibrationBlurScale = 0.05f;
+            night_optic.slot.VibrationShakeMultiplier = 0.01f;
+            night_optic.slot.VibrationPreBlur = true;
+            night_optic.slot.OverrideFLIRResolution = true;
+            night_optic.slot.FLIRWidth = 1024;
+            night_optic.slot.FLIRHeight = 576;
+            night_optic.slot.CanToggleFlirPolarity = true;
+            night_optic.slot.FLIRFilterMode = FilterMode.Point;
 
-                night_optic.reticleMesh.Clear();
+            GameObject monitor_canvas = GameObject.Instantiate(sosna_monitor, night_optic.transform);
+            ThermalMonitor monitor = monitor_canvas.AddComponent<ThermalMonitor>();
 
-                GameObject wide = GameObject.Instantiate(night_optic.reticleMesh.gameObject, night_optic.transform);
-                wide.gameObject.SetActive(true);
-                ReticleMesh wide_reticle_mesh = wide.GetComponent<ReticleMesh>();
-                wide_reticle_mesh.reticleSO = reticleSO_sosna_thermal_wide;
-                wide_reticle_mesh.reticle = reticle_cached_sosna_thermal_wide;
-                wide_reticle_mesh.SMR = null;
-                wide_reticle_mesh.Load();
-                wide_reticle_mesh.Clear();
+            GameObject wfov_reticle = monitor_canvas.transform.Find("WFOV").gameObject;
+            GameObject wfov_elements = monitor_canvas.transform.Find("WFOV UI").gameObject;
+            GameObject crosshair_reticle = monitor_canvas.transform.Find("CROSSHAIR").gameObject;
+            GameObject crosshair_elements = monitor_canvas.transform.Find("CROSSHAIR UI").gameObject;
 
-                UsableOptic.FovLimitedItem wide_lim = new UsableOptic.FovLimitedItem();
-                wide_lim.FovRange = new Vector2(9f, 360f);
-                wide_lim.ExclusiveObjects = new GameObject[] { wide };
-                UsableOptic.FovLimitedItem zoomed_lim = new UsableOptic.FovLimitedItem();
-                zoomed_lim.FovRange = new Vector2(0f, 8f);
-                zoomed_lim.ExclusiveObjects = new GameObject[] { night_optic.reticleMesh.gameObject };
+            night_optic.FovLimitedItems = new UsableOptic.FovLimitedItem[] {
+                new UsableOptic.FovLimitedItem() { 
+                    FovRange = new Vector2(10f, 15f),
+                    ExclusiveObjects = new GameObject[] { wfov_reticle, wfov_elements}
+                },
 
-                night_optic._reticleMeshLocalPositions = new Vector2[] { Vector3.zero, Vector3.zero };
-                night_optic.FovLimitedItems = new UsableOptic.FovLimitedItem[] { wide_lim, zoomed_lim };
-                night_optic.AdditionalReticleMeshes = new ReticleMesh[] { wide_reticle_mesh };
-                night_optic.reticleMesh = null;
+                new UsableOptic.FovLimitedItem() {
+                    FovRange = new Vector2(2f, 7f),
+                    ExclusiveObjects = new GameObject[] { crosshair_reticle, crosshair_elements }
+                }
+            };
 
-                night_optic.slot.DefaultFov = 10.52f;
-                night_optic.slot.OtherFovs = new float[2] { 6.25f, 2.95f };
-                night_optic.slot.VibrationBlurScale = 0.05f;
-                night_optic.slot.VibrationShakeMultiplier = 0.01f;
-                night_optic.slot.VibrationPreBlur = true;
+            night_optic.ReadyToFireObject = crosshair_elements.transform.Find("READY").gameObject;
+            night_optic.OverridingObject = crosshair_elements.transform.Find("CMDR CONTROL").gameObject;
+            night_optic.RangeText = crosshair_elements.transform.Find("RANGE").GetComponentInChildren<TMP_Text>();
 
-                night_optic.gameObject.AddComponent<HasThermalMonitor>();
-            }
+            GameObject post = GameObject.Instantiate(PactThermal.flir_post, night_optic.transform);
+            PostProcessProfile profile = post.transform.Find("FLIR Only Volume").GetComponent<PostProcessVolume>().profile;
+            ColorGrading color_grading;
+            profile.TryGetSettings<ColorGrading>(out color_grading);
+            color_grading.postExposure.value = 0f;
+
+            LockOnLead s = fcs.gameObject.AddComponent<LockOnLead>();
+            s.fcs = fcs;
+            s.guidance_computer = mgu;
+            s.tracking_gates = crosshair_elements.transform.Find("TRACKING GATE HOLDER").GetComponent<RectTransform>();
 
             fcs.RegisteredRangeLimits = new Vector2(100f, 4000f);
             fcs._currentRange = 100f;
@@ -412,69 +352,11 @@ namespace PactIncreasedLethality
             reticleSO_sosna.planes[0].elements.Add(impact);         
         }
 
-        private static void ThermalReticle()
-        {
-            // WFOV
-            reticleSO_sosna_thermal_wide = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["WFOV"].tree);
-            reticleSO_sosna_thermal_wide.name = "PACT-SOSNA-WFOV";
-
-            Util.ShallowCopy(reticle_cached_sosna_thermal_wide, ReticleMesh.cachedReticles["WFOV"]);
-            reticle_cached_sosna_thermal_wide.tree = reticleSO_sosna_thermal_wide;
-
-            reticle_cached_sosna_thermal_wide.tree.lights = new List<ReticleTree.Light>() {
-                new ReticleTree.Light()
-            };
-
-            reticle_cached_sosna_thermal_wide.tree.lights[0].type = ReticleTree.Light.Type.Powered;
-            reticle_cached_sosna_thermal_wide.tree.lights[0].color = new RGB(1f, 1f, 1f, true);
-
-            ReticleTree.Angular wfov_angular = (reticleSO_sosna_thermal_wide.planes[0].elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Angular;
-
-            for (int i = 0; i <= 3; i++) {
-                (wfov_angular.elements[i] as ReticleTree.Line).length.mrad = 9.8175f;
-            }
-
-            // CROSSHAIRS
-            reticleSO_sosna_thermal = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55-NVS"].tree);
-            reticleSO_sosna_thermal.name = "PACT-SOSNA-CROSSHAIRS";
-
-            Util.ShallowCopy(reticle_cached_sosna_thermal, ReticleMesh.cachedReticles["T55-NVS"]);
-            reticle_cached_sosna_thermal.tree = reticleSO_sosna_thermal;
-
-            reticle_cached_sosna_thermal.tree.lights = new List<ReticleTree.Light>() {
-                new ReticleTree.Light()
-            };
-
-            reticle_cached_sosna_thermal.tree.lights[0].type = ReticleTree.Light.Type.Powered;
-            reticle_cached_sosna_thermal.tree.lights[0].color = new RGB(1f, 1f, 1f, true);
-
-            ReticleTree.Angular reticle_sosna_cross = (reticleSO_sosna_thermal.planes[0].elements[0] as ReticleTree.Angular).elements[0] as ReticleTree.Angular;
-            (reticleSO_sosna_thermal.planes[0].elements[0] as ReticleTree.Angular).align = ReticleTree.GroupBase.Alignment.Boresight;
-            reticle_sosna_cross.align = ReticleTree.GroupBase.Alignment.Boresight;
-            reticle_cached_sosna_thermal.mesh = null;
-
-            reticle_sosna_cross.elements.RemoveAt(4);
-            reticle_sosna_cross.elements.RemoveAt(1);
-            reticle_sosna_cross.elements.RemoveAt(0);
-
-            ReticleTree.Line line1 = reticle_sosna_cross.elements[0] as ReticleTree.Line;
-            line1.rotation.mrad = 0;
-            line1.position.x = 0;
-            line1.position.y = 0;
-            line1.length.mrad = 22.0944f;
-            line1.illumination = ReticleTree.Light.Type.Powered;
-
-            ReticleTree.Line line2 = reticle_sosna_cross.elements[1] as ReticleTree.Line;
-            line2.position.y = 0;
-            line2.length.mrad = 9.0944f;
-            line2.illumination = ReticleTree.Light.Type.Powered;
-        }
-
         public static void Init() {
             if (reticleSO_sosna == null)
             {
                 AssetBundle bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "sosna_monitor"));
-                sosna_monitor = bundle.LoadAsset<GameObject>("MONITOR CANVAS.prefab");
+                sosna_monitor = bundle.LoadAsset<GameObject>("SOSNA MONITOR CANVAS.prefab");
                 sosna_monitor.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
                 foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
@@ -498,6 +380,7 @@ namespace PactIncreasedLethality
                         {
                             obj.transform.Find("Turret Scripts/GPS/FLIR/Reticle Mesh WFOV").GetComponent<ReticleMesh>().Load();
                         }
+
                     }
 
                     if (obj.gameObject.name == "M2 Bradley")
@@ -514,22 +397,7 @@ namespace PactIncreasedLethality
                 }
 
                 Reticle();
-                ThermalReticle();
-
-                post_sosna = PostProcessVolume.Instantiate(PactThermal.post_og);
-                ColorGrading color_grading = post_sosna.profile.settings[1] as ColorGrading;
-                color_grading.postExposure.overrideState = false;
-                color_grading.contrast.value = 2f;
-                color_grading.colorFilter.value = new Color(0.4227f, 0.4227f, 0.4227f);
-                color_grading.lift.overrideState = false;
-                (post_sosna.profile.settings[2] as Grain).intensity.value = 0.111f;
-                (post_sosna.profile.settings[0] as Bloom).intensity.value = 0.5f;
-                post_sosna.sharedProfile = post_sosna.profile;
-                post_sosna.gameObject.SetActive(false);
             }
-
-
-            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(AddThermalMonitor), GameStatePriority.Medium);
         }
     }
 }

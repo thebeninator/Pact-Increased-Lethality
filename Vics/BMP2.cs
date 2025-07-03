@@ -25,6 +25,7 @@ using GHPC.Player;
 using GHPC.Equipment;
 using GHPC.Equipment.Lamps;
 using GHPC.Effects;
+using GHPC.Camera;
 
 namespace PactIncreasedLethality
 {
@@ -72,7 +73,7 @@ namespace PactIncreasedLethality
                     vel.y = __instance.transform.forward.y * 10f;
                     vel.z = __instance.transform.forward.z * 10f;
 
-                    bool interior = __instance.IsInterior && __instance == PactIncreasedLethalityMod.player_manager.CurrentPlayerWeapon.Weapon.WeaponSound;
+                    bool interior = !CameraManager._instance.ExteriorMode && __instance == PactIncreasedLethalityMod.player_manager.CurrentPlayerWeapon.Weapon.WeaponSound;
 
                     ChannelGroup channelGroup;
                     corSystem.createChannelGroup("master", out channelGroup);

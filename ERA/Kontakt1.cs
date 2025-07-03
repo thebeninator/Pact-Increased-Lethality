@@ -39,7 +39,7 @@ namespace PactIncreasedLethality
             {
                 UniformArmor k1_armour = k1.gameObject.AddComponent<UniformArmor>();
                 k1_armour._name = "Kontakt-1";
-                k1_armour.PrimaryHeatRha = 150f;
+                k1_armour.PrimaryHeatRha = 350f;
                 k1_armour.PrimarySabotRha = 20f;
                 k1_armour.SecondaryHeatRha = 0f;
                 k1_armour.SecondarySabotRha = 0f;

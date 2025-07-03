@@ -10,6 +10,7 @@ using static MelonLoader.MelonLogger;
 using GHPC.Player;
 using System;
 using GHPC.Camera;
+using GHPC.Thermals;
 
 namespace PactIncreasedLethality
 {
@@ -17,31 +18,37 @@ namespace PactIncreasedLethality
     {
         public Vehicle target;
         public Renderer tracking_center;
+        public RectTransform tracking_gates;
         public FireControlSystem fcs;
-        public T72.CustomGuidanceComputer guidance_computer;
+        public CustomGuidanceComputer guidance_computer;
         private float cd = 0f;
         public bool engaged = false;
         public Vector2 offset;
-        static Vector2 monitor_dims = new Vector2(1024f, 576f);
 
-        void LateUpdate() {
+        void LateUpdate()
+        {
             if (!target) return;
+            if (!tracking_gates) return;
 
             Transform tracking_object = target.gameObject.transform.Find("TRACKING OBJECT");
 
             if (tracking_object == null) return;
 
-            Camera camera = CameraManager.MainCam;
+            Camera camera = FLIRCamera.Instance._thermalCamera;
+            Vector2 monitor_dims = new Vector2(camera.pixelWidth, camera.pixelHeight);
+            Vector2 screen_dims = new Vector2(Screen.width, Screen.height);
             Bounds bounds = tracking_object.GetComponent<MeshRenderer>().bounds;
-            Vector3[] ss_corners = new Vector3[8];
-            ss_corners[0] = camera.WorldToScreenPoint(new Vector3(bounds.max.x, bounds.max.y, bounds.max.z));
-            ss_corners[1] = camera.WorldToScreenPoint(new Vector3(bounds.max.x, bounds.max.y, bounds.min.z));
-            ss_corners[2] = camera.WorldToScreenPoint(new Vector3(bounds.max.x, bounds.min.y, bounds.max.z));
-            ss_corners[3] = camera.WorldToScreenPoint(new Vector3(bounds.max.x, bounds.min.y, bounds.min.z));
-            ss_corners[4] = camera.WorldToScreenPoint(new Vector3(bounds.min.x, bounds.max.y, bounds.max.z));
-            ss_corners[5] = camera.WorldToScreenPoint(new Vector3(bounds.min.x, bounds.max.y, bounds.min.z));
-            ss_corners[6] = camera.WorldToScreenPoint(new Vector3(bounds.min.x, bounds.min.y, bounds.max.z));
-            ss_corners[7] = camera.WorldToScreenPoint(new Vector3(bounds.min.x, bounds.min.y, bounds.min.z));
+
+            Vector3[] ss_corners = new Vector3[] {
+                camera.WorldToScreenPoint(new Vector3(bounds.max.x, bounds.max.y, bounds.max.z)),
+                camera.WorldToScreenPoint(new Vector3(bounds.max.x, bounds.max.y, bounds.min.z)),
+                camera.WorldToScreenPoint(new Vector3(bounds.max.x, bounds.min.y, bounds.max.z)),
+                camera.WorldToScreenPoint(new Vector3(bounds.max.x, bounds.min.y, bounds.min.z)),
+                camera.WorldToScreenPoint(new Vector3(bounds.min.x, bounds.max.y, bounds.max.z)),
+                camera.WorldToScreenPoint(new Vector3(bounds.min.x, bounds.max.y, bounds.min.z)),
+                camera.WorldToScreenPoint(new Vector3(bounds.min.x, bounds.min.y, bounds.max.z)),
+                camera.WorldToScreenPoint(new Vector3(bounds.min.x, bounds.min.y, bounds.min.z))
+            };
 
             float min_x = ss_corners[0].x;
             float min_y = ss_corners[0].y;
@@ -56,9 +63,8 @@ namespace PactIncreasedLethality
                 max_y = Mathf.Max(max_y, ss_corners[i].y);
             }
 
-            RectTransform rt = Sosna.ThermalMonitor.tracking_gates.GetComponent<RectTransform>();
-            rt.position = new Vector2(min_x, min_y) / monitor_dims * new Vector2(Screen.width, Screen.height);
-            rt.sizeDelta = new Vector2(max_x - min_x, max_y - min_y) / monitor_dims * new Vector2(Screen.width, Screen.height) * new Vector2(768f / Screen.width, 465f / Screen.height);
+            tracking_gates.position = new Vector2(min_x, min_y) / monitor_dims * screen_dims;
+            tracking_gates.sizeDelta = new Vector2(max_x - min_x, max_y - min_y) / monitor_dims * screen_dims * (monitor_dims / screen_dims);
         }
 
         void ResetTracking() {
@@ -151,7 +157,7 @@ namespace PactIncreasedLethality
 
                 guidance_computer.transform.LookAt(Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(offset));
 
-                fcs.SetRange((tracking_center.bounds.center - fcs.ReferenceTransform.transform.position).magnitude);
+                fcs.SetRange((tracking_center.bounds.center - fcs.ReferenceTransform.transform.position).magnitude, true);
             }
         }
     }

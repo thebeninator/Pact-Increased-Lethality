@@ -9,6 +9,7 @@ using UnityEngine;
 using FMOD;
 using FMODUnity;
 using HarmonyLib;
+using GHPC.Camera;
 
 namespace PactIncreasedLethality
 {
@@ -37,7 +38,7 @@ namespace PactIncreasedLethality
                 vel.y = 0f;
                 vel.z = 0f;
 
-                bool interior = __instance.IsInterior && __instance == PactIncreasedLethalityMod.player_manager.CurrentPlayerWeapon.Weapon.WeaponSound;
+                bool interior = !CameraManager._instance.ExteriorMode && __instance == PactIncreasedLethalityMod.player_manager.CurrentPlayerWeapon.Weapon.WeaponSound;
 
                 ChannelGroup channelGroup;
                 corSystem.createChannelGroup("master", out channelGroup);

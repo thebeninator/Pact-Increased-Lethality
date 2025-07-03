@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
+using GHPC.Camera;
 using GHPC.Equipment.Optics;
 using GHPC.Vehicle;
 using GHPC.Weapons;
 using MelonLoader;
+using MelonLoader.Utils;
 using Reticle;
 using TMPro;
 using UnityEngine;
@@ -17,7 +21,6 @@ namespace PactIncreasedLethality
     public class PactThermal
     {
         private static GameObject thermal_canvas;
-        private static GameObject scanline_canvas;
         private static ReticleSO reticleSO_lq;
         private static ReticleMesh.CachedReticle reticle_cached_lq;
 
@@ -29,30 +32,13 @@ namespace PactIncreasedLethality
 
         private static ReticleSO reticleSO_hq_wide;
         private static ReticleMesh.CachedReticle reticle_cached_hq_wide;
-        internal static PostProcessVolume post_og; 
-        private static PostProcessVolume post_lq;
-        private static PostProcessVolume post_hq;
         private static TMP_FontAsset tpd_etch_sdf;
         private static AmmoCodexScriptable ammo_3bk14m;
 
-        static MelonPreferences_Entry<float> lq_blur;
-        static MelonPreferences_Entry<float> hq_blur;
+        private static Material white_flir_mat;
+        internal static Material white_flir_mat_no_scope;
 
-        static MelonPreferences_Entry<bool> lq_boxing;
-        static MelonPreferences_Entry<bool> hq_boxing;
-
-        public static void Config(MelonPreferences_Category cfg)
-        {
-            lq_blur = cfg.CreateEntry<float>("Low Quality Thermals Blur", 0.30f);
-            lq_blur.Description = "//////////////////////////////////////////////////////////////////////////////////////////";
-            lq_blur.Comment = "Default: 0.30";
-
-            hq_blur = cfg.CreateEntry<float>("High Quality Thermals Blur", 0.15f);
-            hq_blur.Comment = "Default: 0.15";
-
-            lq_boxing = cfg.CreateEntry<bool>("Low Quality Thermals Boxing", true);
-            lq_boxing.Comment = "Creates a box border around the sight";
-        }
+        internal static GameObject flir_post;
 
         public class UpdateRange : MonoBehaviour
         {
@@ -78,21 +64,25 @@ namespace PactIncreasedLethality
         };
 
         public static void Add(UsableOptic optic, string quality, bool is_point_n_shoot = false) {
-            CRTShock.Add(optic.transform, 0f, new Vector3(1f, 1f, 1f));
+            //CRTShock.Add(optic.transform, 0f, new Vector3(1f, 1f, 1f));
             optic.slot.VisionType = NightVisionType.Thermal;
-            optic.slot.BaseBlur = quality == "low" ? lq_blur.Value : hq_blur.Value;
-            PostProcessVolume vol = PostProcessVolume.Instantiate(quality == "low" ? post_lq : post_hq, optic.transform);
-            vol.gameObject.SetActive(true);
-            optic.post = vol;
+            optic.slot.BaseBlur = 0f;
+            optic.post = null;
+
+            GameObject post = GameObject.Instantiate(PactThermal.flir_post, optic.transform);
+            PostProcessProfile profile = post.transform.Find("FLIR Only Volume").GetComponent<PostProcessVolume>().profile;
+            //ColorGrading color_grading;
+            //profile.TryGetSettings<ColorGrading>(out color_grading);
+            //color_grading.postExposure.value = 1f;
+
+            optic.slot.FLIRBlitMaterialOverride = white_flir_mat;
 
             if (quality == "low") {
-                GameObject s = GameObject.Instantiate(scanline_canvas, optic.transform);
                 optic.Alignment = OpticAlignment.BoresightStabilized;
-                s.SetActive(true);
-            }
+                optic.slot.OverrideFLIRResolution = true;
+                optic.slot.FLIRWidth = 200;
+                optic.slot.FLIRHeight = 200;
 
-            if ((quality == "low" && lq_boxing.Value))
-            {
                 for (int i = 0; i <= 3; i++)
                 {
                     GameObject t = GameObject.Instantiate(thermal_canvas, optic.transform);
@@ -104,14 +94,6 @@ namespace PactIncreasedLethality
                 }
             }
 
-            ReticleSO so_hq = is_point_n_shoot ? reticleSO_hq : reticleSO_tpdk1_hq;
-            ReticleMesh.CachedReticle cached_hq = is_point_n_shoot ? reticle_cached_hq : reticle_tpdk1_cached_hq;
-
-            optic.reticleMesh.reticleSO = quality == "low" ? reticleSO_lq : so_hq;
-            optic.reticleMesh.reticle = quality == "low" ? reticle_cached_lq : cached_hq;
-            optic.reticleMesh.SMR = null;
-            optic.reticleMesh.Load();
-
             if (quality == "high")
             {
                 if (!is_point_n_shoot)
@@ -121,6 +103,11 @@ namespace PactIncreasedLethality
                     UpdateRange ur = optic.gameObject.AddComponent<UpdateRange>();
                     ur.fcs = optic.FCS;
                 }
+
+                optic.slot.OverrideFLIRResolution = true;
+                optic.slot.FLIRWidth = 800;
+                optic.slot.FLIRHeight = 450;
+                optic.slot.CanToggleFlirPolarity = true;
 
                 GameObject wide = GameObject.Instantiate(optic.reticleMesh.gameObject, optic.transform);
                 wide.gameObject.SetActive(true);
@@ -147,9 +134,15 @@ namespace PactIncreasedLethality
                 optic.slot.VibrationBlurScale = 0.05f;
                 optic.slot.VibrationShakeMultiplier = 0.01f;
                 optic.slot.VibrationPreBlur = true;
-
-                //optic.slot.SpriteType = GHPC.Camera.CameraSpriteManager.SpriteType.NightVisionGoggles;
             }
+
+            ReticleSO so_hq = is_point_n_shoot ? reticleSO_hq : reticleSO_tpdk1_hq;
+            ReticleMesh.CachedReticle cached_hq = is_point_n_shoot ? reticle_cached_hq : reticle_tpdk1_cached_hq;
+
+            optic.reticleMesh.reticleSO = quality == "low" ? reticleSO_lq : so_hq;
+            optic.reticleMesh.reticle = quality == "low" ? reticle_cached_lq : cached_hq;
+            optic.reticleMesh.SMR = null;
+            optic.reticleMesh.Load();
         }
 
         private static void LQThermalReticle() {
@@ -369,6 +362,27 @@ namespace PactIncreasedLethality
         public static void Init() {
             if (reticleSO_lq != null) return;
 
+            AssetBundle thermal_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "pilthermals"));
+            Texture colour_ramp_white = thermal_bundle.LoadAsset<Texture>("FLIR White");
+
+            GameObject m1ip = Resources.FindObjectsOfTypeAll<Vehicle>().Where(o => o.name == "M1IP").First().gameObject;
+            flir_post = m1ip.transform.Find("Turret Scripts/GPS/FLIR/FLIR Post Processing").gameObject;
+            Material green_flir_mat = m1ip.transform.Find("Turret Scripts/GPS/FLIR").GetComponent<CameraSlot>().FLIRBlitMaterialOverride;
+            white_flir_mat = new Material(Shader.Find("Blit (FLIR)/Blit Simple"));
+            white_flir_mat.SetTexture("_Noise", green_flir_mat.GetTexture("_Noise"));
+            white_flir_mat.SetTexture("_ScopeEdge", green_flir_mat.GetTexture("_ScopeEdge"));
+            white_flir_mat.SetTexture("_ColorRamp", colour_ramp_white);
+            white_flir_mat.EnableKeyword("_USE_COLOR_RAMP");
+            white_flir_mat.EnableKeyword("_TONEMAP");
+            white_flir_mat.EnableKeyword("_FLIR_POLARITY");
+
+            white_flir_mat_no_scope = new Material(Shader.Find("Blit (FLIR)/Blit Simple"));
+            white_flir_mat_no_scope.SetTexture("_Noise", green_flir_mat.GetTexture("_Noise"));
+            white_flir_mat_no_scope.SetTexture("_ColorRamp", colour_ramp_white);
+            white_flir_mat_no_scope.EnableKeyword("_USE_COLOR_RAMP");
+            white_flir_mat_no_scope.EnableKeyword("_TONEMAP");
+            white_flir_mat_no_scope.EnableKeyword("_FLIR_POLARITY");
+
             foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
             {
                 if (!ReticleMesh.cachedReticles.ContainsKey("T55-NVS") && obj.gameObject.name == "T55A")
@@ -382,11 +396,6 @@ namespace PactIncreasedLethality
                     obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPN‑3‑49 night sight/Reticle Mesh").GetComponent<ReticleMesh>().Load();
                 }
 
-                if (post_og == null && obj.name == "T72M1")
-                {
-                    post_og = obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPN-1-49-23 night sight").GetComponent<UsableOptic>().post;
-                }
-
                 if (thermal_canvas == null && obj.name == "M2 Bradley")
                 {
                     thermal_canvas = GameObject.Instantiate(obj.transform.Find("FCS and sights/GPS Optic/M2 Bradley GPS canvas").gameObject);
@@ -396,15 +405,7 @@ namespace PactIncreasedLethality
                     thermal_canvas.name = "pact thermal canvas";
                 }
 
-                if (scanline_canvas == null && obj.name == "M60A3 TTS")
-                {
-                    scanline_canvas = GameObject.Instantiate(obj.transform.Find("Turret Scripts/Sights/FLIR/Canvas Scanlines").gameObject);
-                    scanline_canvas.SetActive(false);
-                    scanline_canvas.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                    scanline_canvas.name = "pact scanline canvas";
-                }
-
-                if (scanline_canvas && thermal_canvas && post_og && ReticleMesh.cachedReticles.ContainsKey("T55-NVS") && ReticleMesh.cachedReticles.ContainsKey("T72")) break; 
+                if (thermal_canvas && ReticleMesh.cachedReticles.ContainsKey("T55-NVS") && ReticleMesh.cachedReticles.ContainsKey("T72")) break; 
             }
 
             foreach (TMP_FontAsset font in Resources.FindObjectsOfTypeAll(typeof(TMP_FontAsset))) {
@@ -413,26 +414,6 @@ namespace PactIncreasedLethality
                     break;
                 }
             }
-
-            post_lq = PostProcessVolume.Instantiate(post_og);
-            ColorGrading color_grading = post_lq.profile.settings[1] as ColorGrading;
-            color_grading.postExposure.value = 0.5f;
-            color_grading.colorFilter.value = new Color(0.70f, 0.75f, 0.70f);
-            color_grading.lift.value = new Vector4(0f, 0f, 0f, -1.2f);
-            color_grading.lift.overrideState = true;
-            post_lq.sharedProfile = post_lq.profile;
-            post_lq.gameObject.SetActive(false);
-
-            post_hq = PostProcessVolume.Instantiate(post_og);
-            color_grading = post_hq.profile.settings[1] as ColorGrading;
-            color_grading.postExposure.value = 0f;
-            color_grading.contrast.value = 100f;
-            color_grading.colorFilter.value = new Color(0.65f, 0.90f, 0.65f);
-            color_grading.lift.overrideState = false;
-            (post_hq.profile.settings[2] as Grain).intensity.value = 0.111f;
-            (post_hq.profile.settings[0] as Bloom).intensity.value = 1f;
-            post_hq.sharedProfile = post_hq.profile;
-            post_hq.gameObject.SetActive(false);
 
             foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
             {

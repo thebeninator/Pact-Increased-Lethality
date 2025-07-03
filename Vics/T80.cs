@@ -13,14 +13,12 @@ using UnityEngine;
 using NWH.VehiclePhysics;
 using MelonLoader.Utils;
 using System.IO;
-using Thermals;
+using GHPC.Thermals;
 using HarmonyLib;
 using GHPC.Audio;
 using GHPC.Effects;
 using GHPC.Equipment;
 using Reticle;
-using static UnityEngine.GraphicsBuffer;
-using static PactIncreasedLethality.T72;
 
 namespace PactIncreasedLethality
 {
@@ -102,8 +100,8 @@ namespace PactIncreasedLethality
         static void K5Setup(Transform vis_transform, Transform k5_t, string type) {
             UniformArmor k5_armour = k5_t.gameObject.AddComponent<UniformArmor>();
             k5_armour._name = "Kontakt-5";
-            k5_armour.PrimaryHeatRha = 250f;
-            k5_armour.PrimarySabotRha = 120f;
+            k5_armour.PrimaryHeatRha = 550f;
+            k5_armour.PrimarySabotRha = 200f;
             k5_armour.SecondaryHeatRha = 0f;
             k5_armour.SecondarySabotRha = 0f;
             k5_armour._canShatterLongRods = true;
@@ -304,20 +302,16 @@ namespace PactIncreasedLethality
                 if (super_fcs_t80.Value)
                 {
                     weapon.FCS.transform.Find("GPS/1G42 Canvas").gameObject.SetActive(false);
-                    Sosna.Add(day_optic, weapon.FCS.NightOptic, vic.WeaponsManager.Weapons[1], true);
 
                     CustomGuidanceComputer gc = weapon.FCS.gameObject.AddComponent<CustomGuidanceComputer>();
                     gc.fcs = weapon.FCS;
                     gc.mgu = weapon.FCS.GetComponent<MissileGuidanceUnit>();
 
-                    LockOnLead s = weapon.FCS.gameObject.AddComponent<LockOnLead>();
-                    s.fcs = weapon.FCS;
-                    s.guidance_computer = gc;
+                    Sosna.Add(day_optic, weapon.FCS.NightOptic, vic.WeaponsManager.Weapons[1], vic.WeaponsManager.Weapons[0], gc);
 
                     day_optic.transform.Find("Quad").gameObject.SetActive(false);
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
                 }
-
 
                 if (super_comp_cheeks.Value) {
                     Transform cheek_inserts = turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform.Find("T80_armour_turret/cheek inserts");
@@ -335,7 +329,6 @@ namespace PactIncreasedLethality
                     Transform turret_rend = turret.Find("turret");
                     turret_rend.GetComponent<MeshFilter>().sharedMesh = t80bv_turret;
                     turret_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0, 0, 0, 0);
-                    turret_rend.gameObject.AddComponent<HeatSource>();
 
                     turret.Find("turret numbers").gameObject.SetActive(false);
                     vic.transform.Find("T80B_stowage/towropes_front").gameObject.SetActive(false);
@@ -347,7 +340,6 @@ namespace PactIncreasedLethality
 
                     Transform hull_rend = vic.transform.Find("T80_mesh/body");
                     hull_rend.GetComponent<MeshFilter>().sharedMesh = t80bv_hull;
-                    hull_rend.gameObject.AddComponent<HeatSource>();
 
                     GameObject k1_full = GameObject.Instantiate(t80bv_full, turret.Find("turret"));
                     k1_full.transform.localEulerAngles = new Vector3(0f, 270f, 90f);
@@ -402,7 +394,6 @@ namespace PactIncreasedLethality
                     Transform turret_rend = turret.Find("turret");
                     turret_rend.GetComponent<MeshFilter>().sharedMesh = turret_cleaned_mesh;
                     turret_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0, 0, 0, 0);
-                    turret_rend.gameObject.AddComponent<HeatSource>();
 
                     turret.Find("turret numbers").gameObject.SetActive(false);
                     vic.transform.Find("T80B_stowage/towropes_front").gameObject.SetActive(false);
@@ -414,11 +405,9 @@ namespace PactIncreasedLethality
 
                     Transform hull_rend = vic.transform.Find("T80_mesh/body");
                     hull_rend.GetComponent<MeshFilter>().sharedMesh = hull_cleaned_mesh;
-                    hull_rend.gameObject.AddComponent<HeatSource>();
 
                     Transform skirts_rend = vic.transform.Find("T80_mesh/skirts");
                     skirts_rend.GetComponent<MeshFilter>().sharedMesh = skirts_cleaned_mesh;
-                    skirts_rend.gameObject.AddComponent<HeatSource>();
 
                     GameObject k5_turret = GameObject.Instantiate(t80u_turret, turret_rend);
                     k5_turret.transform.localEulerAngles = new Vector3(90f, 0f, 180f);
@@ -629,7 +618,7 @@ namespace PactIncreasedLethality
                         mat.shader = Shader.Find("Standard (FLIR)");
                     }
                 }
-                t80u_hull.AddComponent<HeatSource>();
+                t80u_hull.AddComponent<HeatSource>().heat = 5f; 
 
                 foreach (Transform t in t80u_turret.transform)
                 {
@@ -651,7 +640,7 @@ namespace PactIncreasedLethality
                         mat.shader = Shader.Find("Standard (FLIR)");
                     }
                 }
-                t80u_hull_sides.AddComponent<HeatSource>();
+                t80u_hull_sides.AddComponent<HeatSource>().heat = 5f;
 
                 foreach (Transform armour_transform in t80u_hull.transform.Find("armour")) {
                     armour_transform.gameObject.tag = "Penetrable";
@@ -706,7 +695,7 @@ namespace PactIncreasedLethality
                 Kontakt1.Setup(hull_k1, hull_k1.parent);
                 Kontakt1.Setup(turret_k1, turret_k1.parent);
 
-                Util.SetupFLIRShaders(t80bv_full);
+                // Util.SetupFLIRShaders(t80bv_full);
             }
 
             StateController.WaitForComplete(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);

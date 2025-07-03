@@ -12,7 +12,7 @@ using GHPC.Weapons;
 using Reticle;
 using GHPC.Equipment.Optics;
 using GHPC;
-using Thermals;
+using GHPC.Thermals;
 using GHPC.Camera;
 using UnityEngine.Rendering.PostProcessing;
 using GHPC.AI.Platoons;
@@ -431,10 +431,10 @@ namespace PactIncreasedLethality
                 gun.tag = "Penetrable";
 
                 turret.GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)"); ;
-                turret.gameObject.AddComponent<HeatSource>();
+                turret.gameObject.AddComponent<HeatSource>().heat = 5f;
 
                 gun.GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)"); ;
-                gun.gameObject.AddComponent<HeatSource>();
+                gun.gameObject.AddComponent<HeatSource>().heat = 5f;
             }
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);

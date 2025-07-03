@@ -13,19 +13,12 @@ using GHPC;
 using GHPC.Effects.Voices;
 using MelonLoader.Utils;
 using System.IO;
-using Thermals;
 using NWH.VehiclePhysics;
-using static UnityEngine.GraphicsBuffer;
-using GHPC.Audio;
-using GHPC.Effects;
-using static PactIncreasedLethality.T80;
 using HarmonyLib;
-using UnityEngine.Rendering.PostProcessing;
 using GHPC.Equipment;
 using GHPC.Mission;
 using GHPC.AI;
 using GHPC.Mission.Data;
-using GHPC.Camera;
 
 namespace PactIncreasedLethality
 {
@@ -258,21 +251,6 @@ namespace PactIncreasedLethality
             }
         }
 
-        public class CustomGuidanceComputer : MonoBehaviour
-        {
-            public FireControlSystem fcs;
-            public MissileGuidanceUnit mgu;
-            public bool autotrackingEnabled = false; 
-         
-            void Update() {
-                if (!autotrackingEnabled)
-                {
-                    Quaternion rot = Quaternion.LookRotation(fcs.AimWorldVector);
-                    transform.rotation = rot;
-                }
-            }
-        }
-
         public static IEnumerator Convert(GameState _)
         {
             foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
@@ -425,33 +403,37 @@ namespace PactIncreasedLethality
                 {
                     PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower());
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
+
+                    LaserPointCorrection lpc = fcs.transform.parent.gameObject.AddComponent<LaserPointCorrection>();
+                    lpc.night_optic = weapon.FCS.NightOptic;
+                    lpc.day_optic = day_optic;
+                    lpc.laser = weapon.FCS.LaserOrigin;
                 }
 
-                if (has_sosna) {
+                if (has_sosna)
+                {
                     day_optic.transform.parent.localPosition = new Vector3(-0.727f, 0.4631f, -5.9849f);
                     night_optic.transform.localPosition = new Vector3(-0.727f, 0.4631f, -5.9849f);
                 }
 
-                weapon.Feed.ReloadDuringMissileTracking = true;
-                weapon.FireWhileGuidingMissile = false;
                 GameObject guidance_computer_obj = GameObject.Instantiate(new GameObject("guidance computer"), fcs.transform.parent);
                 guidance_computer_obj.transform.localPosition = fcs.transform.localPosition + new Vector3(0, 0, 5f);
-                guidance_computer_obj.transform.SetParent(day_optic.transform, true);
+                guidance_computer_obj.transform.SetParent(day_optic.transform.parent, true);
                 MissileGuidanceUnit computer = guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
                 computer.AimElement = guidance_computer_obj.transform;
                 weapon.GuidanceUnit = computer;
 
+                weapon.Feed.ReloadDuringMissileTracking = false;
+                weapon.Feed._missileGuidance = computer;
+                weapon.FireWhileGuidingMissile = false;
+
+                CustomGuidanceComputer gc = fcs.transform.parent.gameObject.AddComponent<CustomGuidanceComputer>();
+                gc.fcs = fcs;
+                gc.mgu = computer;
+
                 if (has_sosna)
                 {
-                    Sosna.Add(day_optic, night_optic, vic.WeaponsManager.Weapons[1], true);
-
-                    CustomGuidanceComputer gc = guidance_computer_obj.AddComponent<CustomGuidanceComputer>();
-                    gc.fcs = fcs;
-                    gc.mgu = computer;
-
-                    LockOnLead s = fcs.gameObject.AddComponent<LockOnLead>();
-                    s.fcs = fcs;
-                    s.guidance_computer = gc;
+                    Sosna.Add(day_optic, night_optic, vic.WeaponsManager.Weapons[1], vic.WeaponsManager.Weapons[0], gc);
 
                     day_optic.transform.Find("Quad").gameObject.SetActive(false);
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
@@ -462,7 +444,10 @@ namespace PactIncreasedLethality
                     late_follow.Find("ARMOR/Night Sight Cover").gameObject.SetActive(false);
                     late_follow.Find("ARMOR/Night Sight Glass").gameObject.SetActive(false);
                     late_follow.Find("ARMOR/NightSight Housing").gameObject.SetActive(false);
-                }               
+                }
+                else {
+                    BOM.Add(day_optic.transform);
+                }
 
                 if (super_engine.Value)
                 {
@@ -489,9 +474,6 @@ namespace PactIncreasedLethality
                 ){
                     FireControlSystem1A40.Add(fcs, day_optic, new Vector3(-308.8629f, -6.6525f, 0f));
                 }
-
-                BOM.Add(day_optic.transform);
-
 
                 if (vic.UniqueName == "T72M1")
                 {
@@ -732,8 +714,6 @@ namespace PactIncreasedLethality
                         if (name == "T-72B3" && has_ubh) name = "T-72B3M";
 
                         vic._friendlyName = name;
-
-                        vic.transform.Find("---MESH---").GetComponent<HeatSource>().FetchSwapableMats();
                     }
                 }
             }
@@ -850,12 +830,12 @@ namespace PactIncreasedLethality
 
                 t72b3m_ubh_kit = t72b_bundle.LoadAsset<GameObject>("T72B UBH KIT");
                 t72b3m_ubh_kit.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
+                       
                 Util.SetupFLIRShaders(t72b_k1_full);
                 Util.SetupFLIRShaders(t72av_k1_full);
                 Util.SetupFLIRShaders(t72b_k5_1989_full);
                 Util.SetupFLIRShaders(t72b_k5_b3_full);
-                Util.SetupFLIRShaders(t72b3m_ubh_kit);
+                Util.SetupFLIRShaders(t72b3m_ubh_kit);          
 
                 Transform hull_k1 = t72b_k1_full.transform.Find("HULL ERA/ARMOUR");
                 Transform turret_k1 = t72b_k1_full.transform.Find("TURRET ERA/ARMOUR");
@@ -928,15 +908,6 @@ namespace PactIncreasedLethality
                 hull_slat_armor._name = "hull side slat armour";
                 hull_slat_armor.PrimaryHeatRha = 60f;
                 hull_slat_armor.PrimarySabotRha = 15f;
-
-
-
-
-
-
-
-
-
 
                 GameObject sosna_sight_complex = sosna_u.transform.Find("SOSNA U/SIGHT COMPLEX").gameObject;
                 sosna_sight_complex.tag = "Penetrable";

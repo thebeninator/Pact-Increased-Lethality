@@ -11,7 +11,7 @@ using MelonLoader;
 using MelonLoader.Utils;
 using NWH.VehiclePhysics;
 using Reticle;
-using Thermals;
+using GHPC.Thermals;
 using TMPro;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
@@ -306,7 +306,6 @@ namespace PactIncreasedLethality
                     mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
                     //new_materials[1] = mat;
                     //turret_skinned.materials = new_materials;
-                    vic.transform.GetComponent<HeatSource>().FetchSwapableMats();
 
                     Transform turret = vic.transform.Find("---T62_rig---/HULL/TURRET/turret");
                     turret.gameObject.AddComponent<LateFollowTarget>();
@@ -384,17 +383,17 @@ namespace PactIncreasedLethality
                 t62m_turret_parts.transform.Find("left").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
                 t62m_turret_parts.transform.Find("right").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
                 t62m_turret_parts.transform.Find("LAMP").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t62m_turret_parts.AddComponent<HeatSource>();
+                t62m_turret_parts.AddComponent<HeatSource>().heat = 5f;
 
                 t62m_hull_parts.transform.Find("HULL APPLIQUE").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t62m_hull_parts.AddComponent<HeatSource>();
+                t62m_hull_parts.AddComponent<HeatSource>().heat = 5f;
 
                 t62m_lrf.transform.Find("LRF").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t62m_lrf.AddComponent<HeatSource>();
+                t62m_lrf.AddComponent<HeatSource>().heat = 5f;
 
                 t62m_skirts.transform.Find("SKIRT1").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
                 t62m_skirts.transform.Find("SKIRT2").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t62m_skirts.AddComponent<HeatSource>();
+                t62m_skirts.AddComponent<HeatSource>().heat = 5f;
 
                 Transform armour = t62m_turret_parts.transform.Find("ARMOUR");
                 foreach (Transform t in armour.GetComponentsInChildren<Transform>())

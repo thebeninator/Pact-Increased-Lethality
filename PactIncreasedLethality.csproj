@@ -107,7 +107,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomGuidanceComputer.cs" />
     <Compile Include="ERA\Relikt.cs" />
+    <Compile Include="Assets.cs" />
+    <Compile Include="LaserPointCorrection.cs" />
     <Compile Include="Sights\1A40.cs" />
     <Compile Include="AMMO_30MM.cs" />
     <Compile Include="AMMO_125mm.cs" />
@@ -133,7 +136,6 @@
     <Compile Include="ProximityFuse.cs" />
     <Compile Include="ReducedATGMSmoke.cs" />
     <Compile Include="Sights\Sosna.cs" />
-    <Compile Include="ScreenShake.cs" />
     <Compile Include="Vics\T55.cs" />
     <Compile Include="Vics\T62.cs" />
     <Compile Include="Vics\T64B.cs" />

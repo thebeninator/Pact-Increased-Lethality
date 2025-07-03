@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using GHPC.Equipment.Optics;
 using GHPC.Weapons;
-using Thermals;
+using GHPC.Thermals;
 using UnityEngine;
 
 namespace PactIncreasedLethality
@@ -46,7 +46,7 @@ namespace PactIncreasedLethality
             }
 
             HeatSource src = parent.AddComponent<HeatSource>();
-            src.FetchSwapableMats();
+            src.heat = 5f;
         }
 
         public static void ShallowCopy(System.Object dest, System.Object src)

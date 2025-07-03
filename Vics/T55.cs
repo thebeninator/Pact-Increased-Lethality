@@ -13,7 +13,7 @@ using TMPro;
 using GHPC.Camera;
 using MelonLoader.Utils;
 using System.IO;
-using Thermals;
+using GHPC.Thermals;
 using NWH.VehiclePhysics;
 
 namespace PactIncreasedLethality
@@ -224,7 +224,6 @@ namespace PactIncreasedLethality
 
                 if (use_9m117.Value)
                 {
-                    weapon.Feed.ReloadDuringMissileTracking = false;
                     GameObject guidance_computer_obj = new GameObject("guidance computer");
                     guidance_computer_obj.transform.parent = vic.transform;
                     guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
@@ -237,6 +236,9 @@ namespace PactIncreasedLethality
                     MissileGuidanceUnit computer = guidance_computer_obj.GetComponent<MissileGuidanceUnit>();
                     computer.AimElement = weapon.FCS.AimTransform;
                     weapon.GuidanceUnit = computer;
+
+                    weapon.Feed.ReloadDuringMissileTracking = false;
+                    weapon.Feed._missileGuidance = computer;
 
                     BOM.Add(day_optic.transform, lrf_canvas);
                     ReducedATGMSmoke no_smoking = fcs.gameObject.AddComponent<ReducedATGMSmoke>();
@@ -393,9 +395,6 @@ namespace PactIncreasedLethality
 
                     vic._friendlyName = "T-55AM2";
                     if (use_9m117.Value) vic._friendlyName += "B";
-
-                    vic.transform.Find("T55A_base (1)").GetComponent<HeatSource>().FetchSwapableMats();
-
                 }
             }
 
@@ -467,25 +466,21 @@ namespace PactIncreasedLethality
                 t55am_hull = t55am_bundle.LoadAsset<Mesh>("hull.asset");
                 t55am_hull.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-                //var bmp3_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "bmp3"));
-                //GameObject bmp3_turret = bmp3_bundle.LoadAsset<GameObject>("BMP3TURRET.prefab");
-                //bmp3_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
                 t55am_turret_parts.transform.Find("T55AM.002").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
                 t55am_turret_parts.transform.Find("T55AM.002 (1)").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
                 t55am_turret_parts.transform.Find("T55AM.002 (1)/rondels").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
                 t55am_turret_parts.transform.Find("LAMP").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t55am_turret_parts.AddComponent<HeatSource>();
+                t55am_turret_parts.AddComponent<HeatSource>().heat = 5f;
 
                 t55am_hull_parts.transform.Find("HULL APPLIQUE").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t55am_hull_parts.AddComponent<HeatSource>();
+                t55am_hull_parts.AddComponent<HeatSource>().heat = 5f;
 
                 t55am_lrf.transform.Find("LRF").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t55am_lrf.AddComponent<HeatSource>();
+                t55am_lrf.AddComponent<HeatSource>().heat = 5f;
 
                 t55am_skirts.transform.Find("SKIRT1").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
                 t55am_skirts.transform.Find("SKIRT2").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t55am_skirts.AddComponent<HeatSource>();
+                t55am_skirts.AddComponent<HeatSource>().heat = 5f;
 
                 Transform armour = t55am_turret_parts.transform.Find("ARMOUR");
                 foreach (Transform t in armour.GetComponentsInChildren<Transform>())

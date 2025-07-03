@@ -14,9 +14,8 @@ using GHPC.Vehicle;
 using HarmonyLib;
 using GHPC;
 using GHPC.Weapons;
-using static PactIncreasedLethality.ScreenShake;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.5", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.6", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -37,31 +36,8 @@ namespace PactIncreasedLethality
             player_manager = game_manager.GetComponent<PlayerInput>();
             camera_manager = game_manager.GetComponent<CameraManager>();
             vics = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
-            /*
-            if (!CameraManager._mainCamera.GetComponent<ScreenShake.CameraShake>())
-            {
-                CameraManager._mainCamera.gameObject.AddComponent<ScreenShake.CameraShake>();
-                CameraManager._mainCamera.nearClipPlane = 0.5f;
-            }
-            */   
             yield break;
         }
-
-        /*
-        [HarmonyPatch(typeof(GHPC.Weapons.WeaponSystem), "Fire")]
-        public static class FURE
-        {
-            public static bool Prefix(WeaponSystem __instance)
-            {
-                if (!__instance.AbleToFire) return true;
-
-                CameraManager._mainCamera.GetComponent<CameraShake>().shakeAmount = 0.35f;
-                CameraManager._mainCamera.GetComponent<CameraShake>().shakeDuration = 0.25f;
-
-                return true;
-            }
-        }
-        */
 
         public override void OnInitializeMelon()
         {
@@ -76,7 +52,6 @@ namespace PactIncreasedLethality
             BMP2.Config(cfg);
             BTR60.Config(cfg);
             Drozd.Config(cfg);
-            PactThermal.Config(cfg);
             Armour.Config(cfg);
 
             var corSystem = FMODUnity.RuntimeManager.CoreSystem;

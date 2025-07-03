@@ -22,8 +22,7 @@ namespace PactIncreasedLethality
             t.transform.localPosition = pos;
             t.transform.localScale = scale;       
             t.GetComponent<MeshRenderer>().material = null;
-            t.GetComponent<MeshRenderer>().materials = new Material[0];
-            
+            t.GetComponent<MeshRenderer>().materials = new Material[0];            
             t.GetComponent<BoxCollider>().enabled = false;
         }
 
@@ -33,6 +32,10 @@ namespace PactIncreasedLethality
             if (vics.Length == 0 || done) return;
 
             CreateTrackingObject("M2 Bradley", new Vector3(0f, 1.38f, 0.45f), new Vector3(3f, 2.5f, 6f));
+
+            CreateTrackingObject("Marder A1-", new Vector3(0f, 1.38f, 0.45f), new Vector3(3f, 2.5f, 6f));
+            CreateTrackingObject("Marder A1A no MILAN", new Vector3(0f, 1.38f, 0.45f), new Vector3(3f, 2.5f, 6f));
+            CreateTrackingObject("Marder A1+", new Vector3(0f, 1.38f, 0.45f), new Vector3(3f, 2.5f, 6f));
 
             CreateTrackingObject("M60A1 RISE Passive Late", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
             CreateTrackingObject("M60A1 RISE Passive Early", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
