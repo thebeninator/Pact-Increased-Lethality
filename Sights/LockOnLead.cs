@@ -1,15 +1,8 @@
-﻿using GHPC.Utility;
-using GHPC;
-using GHPC.Vehicle;
+﻿using GHPC.Vehicle;
 using UnityEngine;
 using HarmonyLib;
 using GHPC.Weapons;
-using MelonLoader;
-using MelonLoader.TinyJSON;
-using static MelonLoader.MelonLogger;
 using GHPC.Player;
-using System;
-using GHPC.Camera;
 using GHPC.Thermals;
 
 namespace PactIncreasedLethality
@@ -130,7 +123,7 @@ namespace PactIncreasedLethality
                 ResetTracking();
             }
 
-            if (engaged && target)
+            if (engaged && target && fcs.CurrentWeaponSystem.AbleToFire)
             {
                 guidance_computer.autotrackingEnabled = true;
 
@@ -157,7 +150,7 @@ namespace PactIncreasedLethality
 
                 guidance_computer.transform.LookAt(Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(offset));
 
-                fcs.SetRange((tracking_center.bounds.center - fcs.ReferenceTransform.transform.position).magnitude, true);
+                fcs.SetRange((tracking_center.bounds.center - fcs.ReferenceTransform.transform.position).magnitude);
             }
         }
     }

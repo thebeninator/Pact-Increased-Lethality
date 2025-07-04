@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 using GHPC.Equipment;
 using GHPC;
 using GHPC.Audio;

@@ -230,6 +230,7 @@ namespace PactIncreasedLethality
             s.tracking_gates = crosshair_elements.transform.Find("TRACKING GATE HOLDER").GetComponent<RectTransform>();
 
             fcs.RegisteredRangeLimits = new Vector2(100f, 4000f);
+            fcs._originalRangeLimits = new Vector2(100f, 4000f);
             fcs._currentRange = 100f;
             fcs.UpdateRange();
         }

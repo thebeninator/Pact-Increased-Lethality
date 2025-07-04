@@ -11,11 +11,8 @@ using GHPC.Player;
 using GHPC.Camera;
 using FMOD;
 using GHPC.Vehicle;
-using HarmonyLib;
-using GHPC;
-using GHPC.Weapons;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.6", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.6A", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
