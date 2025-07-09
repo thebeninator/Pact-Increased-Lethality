@@ -9,7 +9,7 @@ namespace PactIncreasedLethality
 {
     public class Relikt
     {
-        public static ArmorCodexScriptable rlkt_so = null;
+        public static ArmorCodexScriptable rlkt_so = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
         public static ArmorType rlkt_armour = new ArmorType();
 
 
@@ -22,7 +22,7 @@ namespace PactIncreasedLethality
 
         public static void Setup(Transform rlkt_armour_parent, Transform visual_parent, bool hide_on_detonate = true, Material destroyed_mat = null)
         {
-            if (rlkt_so == null)
+            if (rlkt_so.ArmorType == null)
             {
                 rlkt_armour.RhaeMultiplierKe = 1f;
                 rlkt_armour.RhaeMultiplierCe = 1f;
@@ -32,7 +32,6 @@ namespace PactIncreasedLethality
                 rlkt_armour.CanShatterLongRods = true;
                 rlkt_armour.ThicknessSource = ArmorType.RhaSource.Multipliers;
 
-                rlkt_so = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
                 rlkt_so.name = "relikt armour";
                 rlkt_so.ArmorType = rlkt_armour;
             }

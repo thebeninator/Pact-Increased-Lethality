@@ -10,7 +10,7 @@ namespace PactIncreasedLethality
 {
     public class Kontakt5
     {
-        public static ArmorCodexScriptable kontakt5_so = null;
+        public static ArmorCodexScriptable kontakt5_so = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
         public static ArmorType kontakt5_armour = new ArmorType();
         public static AmmoType dummy_he;
 
@@ -24,7 +24,7 @@ namespace PactIncreasedLethality
 
         public static void Setup(Transform k5_armour_parent, Transform visual_parent, bool hide_on_detonate = true, Material destroyed_mat = null)
         {
-            if (kontakt5_so == null)
+            if (kontakt5_so.ArmorType == null)
             {
                 kontakt5_armour.RhaeMultiplierKe = 1f;
                 kontakt5_armour.RhaeMultiplierCe = 1f;
@@ -34,7 +34,6 @@ namespace PactIncreasedLethality
                 kontakt5_armour.CanShatterLongRods = true;
                 kontakt5_armour.ThicknessSource = ArmorType.RhaSource.Multipliers;
 
-                kontakt5_so = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
                 kontakt5_so.name = "kontakt-5 armour";
                 kontakt5_so.ArmorType = kontakt5_armour;
             }
