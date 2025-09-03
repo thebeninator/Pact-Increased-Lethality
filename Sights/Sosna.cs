@@ -362,7 +362,7 @@ namespace PactIncreasedLethality
 
                 foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
                 {
-                    if (obj.gameObject.name == "M1IP")
+                    if (obj.gameObject.name == "_M1IP (variant)")
                     {
                         range_readout = GameObject.Instantiate(obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas").gameObject);
                         GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);

@@ -527,7 +527,7 @@ namespace PactIncreasedLethality
             {
                 foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
                 {
-                    if (obj.gameObject.name == "M1IP")
+                    if (obj.gameObject.name == "_M1IP (variant)")
                     {
                         abrams_vic_controller = obj.GetComponent<VehicleController>();
                         break;

@@ -365,8 +365,8 @@ namespace PactIncreasedLethality
             AssetBundle thermal_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "pilthermals"));
             Texture colour_ramp_white = thermal_bundle.LoadAsset<Texture>("FLIR White");
 
-            GameObject m1ip = Resources.FindObjectsOfTypeAll<Vehicle>().Where(o => o.name == "M1IP").First().gameObject;
-            flir_post = m1ip.transform.Find("Turret Scripts/GPS/FLIR/FLIR Post Processing").gameObject;
+            GameObject m1ip = Resources.FindObjectsOfTypeAll<Vehicle>().Where(o => o.name == "_M1IP (variant)").First().gameObject;
+            flir_post = m1ip.transform.Find("Turret Scripts/GPS/FLIR/FLIR Post Processing - Green").gameObject;
             Material green_flir_mat = m1ip.transform.Find("Turret Scripts/GPS/FLIR").GetComponent<CameraSlot>().FLIRBlitMaterialOverride;
             white_flir_mat = new Material(Shader.Find("Blit (FLIR)/Blit Simple"));
             white_flir_mat.SetTexture("_Noise", green_flir_mat.GetTexture("_Noise"));

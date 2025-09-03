@@ -20,7 +20,7 @@ namespace PactIncreasedLethality
             {
                 foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
                 {
-                    if (obj.gameObject.name == "M1IP")
+                    if (obj.gameObject.name == "_M1IP (variant)")
                     {
                         crt_shock_go = obj.transform.Find("Turret Scripts/GPS/FLIR/Scanline FOV change").gameObject;
                         break;

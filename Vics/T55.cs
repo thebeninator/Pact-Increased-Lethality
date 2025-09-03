@@ -241,9 +241,6 @@ namespace PactIncreasedLethality
                     weapon.Feed._missileGuidance = computer;
 
                     BOM.Add(day_optic.transform, lrf_canvas);
-                    ReducedATGMSmoke no_smoking = fcs.gameObject.AddComponent<ReducedATGMSmoke>();
-                    no_smoking.fcs = fcs;
-                    no_smoking.fx = new Transform[] { weapon.MuzzleEffects[0].transform.GetChild(3).GetChild(0) };
 
                     loadout_manager.LoadedAmmoTypes = Util.AppendToArray(loadout_manager.LoadedAmmoTypes, clip_codex_9m117);
                     loadout_manager._totalAmmoTypes = 4;
@@ -409,7 +406,7 @@ namespace PactIncreasedLethality
             {
                 foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
                 {
-                    if (obj.name == "M1IP")
+                    if (obj.name == "_M1IP (variant)")
                     {
                         range_readout = GameObject.Instantiate(obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas").gameObject);
                         GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
