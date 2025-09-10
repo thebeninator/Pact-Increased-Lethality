@@ -210,7 +210,7 @@ namespace PactIncreasedLethality
                     vic._friendlyName += "D";
                 }
 
-                vic.AimablePlatforms[1].transform.Find("optic cover parent").gameObject.SetActive(false);
+                vic.AimablePlatforms[3].transform.Find("optic cover parent").gameObject.SetActive(false);
 
                 if (thermals.Value)
                 {
