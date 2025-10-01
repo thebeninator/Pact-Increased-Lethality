@@ -37,7 +37,7 @@ namespace PactIncreasedLethality
             if (!ReticleMesh.cachedReticles.ContainsKey("TPN3")) {
                 foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
                 {
-                    if (obj.gameObject.name == "T64B")
+                    if (obj.gameObject.name == "T64B 1984 (base)")
                     {
                         obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPN‑3‑49 night sight/Reticle Mesh").GetComponent<ReticleMesh>().Load();
                     }

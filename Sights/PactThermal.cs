@@ -391,7 +391,7 @@ namespace PactIncreasedLethality
                     night_optic.reticleMesh.Load();
                 }
 
-                if (!ReticleMesh.cachedReticles.ContainsKey("TPN3") && obj.gameObject.name == "T64B")
+                if (!ReticleMesh.cachedReticles.ContainsKey("TPN3") && obj.gameObject.name == "T64B 1984 (base)")
                 {         
                     obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPN‑3‑49 night sight/Reticle Mesh").GetComponent<ReticleMesh>().Load();
                 }
