@@ -73,8 +73,8 @@ namespace PactIncreasedLethality
             has_lrf = cfg.CreateEntry<bool>("Laser Rangefinder (T-62)", true);
             has_lrf.Comment = "Only gives range: user will need to set range manually";
 
-            has_drozd = cfg.CreateEntry<bool>("Drozd APS (T-62)", false);
-            has_drozd.Comment = "Intercepts incoming projectiles; covers the frontal arc of the tank relative to where the turret is facing";
+            //has_drozd = cfg.CreateEntry<bool>("Drozd APS (T-62)", false);
+            //has_drozd.Comment = "Intercepts incoming projectiles; covers the frontal arc of the tank relative to where the turret is facing";
 
             tpn3 = cfg.CreateEntry<bool>("TPN-3 Night Sight (T-62)", true);
             tpn3.Comment = "Replaces the night sight with the one found on the T-80B/T-64B";
@@ -234,47 +234,47 @@ namespace PactIncreasedLethality
                 weapon.Feed.Start();
                 loadout_manager.RegisterAllBallistics();
 
-                if (has_drozd.Value)
-                {
-                    List<DrozdLauncher> launchers = new List<DrozdLauncher>();
-                    vic.transform.Find("---T62_rig---/HULL/TURRET/ammobox").gameObject.SetActive(false);
+                //if (has_drozd.Value)
+                //{
+                //    List<DrozdLauncher> launchers = new List<DrozdLauncher>();
+                //    vic.transform.Find("---T62_rig---/HULL/TURRET/ammobox").gameObject.SetActive(false);
 
-                    Vector3[] launcher_positions = new Vector3[] {
-                        new Vector3(-1.2952f, -0.1383f, -0.2131f),
-                        new Vector3(-1.2543f, 0.1291f, -0.2131f),
-                        new Vector3(1.2952f, -0.1383f, -0.2131f),
-                        new Vector3(1.2543f, 0.1291f, -0.2131f),
-                    };
+                //    Vector3[] launcher_positions = new Vector3[] {
+                //        new Vector3(-1.2952f, -0.1383f, -0.2131f),
+                //        new Vector3(-1.2543f, 0.1291f, -0.2131f),
+                //        new Vector3(1.2952f, -0.1383f, -0.2131f),
+                //        new Vector3(1.2543f, 0.1291f, -0.2131f),
+                //    };
 
-                    Vector3[] launcher_rots = new Vector3[] 
-                    {
-                        new Vector3(0f, 0f, 0f),
-                        new Vector3(0f, 335.8091f, 0f),
-                        new Vector3(0f, 0f, 0f),
-                        new Vector3(0f, -335.8091f, 0f)
-                    };
+                //    Vector3[] launcher_rots = new Vector3[] 
+                //    {
+                //        new Vector3(0f, 0f, 0f),
+                //        new Vector3(0f, 335.8091f, 0f),
+                //        new Vector3(0f, 0f, 0f),
+                //        new Vector3(0f, -335.8091f, 0f)
+                //    };
 
-                    for (var i = 0; i < launcher_positions.Length; i++)
-                    {
-                        GameObject launcher = GameObject.Instantiate(DrozdLauncher.drozd_launcher_visual, vic.transform.Find("---T62_rig---/HULL/TURRET"));
-                        launcher.transform.localPosition = launcher_positions[i];
-                        launcher.transform.localEulerAngles = launcher_rots[i];
+                //    for (var i = 0; i < launcher_positions.Length; i++)
+                //    {
+                //        GameObject launcher = GameObject.Instantiate(DrozdLauncher.drozd_launcher_visual, vic.transform.Find("---T62_rig---/HULL/TURRET"));
+                //        launcher.transform.localPosition = launcher_positions[i];
+                //        launcher.transform.localEulerAngles = launcher_rots[i];
 
-                        if (i > 1)
-                        {
-                            launcher.transform.localScale = Vector3.Scale(launcher.transform.localScale, new Vector3(-1f, 1f, 1f));
-                        }
+                //        if (i > 1)
+                //        {
+                //            launcher.transform.localScale = Vector3.Scale(launcher.transform.localScale, new Vector3(-1f, 1f, 1f));
+                //        }
 
-                        launchers.Add(launcher.GetComponent<DrozdLauncher>());
-                    }
+                //        launchers.Add(launcher.GetComponent<DrozdLauncher>());
+                //    }
 
-                    Drozd.AttachDrozd(
-                        vic.transform.Find("---T62_rig---/HULL/TURRET"), vic, new Vector3(0f, 0f, 9.5f),
-                        launchers.GetRange(0, 2).ToArray(), launchers.GetRange(2, 2).ToArray()
-                    );
+                //    Drozd.AttachDrozd(
+                //        vic.transform.Find("---T62_rig---/HULL/TURRET"), vic, new Vector3(0f, 0f, 9.5f),
+                //        launchers.GetRange(0, 2).ToArray(), launchers.GetRange(2, 2).ToArray()
+                //    );
 
-                    vic._friendlyName += "D";
-                }
+                //    vic._friendlyName += "D";
+                //}
 
                 if (tpn3.Value)
                 {

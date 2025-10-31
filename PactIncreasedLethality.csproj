@@ -108,6 +108,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomGuidanceComputer.cs" />
+    <Compile Include="ERA\EraVisual.cs" />
+    <Compile Include="ERA\PactEra.cs" />
     <Compile Include="ERA\Relikt.cs" />
     <Compile Include="Assets.cs" />
     <Compile Include="LaserPointCorrection.cs" />

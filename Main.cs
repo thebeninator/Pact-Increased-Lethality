@@ -12,7 +12,7 @@ using GHPC.Camera;
 using FMOD;
 using GHPC.Vehicle;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.6C3", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.6C4", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -48,7 +48,7 @@ namespace PactIncreasedLethality
             BMP1.Config(cfg);
             BMP2.Config(cfg);
             BTR60.Config(cfg);
-            Drozd.Config(cfg);
+            //Drozd.Config(cfg);
             Armour.Config(cfg);
 
             var corSystem = FMODUnity.RuntimeManager.CoreSystem;
@@ -75,7 +75,7 @@ namespace PactIncreasedLethality
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Medium);
             
-            Kontakt5.Init();
+            PactEra.Init();
             
             BOM.Init();
             
@@ -93,7 +93,7 @@ namespace PactIncreasedLethality
             
             Sosna.Init();
             
-            Drozd.Init();
+            //Drozd.Init();
 
             ProximityFuse.Init();
             

@@ -106,18 +106,7 @@ namespace PactIncreasedLethality
             foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
             {
                 GameObject vic_go = vic.gameObject;
-                /*
-                if (vic.name == "M113") {
-                    bool platoon_leader = vic.Platoon.PlatoonLeaderUnit == vic;
-                    PlatoonData platoon = vic.Platoon;
 
-                    GameObject new_unit = GameObject.Instantiate(m60a1, vic_go.transform.parent);
-                    Vehicle new_unit_vic = new_unit.GetComponent<Vehicle>();
-                    new_unit.transform.position = vic_go.transform.position;
-                    new_unit.transform.localEulerAngles = vic_go.transform.localEulerAngles;
-                    new_unit_vic.Allegiance = vic.Allegiance;         
-                }
-                */
                 if (vic == null) continue;
                 if (!vic.UniqueName.Contains("BTR60PB")) continue;
                 if (vic_go.GetComponent<AlreadyConverted>() != null) continue;
@@ -153,16 +142,6 @@ namespace PactIncreasedLethality
                     GameObject turret = full_turret.transform.Find("BTR_80_B").gameObject;
                     GameObject gun = full_turret.transform.Find("BTR_80_C").gameObject;
                     LateFollow turret_late_follow = vic.transform.Find("btr60_rig/HULL/TURRET").GetComponent<LateFollowTarget>()._lateFollowers[0];
-
-                    UniformArmor turret_armour = turret.AddComponent<UniformArmor>();
-                    turret_armour.PrimaryHeatRha = 20f;
-                    turret_armour.PrimarySabotRha = 20f;
-                    turret_armour.SetName("turret");
-
-                    UniformArmor gun_armour = gun.AddComponent<UniformArmor>();
-                    gun_armour.PrimaryHeatRha = 10f;
-                    gun_armour.PrimarySabotRha = 10f;
-                    gun_armour.SetName("weapons assembly");
 
                     turret_late_follow.transform.Find("turret_sides_7mm").gameObject.SetActive(false);
                     btr_gun.Find("MG_KPVT-1_Breach").gameObject.SetActive(false);
@@ -424,11 +403,25 @@ namespace PactIncreasedLethality
                 btr60a_turret_complete.hideFlags = HideFlags.DontUnloadUnusedAsset;
                 btr60a_turret_complete.transform.localScale = new Vector3(1.1f, 1.1f, 1.1f);
 
-                Transform turret = btr60a_turret_complete.transform.GetChild(0);
-                Transform gun = btr60a_turret_complete.transform.GetChild(1);
+                Transform turret = btr60a_turret_complete.transform.Find("BTR_80_B");
+                Transform gun = btr60a_turret_complete.transform.Find("BTR_80_C");
 
-                turret.tag = "Penetrable";
-                gun.tag = "Penetrable";
+                GameObject turret_armour = turret.transform.Find("ARMOUR").gameObject;
+                GameObject gun_armour = gun.transform.Find("ARMOUR").gameObject;
+                turret_armour.tag = "Penetrable";
+                gun_armour.tag = "Penetrable";
+                turret_armour.layer = 8;
+                gun_armour.layer = 8;
+
+                UniformArmor turret_u_armour = turret_armour.AddComponent<UniformArmor>();
+                turret_u_armour.PrimaryHeatRha = 20f;
+                turret_u_armour.PrimarySabotRha = 20f;
+                turret_u_armour.SetName("turret");
+
+                UniformArmor gun_u_armour = gun_armour.AddComponent<UniformArmor>();
+                gun_u_armour.PrimaryHeatRha = 10f;
+                gun_u_armour.PrimarySabotRha = 10f;
+                gun_u_armour.SetName("weapons assembly");
 
                 turret.GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)"); ;
                 turret.gameObject.AddComponent<HeatSource>().heat = 5f;

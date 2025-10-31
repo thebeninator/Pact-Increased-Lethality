@@ -92,7 +92,7 @@ namespace PactIncreasedLethality
                 vis.visual.materials = new_mat;
 
                 ParticleEffectsManager.Instance.CreateImpactEffectOfType(
-                    Kontakt5.dummy_he, ParticleEffectsManager.FusedStatus.Fuzed, ParticleEffectsManager.SurfaceMaterial.Steel, false, __instance.transform.position);
+                    PactEra.dummy_he, ParticleEffectsManager.FusedStatus.Fuzed, ParticleEffectsManager.SurfaceMaterial.Steel, false, __instance.transform.position);
                 ImpactSFXManager.Instance.PlaySimpleImpactAudio(ImpactAudioType.MainGunHeat, __instance.transform.position);
             }
         }
@@ -108,7 +108,7 @@ namespace PactIncreasedLethality
             k5_armour._normalizesHits = false;
             k5_armour.AngleMatters = false;
             k5_armour._isEra = true;
-            k5_armour._armorType = Kontakt5.kontakt5_so;
+            k5_armour._armorType = Kontakt5.schema.era_so;
 
             Kontakt5Visual vis = k5_t.gameObject.AddComponent<Kontakt5Visual>();
             vis.visual = vis_transform.transform.GetChild(k5_t.GetSiblingIndex()).GetComponent<MeshRenderer>();

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GHPC.Equipment.Optics;
 using GHPC.State;
 using GHPC.Utility;
@@ -11,21 +7,18 @@ using GHPC.Vehicle;
 using GHPC.Weapons;
 using MelonLoader;
 using Reticle;
-using TMPro;
 using HarmonyLib;
 using UnityEngine;
 using FMOD;
 using FMODUnity;
-using GHPC.Crew;
 using MelonLoader.Utils;
 using System.IO;
 using GHPC;
-using static Reticle.LinearLength;
 using GHPC.Player;
 using GHPC.Equipment;
-using GHPC.Equipment.Lamps;
 using GHPC.Effects;
 using GHPC.Camera;
+using GHPC.Crew;
 
 namespace PactIncreasedLethality
 {
@@ -246,8 +239,12 @@ namespace PactIncreasedLethality
                 int rand = UnityEngine.Random.Range(1, 100);
                 bool is_zsu = zsu_conversion.Value && rand <= zsu_conversion_chance.Value;
 
+                AmmoClipCodexScriptable ap = use_3ubr8.Value ? AMMO_30MM.clip_codex_3ubr8 : AMMO_30MM.clip_codex_3ubr6;
+                AmmoClipCodexScriptable he = use_3uof8.Value ? AMMO_30MM.clip_codex_3uof8 : AMMO_30MM.clip_codex_3uor6;
+
                 if (is_zsu)
                 {
+
                     GameObject hide_barrel = new GameObject("hide_barrel");
                     GameObject h = GameObject.Instantiate(hide_barrel, vic.transform.Find("BMP2_rig/HULL/TURRET"));
                     h.transform.localScale = new Vector3(0f, 0.0f, 1f);
@@ -302,7 +299,7 @@ namespace PactIncreasedLethality
                     //weapon.FCS.gameObject.AddComponent<LockOnLead>();
 
                     loadout_manager._weaponsManager.Weapons = new WeaponSystemInfo[] { loadout_manager._weaponsManager.Weapons[0] };
-                    (vic.CrewManager.GetCrewBrain(CrewPosition.Gunner) as GunnerBrain).Weapons.RemoveRange(1, 2);
+                    (vic.CrewManager.GetCrewBrain(CrewPosition.Gunner) as GunnerBrain).WeaponsModule.Weapons.RemoveRange(1, 2);
                     vic.transform.Find("BMP2_rig/HULL/TURRET/konkurs_azimuth").gameObject.SetActive(false);
                     vic.transform.Find("BMP2_rig/HULL/TURRET/konkurs_azimuth").localScale = new Vector3(0f, 0f, 0f);
 
@@ -344,18 +341,12 @@ namespace PactIncreasedLethality
                     day_optic.reticleMesh.Load();
 
                     vic._friendlyName = "BMP-23-4";
-                }
 
-                AmmoClipCodexScriptable ap = use_3ubr8.Value ? AMMO_30MM.clip_codex_3ubr8 : AMMO_30MM.clip_codex_3ubr6;
-                AmmoClipCodexScriptable he = use_3uof8.Value ? AMMO_30MM.clip_codex_3uof8 : AMMO_30MM.clip_codex_3uor6;
-
-                if (is_zsu)
-                {
                     he = clip_codex_bzt;
                     ap = clip_codex_ofz;
                 }
 
-                if (has_lrf.Value) {
+                if (has_lrf.Value && !is_zsu) {
                     LRFReticle();
 
                     day_optic.Alignment = OpticAlignment.FcsRange;
@@ -406,7 +397,7 @@ namespace PactIncreasedLethality
                     }
                 }
 
-                if (has_kornets.Value)
+                if (has_kornets.Value && !is_zsu)
                 {
                     vic._friendlyName = "BMP-2M";
 
@@ -539,7 +530,7 @@ namespace PactIncreasedLethality
                 weapon.Feed.Start();
                 loadout_manager.RegisterAllBallistics();
                 
-                if (use_9m113as.Value && !has_kornets.Value)
+                if (use_9m113as.Value && !has_kornets.Value && !is_zsu)
                 {
                     GHPC.Weapons.AmmoRack atgm_rack = atgm.Feed.ReadyRack;
 
