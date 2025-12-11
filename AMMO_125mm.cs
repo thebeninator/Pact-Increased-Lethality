@@ -2,6 +2,7 @@
 using System.Linq;
 using GHPC.Weapons;
 using UnityEngine;
+using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {

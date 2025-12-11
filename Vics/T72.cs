@@ -19,6 +19,7 @@ using GHPC.Equipment;
 using GHPC.Mission;
 using GHPC.AI;
 using GHPC.Mission.Data;
+using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
@@ -227,26 +228,27 @@ namespace PactIncreasedLethality
             better_stab.Comment = "Less reticle blur, shake while on the move";
         }
 
-        public class PreviouslyT72M : MonoBehaviour { }
+        public class PreviouslyT72M : MonoBehaviour {}
 
-        [HarmonyPatch(typeof(UnitSpawner), "SpawnUnit", new Type[] { typeof(GameObject), typeof(UnitMetaData), typeof(WaypointHolder), typeof(Transform)})]
+        [HarmonyPatch(typeof(UnitSpawner), "SpawnUnit", new Type[] { typeof(string), typeof(UnitMetaData), typeof(WaypointHolder), typeof(Transform)})]
         public static class OverrideT72M
         {
-            private static void Prefix(out bool __state, UnitSpawner __instance, ref GameObject prefab)
+            private static void Prefix(out bool __state, UnitSpawner __instance, ref string uniqueName)
             {
                 __state = false;
 
                 bool conversion_reqd = t72m_composite_cheeks.Value || t72m_super_composite_cheeks.Value || era_t72m.Value || k5_t72m.Value;
 
-                if (prefab.name == "T72M" && conversion_reqd) {
+                if (uniqueName == "T72M" && conversion_reqd) {
                     __state = true;
-                    prefab = __instance.GetPrefabByUniqueName("T72M1"); 
+                    uniqueName = "T72M1"; 
                 }
             }
 
             private static void Postfix(bool __state, ref IUnit __result) {
                 if (__state) {
-                    __result.transform.gameObject.AddComponent<PreviouslyT72M>();
+                    PreviouslyT72M comp = __result.transform.gameObject.AddComponent<PreviouslyT72M>();
+                    comp.enabled = false;
                 }
             }
         }
@@ -331,28 +333,21 @@ namespace PactIncreasedLethality
 
                 try
                 {
-                    AmmoClipCodexScriptable codex = AMMO_125mm.ap[ammo_str];
-                    loadout_manager.LoadedAmmoTypes[0] = codex;
-
-                    if (atgm_str != "None")
-                        loadout_manager.LoadedAmmoTypes = Util.AppendToArray(loadout_manager.LoadedAmmoTypes, AMMO_125mm.atgm[atgm_str]);
+                    if (ammo_str != "3BM15")
+                        loadout_manager.LoadedAmmoList.AmmoClips[0] = AMMO_125mm.ap[ammo_str];
 
                     if (heat_str == "3BK18M")
-                        loadout_manager.LoadedAmmoTypes[1] = clip_codex_3bk18m;
+                        loadout_manager.LoadedAmmoList.AmmoClips[1] = clip_codex_3bk18m;
 
-                    //loadout_manager.LoadedAmmoTypes[2] = clip_codex_3of26_vt;
+                    if (atgm_str != "None")
+                        loadout_manager.LoadedAmmoList.AmmoClips = Util.AppendToArray(loadout_manager.LoadedAmmoList.AmmoClips, AMMO_125mm.atgm[atgm_str]);
+
                     for (int i = 0; i <= 4; i++)
                     {
                         GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
-                        rack.ClipTypes[0] = codex.ClipType;
-
-                        if (heat_str == "3BK18M")
-                            rack.ClipTypes[1] = clip_codex_3bk18m.ClipType;
 
                         if (atgm_str != "None" && (i == 0 || i == 2))
                         {
-                            rack.ClipTypes = Util.AppendToArray(rack.ClipTypes, AMMO_125mm.atgm[atgm_str].ClipType);
-
                             loadout_manager.RackLoadouts[i].FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] {
                                 new LoadoutManager.RackLoadoutFixedChoice() {
                                     AmmoClipIndex = 3,
@@ -374,8 +369,8 @@ namespace PactIncreasedLethality
                         loadout_manager.TotalAmmoCounts = new int[] { 28, 8, 4, 4 };
                     }
 
-                    loadout_manager.SpawnCurrentLoadout();
                     weapon.Feed.AmmoTypeInBreech = null;
+                    loadout_manager.SpawnCurrentLoadout();
                     weapon.Feed.Start();
                     loadout_manager.RegisterAllBallistics();
 
@@ -394,13 +389,17 @@ namespace PactIncreasedLethality
                     MelonLogger.Msg("Loading default ammo for " + vic.FriendlyName);
                 }
 
-                if ((tpn3_t72m1.Value && is_t72m1) || (tpn3_t72m.Value && is_t72m))
-                {
+                if (
+                    (tpn3_t72m1.Value && is_t72m1) || 
+                    (tpn3_t72m.Value && is_t72m)
+                ) {
                     TPN3.Add(fcs, day_optic.slot.LinkedNightSight.PairedOptic, day_optic.slot.LinkedNightSight);
                 }
                
-                if (((thermals_t72m1.Value && is_t72m1) || (thermals_t72m.Value && is_t72m)) && !has_sosna)
-                {
+                if (
+                    ((thermals_t72m1.Value && is_t72m1) || (thermals_t72m.Value && is_t72m)) 
+                    && !has_sosna
+                ) {
                     PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower());
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
 
@@ -557,34 +556,20 @@ namespace PactIncreasedLethality
                             slot.SpawnLocation.transform.position = smoke_cap.GetComponent<Renderer>().bounds.center;
                         }
 
-                        VehicleSmokeManager.SmokePattern[] patterns = new VehicleSmokeManager.SmokePattern[] {
-                            new VehicleSmokeManager.SmokePattern() {
-                                SmokePatternData = new VehicleSmokeManager.SmokePatternData[] {
-                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = 0, },
-                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = 1, }
-                                }
-                            },
-                            new VehicleSmokeManager.SmokePattern() {
-                                SmokePatternData = new VehicleSmokeManager.SmokePatternData[] {
-                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = 2, },
-                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = 3, }
-                                }
-                            },
-                            new VehicleSmokeManager.SmokePattern() {
-                                SmokePatternData = new VehicleSmokeManager.SmokePatternData[] {
-                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = 4, },
-                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = 5, }
-                                }
-                            },
-                            new VehicleSmokeManager.SmokePattern()
+                        VehicleSmokeManager.SmokePattern[] patterns = new VehicleSmokeManager.SmokePattern[4];
+                        int smoke_slot_idx = 0;
+
+                        for (int i = 0; i < patterns.Length; i++) 
+                        {
+                            patterns[i] = new VehicleSmokeManager.SmokePattern() 
                             {
                                 SmokePatternData = new VehicleSmokeManager.SmokePatternData[] {
-                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = 6, },
-                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = 7, }
+                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = smoke_slot_idx++ },
+                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = smoke_slot_idx++ }
                                 }
-                            }
-                        };
-
+                            };
+                        }
+ 
                         smoke_manager._smokeGroups = patterns;
 
                         if (has_sosna)
@@ -835,7 +820,8 @@ namespace PactIncreasedLethality
                 Util.SetupFLIRShaders(t72av_k1_full);
                 Util.SetupFLIRShaders(t72b_k5_1989_full);
                 Util.SetupFLIRShaders(t72b_k5_b3_full);
-                Util.SetupFLIRShaders(t72b3m_ubh_kit);          
+                Util.SetupFLIRShaders(t72b3m_ubh_kit);
+                Util.SetupFLIRShaders(sosna_u);
 
                 Transform hull_k1 = t72b_k1_full.transform.Find("HULL ERA/ARMOUR");
                 Transform turret_k1 = t72b_k1_full.transform.Find("TURRET ERA/ARMOUR");

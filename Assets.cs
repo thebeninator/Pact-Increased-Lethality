@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-// TODO
+﻿using GHPC.Mission;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {
     internal class Assets
     {
+        internal static bool done = false;
+
+        internal static void Load() {
+        }
     }
 }

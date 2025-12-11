@@ -19,6 +19,7 @@ using GHPC.Audio;
 using GHPC.Effects;
 using GHPC.Equipment;
 using Reticle;
+using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
@@ -243,23 +244,16 @@ namespace PactIncreasedLethality
 
                 try
                 {
-                    AmmoClipCodexScriptable codex = AMMO_125mm.ap[ammo_str];
-                    AmmoClipCodexScriptable atgm_codex = null;
+                    if (ammo_str != "3BM15")
+                        loadout_manager.LoadedAmmoList.AmmoClips[0] = AMMO_125mm.ap[ammo_str];
+
                     if (t80_atgm_type.Value != "9M112M")
-                        atgm_codex  = AMMO_125mm.atgm[t80_atgm_type.Value];
+                        loadout_manager.LoadedAmmoList.AmmoClips[3] = AMMO_125mm.atgm[t80_atgm_type.Value];
 
-                    loadout_manager.LoadedAmmoTypes[0] = codex;
-
-                    if (atgm_codex != null)
-                        loadout_manager.LoadedAmmoTypes[3] = atgm_codex;
 
                     for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
                     {
                         GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
-                        rack.ClipTypes[0] = codex.ClipType;
-
-                        if (atgm_codex != null)
-                            rack.ClipTypes[3] = atgm_codex.ClipType;
 
                         Util.EmptyRack(rack);
                     }
@@ -695,7 +689,7 @@ namespace PactIncreasedLethality
                 Kontakt1.Setup(hull_k1, hull_k1.parent);
                 Kontakt1.Setup(turret_k1, turret_k1.parent);
 
-                // Util.SetupFLIRShaders(t80bv_full);
+                Util.SetupFLIRShaders(t80bv_full);
             }
 
             StateController.WaitForComplete(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);

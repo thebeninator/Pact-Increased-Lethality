@@ -71,9 +71,9 @@ namespace PactIncreasedLethality
             CreateTrackingObject("T64A 1979", new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f));
             CreateTrackingObject("T64A 1974", new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f));
             CreateTrackingObject("T64B1 1984", new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f));
+            CreateTrackingObject("T64B1 1981", new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f));
             CreateTrackingObject("T64B 1981", new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f));
-            CreateTrackingObject("T64B1 1984 Variant", new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f));
-            CreateTrackingObject("T64B 1984 (base)", new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f));
+            CreateTrackingObject("T64B 1984", new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f));
             CreateTrackingObject("T64R", new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f));
             CreateTrackingObject("T64A 1984", new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f));
             CreateTrackingObject("T64A 1983", new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f));

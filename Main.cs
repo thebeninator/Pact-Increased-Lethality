@@ -12,7 +12,7 @@ using GHPC.Camera;
 using FMOD;
 using GHPC.Vehicle;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.6C4", "ATLAS")]
+[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.6C5", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -69,38 +69,43 @@ namespace PactIncreasedLethality
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
+            if (!Assets.done && (sceneName == "MainMenu2_Scene" || sceneName == "MainMenu2-1_Scene" || sceneName == "t64_menu"))
+            {
+                Assets.Load();
+            }
+
             TrackingDimensions.Generate();
 
             if (Util.menu_screens.Contains(sceneName)) return;
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Medium);
-            
+
             PactEra.Init();
-            
+
             BOM.Init();
-            
+
             Armour.Init();
-           
+
             CRTShock.Init();
-            
+
             FireControlSystem1A40.Init();
-       
+
             AMMO_125mm.Init();
-            
+
             AMMO_30MM.Init();
-            
+
             PactThermal.Init();
-            
+
             Sosna.Init();
-            
+
             //Drozd.Init();
 
             ProximityFuse.Init();
-            
+
             EFP.Init();
-            
+
             T72.Init();
-            
+
             BMP2.Init();
 
             T55.Init();
@@ -109,14 +114,13 @@ namespace PactIncreasedLethality
 
             T64A.Init();
 
-            T64B.Init();     
-            
-            T62.Init();     
-            
+            T64B.Init();
+
+            T62.Init();
+
             T80.Init();
 
-            BTR60.Init();        
-            
+            BTR60.Init();
         }
     }
 }

@@ -14,7 +14,7 @@ using Reticle;
 using GHPC.Thermals;
 using TMPro;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
+using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
@@ -154,17 +154,17 @@ namespace PactIncreasedLethality
                         reticle = reticleSO.planes[0].elements[2] as ReticleTree.Angular;
                         reticle_cached.mesh = null;
 
-                        // AAAAAAAAAAAAAAA
                         reticle.elements.Add(new ReticleTree.Circle());
                         reticle.name = "LasePoint";
                         reticle.position = new ReticleTree.Position(0, 0, AngularLength.AngularUnit.MIL_USSR, LinearLength.LinearUnit.M);
-                        (reticle.elements[0] as ReticleTree.Circle).radius.mrad = 0.5236f;
-                        (reticle.elements[0] as ReticleTree.Circle).thickness.mrad = 0.16f;
-                        (reticle.elements[0] as ReticleTree.Circle).illumination = ReticleTree.Light.Type.Powered;
-                        (reticle.elements[0] as ReticleTree.Circle).visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
-                        (reticle.elements[0] as ReticleTree.Circle).position = new ReticleTree.Position(0, 0, AngularLength.AngularUnit.MIL_USSR, LinearLength.LinearUnit.M);
-                        (reticle.elements[0] as ReticleTree.Circle).position.x = 0;
-                        (reticle.elements[0] as ReticleTree.Circle).position.y = 0;
+                        ReticleTree.Circle circle = reticle.elements[0] as ReticleTree.Circle;
+                        circle.radius.mrad = 0.5236f;
+                        circle.thickness.mrad = 0.16f;
+                        circle.illumination = ReticleTree.Light.Type.Powered;
+                        circle.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+                        circle.position = new ReticleTree.Position(0, 0, AngularLength.AngularUnit.MIL_USSR, LinearLength.LinearUnit.M);
+                        circle.position.x = 0;
+                        circle.position.y = 0;
                     }
 
                     day_optic.reticleMesh.reticleSO = reticleSO;
@@ -197,7 +197,7 @@ namespace PactIncreasedLethality
 
                     BOM.Add(day_optic.transform, lrf_canvas);
 
-                    loadout_manager.LoadedAmmoTypes = Util.AppendToArray(loadout_manager.LoadedAmmoTypes, clip_codex_9m117);
+                    loadout_manager.LoadedAmmoList.AmmoClips = Util.AppendToArray(loadout_manager.LoadedAmmoList.AmmoClips, clip_codex_9m117);
                     loadout_manager._totalAmmoTypes = 4;
                     loadout_manager.TotalAmmoCounts = new int[] { 20, 10, 6, 4 };
                 }
@@ -208,11 +208,8 @@ namespace PactIncreasedLethality
 
                     if (use_9m117.Value)
                     {
-
                         if (i == 0 || i == 3)
                         {
-                            rack.ClipTypes = Util.AppendToArray(rack.ClipTypes, clip_9m117);
-
                             loadout_manager.RackLoadouts[i].FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] {
                                 new LoadoutManager.RackLoadoutFixedChoice() {
                                     AmmoClipIndex = 3,

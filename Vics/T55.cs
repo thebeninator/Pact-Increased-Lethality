@@ -15,6 +15,7 @@ using MelonLoader.Utils;
 using System.IO;
 using GHPC.Thermals;
 using NWH.VehiclePhysics;
+using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
@@ -104,25 +105,6 @@ namespace PactIncreasedLethality
 
         public static IEnumerator Convert(GameState _)
         {
-            /*
-            foreach (TerrainCollider terrain_collider in GameObject.FindObjectsByType<TerrainCollider>(FindObjectsSortMode.None))
-            {
-                terrain_collider.terrainData.treeInstances = new TreeInstance[] { };
-            }
-
-            foreach (UnityEngine.Terrain terrain in GameObject.FindObjectsByType<UnityEngine.Terrain>(FindObjectsSortMode.None))
-            {
-                MethodInfo remove_trees = typeof(UnityEngine.Terrain).GetMethod("RemoveTrees", BindingFlags.NonPublic | BindingFlags.Instance);
-                for (int i = 0; i <= 10; i++)
-                {
-                    remove_trees.Invoke(terrain, new object[] { new Vector2(0f, 0f), 50000f, i });
-                }
-
-                terrain.gameObject.SetActive(false);
-                terrain.gameObject.SetActive(true);
-            }
-            */
-
             foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
             {
                 GameObject vic_go = vic.gameObject;
@@ -190,17 +172,17 @@ namespace PactIncreasedLethality
                         reticle = reticleSO.planes[0].elements[2] as ReticleTree.Angular;
                         reticle_cached.mesh = null;
 
-                        // AAAAAAAAAAAAAAA
                         reticle.elements.Add(new ReticleTree.Circle());
                         reticle.name = "LasePoint";
                         reticle.position = new ReticleTree.Position(0, 0, AngularLength.AngularUnit.MIL_USSR, LinearLength.LinearUnit.M);
-                        (reticle.elements[0] as ReticleTree.Circle).radius.mrad = 0.5236f;
-                        (reticle.elements[0] as ReticleTree.Circle).thickness.mrad = 0.16f;
-                        (reticle.elements[0] as ReticleTree.Circle).illumination = ReticleTree.Light.Type.Powered;
-                        (reticle.elements[0] as ReticleTree.Circle).visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
-                        (reticle.elements[0] as ReticleTree.Circle).position = new ReticleTree.Position(0, 0, AngularLength.AngularUnit.MIL_USSR, LinearLength.LinearUnit.M);
-                        (reticle.elements[0] as ReticleTree.Circle).position.x = 0;
-                        (reticle.elements[0] as ReticleTree.Circle).position.y = 0;
+                        ReticleTree.Circle circle = reticle.elements[0] as ReticleTree.Circle;
+                        circle.radius.mrad = 0.5236f;
+                        circle.thickness.mrad = 0.16f;
+                        circle.illumination = ReticleTree.Light.Type.Powered;
+                        circle.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
+                        circle.position = new ReticleTree.Position(0, 0, AngularLength.AngularUnit.MIL_USSR, LinearLength.LinearUnit.M);
+                        circle.position.x = 0;
+                        circle.position.y = 0;
 
                         if (use_3bk17m.Value)
                         {
@@ -242,28 +224,28 @@ namespace PactIncreasedLethality
 
                     BOM.Add(day_optic.transform, lrf_canvas);
 
-                    loadout_manager.LoadedAmmoTypes = Util.AppendToArray(loadout_manager.LoadedAmmoTypes, clip_codex_9m117);
+                    loadout_manager.LoadedAmmoList.AmmoClips = Util.AppendToArray(loadout_manager.LoadedAmmoList.AmmoClips, clip_codex_9m117);
                     loadout_manager._totalAmmoTypes = 4;
                     loadout_manager.TotalAmmoCounts = new int[] { 16, 18, 6, 3 };
                 }
 
-                if (use_3bm25.Value) loadout_manager.LoadedAmmoTypes[0] = clip_codex_3bm25;
-                if (use_br412d.Value) loadout_manager.LoadedAmmoTypes[2] = clip_codex_br412d;
-                if (use_3bk17m.Value) loadout_manager.LoadedAmmoTypes[1] = clip_codex_3bk17m;
+                if (use_3bm25.Value)
+                    loadout_manager.LoadedAmmoList.AmmoClips[0] = clip_codex_3bm25;
+
+                if (use_br412d.Value) 
+                    loadout_manager.LoadedAmmoList.AmmoClips[2] = clip_codex_br412d;
+
+                if (use_3bk17m.Value) 
+                    loadout_manager.LoadedAmmoList.AmmoClips[1] = clip_codex_3bk17m;
 
                 for (int i = 0; i <= 4; i++)
                 {
                     GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
-                    if (use_3bm25.Value) rack.ClipTypes[0] = clip_codex_3bm25.ClipType;
-                    if (use_br412d.Value) rack.ClipTypes[2] = clip_codex_br412d.ClipType;
-                    if (use_3bk17m.Value) rack.ClipTypes[1] = clip_codex_3bk17m.ClipType;
 
                     if (use_9m117.Value)
                     {
                         if (i == 0 || i == 3)
                         {
-                            rack.ClipTypes = Util.AppendToArray(rack.ClipTypes, clip_9m117);
-
                             loadout_manager.RackLoadouts[i].FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] {
                                 new LoadoutManager.RackLoadoutFixedChoice() {
                                     AmmoClipIndex = 3,
@@ -425,7 +407,6 @@ namespace PactIncreasedLethality
                     }
                 }
             }
-
 
             if (has_lrf.Value && !ReticleMesh.cachedReticles.ContainsKey("T72"))
             {

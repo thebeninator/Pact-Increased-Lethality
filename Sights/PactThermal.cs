@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using GHPC.Camera;
 using GHPC.Equipment.Optics;
 using GHPC.Vehicle;
+using GHPC.Weaponry;
 using GHPC.Weapons;
-using MelonLoader;
 using MelonLoader.Utils;
 using Reticle;
 using TMPro;
@@ -391,7 +389,7 @@ namespace PactIncreasedLethality
                     night_optic.reticleMesh.Load();
                 }
 
-                if (!ReticleMesh.cachedReticles.ContainsKey("TPN3") && obj.gameObject.name == "T64B 1984 (base)")
+                if (!ReticleMesh.cachedReticles.ContainsKey("TPN3") && obj.gameObject.name == "T64B 1984")
                 {         
                     obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPN‑3‑49 night sight/Reticle Mesh").GetComponent<ReticleMesh>().Load();
                 }

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {

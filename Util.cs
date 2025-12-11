@@ -10,7 +10,9 @@ namespace PactIncreasedLethality
 {
     public class AlreadyConverted : MonoBehaviour
     {
-
+        void Awake() {
+            enabled = false;
+        }
     }
 
     public class Util

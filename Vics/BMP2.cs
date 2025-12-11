@@ -19,6 +19,7 @@ using GHPC.Equipment;
 using GHPC.Effects;
 using GHPC.Camera;
 using GHPC.Crew;
+using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
@@ -517,11 +518,10 @@ namespace PactIncreasedLethality
                     atgm.Feed.Start();
                 }
 
-                loadout_manager.LoadedAmmoTypes = new AmmoClipCodexScriptable[] { ap, he };
+                loadout_manager.LoadedAmmoList.AmmoClips[0] = ap;
+                loadout_manager.LoadedAmmoList.AmmoClips[1] = he;
 
                 GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[0].Rack;
-                loadout_manager.RackLoadouts[0].OverrideInitialClips = new AmmoClipCodexScriptable[] { ap, he };
-                rack.ClipTypes = new AmmoType.AmmoClip[] { ap.ClipType, he.ClipType };
                 Util.EmptyRack(rack);
 
                 loadout_manager.SpawnCurrentLoadout();

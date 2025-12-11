@@ -78,7 +78,6 @@ namespace PactIncreasedLethality
                 if (efp == null)  
                     MelonLogger.Msg("Could not find EFP sensor game object, make sure EFP.Init() has been called");
                 
-
                 if (efp_ammos.Contains(__instance.Info.Name) && __instance.gameObject.transform.Find("efp sensor(Clone)") == null)
                 {
                     GameObject p = GameObject.Instantiate(efp, __instance.transform);

@@ -10,6 +10,7 @@ using FMOD;
 using FMODUnity;
 using HarmonyLib;
 using GHPC.Camera;
+using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {

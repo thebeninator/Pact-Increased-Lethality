@@ -8,11 +8,10 @@ using GHPC.Vehicle;
 using GHPC.Weapons;
 using GHPC;
 using MelonLoader;
-using Reticle;
 using UnityEngine;
 using NWH.VehiclePhysics;
 using static PactIncreasedLethality.T80;
-using GHPC.UI.Tips;
+using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
@@ -94,12 +93,12 @@ namespace PactIncreasedLethality
 
                 try
                 {
-                    AmmoClipCodexScriptable codex = AMMO_125mm.ap[ammo_str];
-                    loadout_manager.LoadedAmmoTypes[0] = codex;
+                    if (ammo_str != "3BM15")
+                        loadout_manager.LoadedAmmoList.AmmoClips[0] = AMMO_125mm.ap[ammo_str];
+
                     for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
                     {
                         GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
-                        rack.ClipTypes[0] = codex.ClipType;
                         Util.EmptyRack(rack);
                     }
 
