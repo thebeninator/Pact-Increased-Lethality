@@ -1,3 +1,6 @@
+THIS MOD REQUIRES THE VEHICLE PRELOADER!!!!!!!!
+https://github.com/thebeninator/VehiclePreloader/releases/latest
+
 # Attributions
 Turret model for BTR-60A from https://sketchfab.com/3d-models/btr-80a-5e4b7a1b18c04ac68fcd76036feebfc8 by Alexandr Zhilkin
 
