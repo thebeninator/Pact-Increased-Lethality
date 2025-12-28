@@ -45,6 +45,11 @@ namespace PactIncreasedLethality
             CreateTrackingObject("LEO1A1A3", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
             CreateTrackingObject("LEO1A1A4", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
 
+            CreateTrackingObject("LEO1A3", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
+            CreateTrackingObject("LEO1A3A1", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
+            CreateTrackingObject("LEO1A1A2", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
+            CreateTrackingObject("LEO1A1A3", new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f));
+
             CreateTrackingObject("_M1 (variant)", new Vector3(0f, 1.21f, -0.25f), new Vector3(3.5f, 2.4f, 7.8f));
             CreateTrackingObject("_M1IP (variant)", new Vector3(0f, 1.21f, -0.25f), new Vector3(3.5f, 2.4f, 7.8f));
 

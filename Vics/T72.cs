@@ -879,7 +879,7 @@ namespace PactIncreasedLethality
                 Relikt.Setup(ubh_turret_relikt, ubh_turret_relikt.parent);
                 Relikt.Setup(ubh_hull_relikt, ubh_hull_relikt.parent);
 
-                GameObject turret_slat = t72b3m_ubh_kit.transform.Find("TURRET STUFF/TURRET SLAT").gameObject;
+                GameObject turret_slat = t72b3m_ubh_kit.transform.Find("TURRET STUFF/TURRET SLAT/ARMOUR").gameObject;
                 turret_slat.tag = "Penetrable";
                 turret_slat.layer = 8;
                 UniformArmor turret_slat_armor = turret_slat.AddComponent<UniformArmor>();
@@ -887,7 +887,7 @@ namespace PactIncreasedLethality
                 turret_slat_armor.PrimaryHeatRha = 60f;
                 turret_slat_armor.PrimarySabotRha = 15f;
 
-                GameObject hull_slat = t72b3m_ubh_kit.transform.Find("HULL STUFF/SIDE SLAT").gameObject;
+                GameObject hull_slat = t72b3m_ubh_kit.transform.Find("HULL STUFF/SIDE SLAT/ARMOUR").gameObject;
                 hull_slat.tag = "Penetrable";
                 hull_slat.layer = 8;
                 UniformArmor hull_slat_armor = hull_slat.AddComponent<UniformArmor>();
