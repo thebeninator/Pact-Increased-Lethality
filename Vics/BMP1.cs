@@ -39,7 +39,7 @@ namespace PactIncreasedLethality
                 vel.y = 0f;
                 vel.z = 0f;
 
-                bool interior = !CameraManager._instance.ExteriorMode && __instance == PactIncreasedLethalityMod.player_manager.CurrentPlayerWeapon.Weapon.WeaponSound;
+                bool interior = !CameraManager._instance.ExteriorMode && __instance == Mod.player_manager.CurrentPlayerWeapon.Weapon.WeaponSound;
 
                 ChannelGroup channelGroup;
                 corSystem.createChannelGroup("master", out channelGroup);
@@ -50,7 +50,7 @@ namespace PactIncreasedLethality
                 FMOD.Channel channel;
                 corSystem.playSound(interior ? sounds[UnityEngine.Random.Range(0, sounds.Length)] : sounds_exterior[UnityEngine.Random.Range(0, sounds_exterior.Length)], channelGroup, true, out channel);
 
-                float game_vol = PactIncreasedLethalityMod.audio_settings_manager._previousVolume;
+                float game_vol = Mod.audio_settings_manager._previousVolume;
                 float gun_vol = (interior) ? (game_vol + 0.10f * (game_vol * 10)) : (game_vol + 0.07f * (game_vol * 10));
 
                 channel.setVolume(gun_vol);
@@ -103,7 +103,7 @@ namespace PactIncreasedLethality
 
         public static IEnumerator Convert(GameState _)
         {
-            foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
+            foreach (Vehicle vic in Mod.vics)
             {
                 GameObject vic_go = vic.gameObject;
 

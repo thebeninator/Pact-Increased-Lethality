@@ -22,7 +22,8 @@ namespace PactIncreasedLethality
     {
         public static AmmoType dummy_he;
 
-        public static void Setup(EraSchema schema, Transform era_armour_parent, Transform visual_parent, bool hide_on_detonate = true, Material destroyed_mat = null)
+        public static void Setup(EraSchema schema, Transform era_armour_parent, Transform visual_parent, 
+            bool hide_on_detonate = true, Material destroyed_mat = null, string destroyed_target = "")
         {
             if (schema.era_so.ArmorType == null)
             {
@@ -61,6 +62,7 @@ namespace PactIncreasedLethality
                 {
                     vis.hide_on_detonate = false;
                     vis.destroyed_mat = destroyed_mat;
+                    vis.destroyed_target = destroyed_target;
                 }
 
                 vis.visual = visual_parent.transform.GetChild(era.GetSiblingIndex()).GetComponent<MeshRenderer>();
@@ -80,8 +82,22 @@ namespace PactIncreasedLethality
 
                 if (!vis.hide_on_detonate && vis.destroyed_mat != null)
                 {
+                    int idx = 0;
                     Material[] vis_mats = vis.visual.materials;
-                    vis_mats[0] = vis.destroyed_mat;
+
+                    if (vis.destroyed_target != "") 
+                    {
+                        for (int i = 0; i < vis_mats.Length; i++) 
+                        {
+                            if (vis_mats[i].name.Contains(vis.destroyed_target))
+                            {
+                                idx = i;
+                                break;
+                            }
+                        }
+                    } 
+
+                    vis_mats[idx] = vis.destroyed_mat;
                     vis.visual.materials = vis_mats;
                 }
 

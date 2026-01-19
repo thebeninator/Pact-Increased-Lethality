@@ -31,18 +31,5 @@ namespace PactIncreasedLethality
             optic.reticleMesh.smoothTime = 0.1f;
             optic.reticleMesh.maxSpeed = 2000f;
         }
-
-        public static void Init()
-        {
-            if (!ReticleMesh.cachedReticles.ContainsKey("TPN3")) {
-                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                {
-                    if (obj.gameObject.name == "T64B 1984")
-                    {
-                        obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPN‑3‑49 night sight/Reticle Mesh").GetComponent<ReticleMesh>().Load();
-                    }
-                }
-            }
-        }
     }
 }

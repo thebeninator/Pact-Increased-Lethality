@@ -14,7 +14,9 @@ namespace PactIncreasedLethality
             reticle.CurrentAmmo = fcs.CurrentAmmoType;
 
             if (reticle.curReticleRange != fcs.CurrentRange)
+            {
                 reticle.targetReticleRange = fcs.CurrentRange;
+            }
         }
     }
 }

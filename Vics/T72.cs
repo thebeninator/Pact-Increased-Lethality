@@ -19,7 +19,6 @@ using GHPC.Equipment;
 using GHPC.Mission;
 using GHPC.AI;
 using GHPC.Mission.Data;
-using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
@@ -79,10 +78,6 @@ namespace PactIncreasedLethality
 
         static MelonPreferences_Entry<bool> better_stab;
 
-        static VehicleController abrams_vic_controller;
-
-        static AmmoClipCodexScriptable clip_codex_3bk18m;
-
         static Dictionary<string, int> ammo_racks = new Dictionary<string, int>() {
             ["Hull Wet"] = 1,
             ["Hull Rear"] = 2,
@@ -90,7 +85,6 @@ namespace PactIncreasedLethality
             ["Turret Spare"] = 4
         };
 
-        static GameObject soviet_crew_voice;
         static Mesh t72b_vis_turret;
         static Mesh t72b_armour_turret;
         static GameObject t72b_turret_nera;
@@ -113,8 +107,7 @@ namespace PactIncreasedLethality
         static Mesh t72b_k5_hull_mesh;
         static Mesh t72b3ubh_turret_mesh;
 
-        static ArmorCodexScriptable kontakt1_so;
-        static ArmorType kontakt1_armour = new ArmorType();
+        private static bool assets_loaded = false;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -228,34 +221,9 @@ namespace PactIncreasedLethality
             better_stab.Comment = "Less reticle blur, shake while on the move";
         }
 
-        public class PreviouslyT72M : MonoBehaviour {}
-
-        [HarmonyPatch(typeof(UnitSpawner), "SpawnUnit", new Type[] { typeof(string), typeof(UnitMetaData), typeof(WaypointHolder), typeof(Transform)})]
-        public static class OverrideT72M
-        {
-            private static void Prefix(out bool __state, UnitSpawner __instance, ref string uniqueName)
-            {
-                __state = false;
-
-                bool conversion_reqd = t72m_composite_cheeks.Value || t72m_super_composite_cheeks.Value || era_t72m.Value || k5_t72m.Value;
-
-                if (uniqueName == "T72M" && conversion_reqd) {
-                    __state = true;
-                    uniqueName = "T72M1"; 
-                }
-            }
-
-            private static void Postfix(bool __state, ref IUnit __result) {
-                if (__state) {
-                    PreviouslyT72M comp = __result.transform.gameObject.AddComponent<PreviouslyT72M>();
-                    comp.enabled = false;
-                }
-            }
-        }
-
         public static IEnumerator Convert(GameState _)
         {
-            foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
+            foreach (Vehicle vic in Mod.vics)
             {
                 GameObject vic_go = vic.gameObject;
 
@@ -296,7 +264,7 @@ namespace PactIncreasedLethality
                     vic._friendlyName = vic.FriendlyName == "KPz T-72M1" ? "T-72A" : "T-72";
 
                     vic.transform.Find("DE Tank Voice").gameObject.SetActive(false);
-                    GameObject crew_voice = GameObject.Instantiate(soviet_crew_voice, vic.transform);
+                    GameObject crew_voice = GameObject.Instantiate(Assets.soviet_crew_voice, vic.transform);
                     crew_voice.transform.localPosition = new Vector3(0, 0, 0);
                     crew_voice.transform.localEulerAngles = new Vector3(0, 0, 0);
                     CrewVoiceHandler handler = crew_voice.GetComponent<CrewVoiceHandler>();
@@ -334,13 +302,13 @@ namespace PactIncreasedLethality
                 try
                 {
                     if (ammo_str != "3BM15")
-                        loadout_manager.LoadedAmmoList.AmmoClips[0] = AMMO_125mm.ap[ammo_str];
+                        loadout_manager.LoadedAmmoList.AmmoClips[0] = Ammo_125mm.ap[ammo_str];
 
                     if (heat_str == "3BK18M")
-                        loadout_manager.LoadedAmmoList.AmmoClips[1] = clip_codex_3bk18m;
+                        loadout_manager.LoadedAmmoList.AmmoClips[1] = Assets.clip_codex_3bk18m;
 
                     if (atgm_str != "None")
-                        loadout_manager.LoadedAmmoList.AmmoClips = Util.AppendToArray(loadout_manager.LoadedAmmoList.AmmoClips, AMMO_125mm.atgm[atgm_str]);
+                        loadout_manager.LoadedAmmoList.AmmoClips = Util.AppendToArray(loadout_manager.LoadedAmmoList.AmmoClips, Ammo_125mm.atgm[atgm_str]);
 
                     for (int i = 0; i <= 4; i++)
                     {
@@ -390,8 +358,8 @@ namespace PactIncreasedLethality
                 }
 
                 if (
-                    (tpn3_t72m1.Value && is_t72m1) || 
-                    (tpn3_t72m.Value && is_t72m)
+                    ((tpn3_t72m1.Value && is_t72m1) || (tpn3_t72m.Value && is_t72m))
+                    && !has_sosna
                 ) {
                     TPN3.Add(fcs, day_optic.slot.LinkedNightSight.PairedOptic, day_optic.slot.LinkedNightSight);
                 }
@@ -411,8 +379,8 @@ namespace PactIncreasedLethality
 
                 if (has_sosna)
                 {
-                    day_optic.transform.parent.localPosition = new Vector3(-0.727f, 0.4631f, -5.9849f);
-                    night_optic.transform.localPosition = new Vector3(-0.727f, 0.4631f, -5.9849f);
+                    day_optic.transform.parent.localPosition = new Vector3(-0.727f, 0.4631f, -5.7249f);
+                    night_optic.transform.localPosition = new Vector3(-0.727f, 0.4631f, -5.7249f);
                 }
 
                 GameObject guidance_computer_obj = GameObject.Instantiate(new GameObject("guidance computer"), fcs.transform.parent);
@@ -432,7 +400,7 @@ namespace PactIncreasedLethality
 
                 if (has_sosna)
                 {
-                    Sosna.Add(day_optic, night_optic, vic.WeaponsManager.Weapons[1], vic.WeaponsManager.Weapons[0], gc);
+                    SuperFCS.Add(day_optic, night_optic, vic.WeaponsManager.Weapons[1], vic.WeaponsManager.Weapons[0], gc);
 
                     day_optic.transform.Find("Quad").gameObject.SetActive(false);
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
@@ -453,8 +421,8 @@ namespace PactIncreasedLethality
                     VehicleController this_vic_controller = vic_go.GetComponent<VehicleController>();
                     NwhChassis chassis = vic_go.GetComponent<NwhChassis>();
 
-                    Util.ShallowCopy(this_vic_controller.engine, abrams_vic_controller.engine);
-                    Util.ShallowCopy(this_vic_controller.transmission, abrams_vic_controller.transmission);
+                    Util.ShallowCopy(this_vic_controller.engine, Assets.abrams_vic_controller.engine);
+                    Util.ShallowCopy(this_vic_controller.transmission, Assets.abrams_vic_controller.transmission);
 
                     this_vic_controller.engine.vc = vic_go.GetComponent<VehicleController>();
                     this_vic_controller.transmission.vc = vic_go.GetComponent<VehicleController>();
@@ -706,219 +674,225 @@ namespace PactIncreasedLethality
             yield break;
         }
 
+        public class PreviouslyT72M : MonoBehaviour { }
+
+        [HarmonyPatch(typeof(UnitSpawner), "SpawnUnit", new Type[] { typeof(string), typeof(UnitMetaData), typeof(WaypointHolder), typeof(Transform) })]
+        public static class OverrideT72M
+        {
+            private static void Prefix(out bool __state, UnitSpawner __instance, ref string uniqueName)
+            {
+                __state = false;
+
+                bool conversion_reqd = t72m_composite_cheeks.Value || t72m_super_composite_cheeks.Value || era_t72m.Value || k5_t72m.Value;
+
+                if (uniqueName == "T72M" && conversion_reqd)
+                {
+                    __state = true;
+                    uniqueName = "T72M1";
+                }
+            }
+
+            private static void Postfix(bool __state, ref IUnit __result)
+            {
+                if (__state)
+                {
+                    PreviouslyT72M comp = __result.transform.gameObject.AddComponent<PreviouslyT72M>();
+                    comp.enabled = false;
+                }
+            }
+        }
+
+        public static void LoadAssets() 
+        {
+            if (assets_loaded) return;
+            if (!t72_patch.Value) return;
+
+            AssetBundle t72b_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72b"));
+            AssetBundle t72av_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72av"));
+
+            t72b_k5_plate_destroyed = t72b_bundle.LoadAsset<Material>("DESTROYED K5 PLATE");
+            t72b_k5_plate_destroyed.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72b_vis_turret = t72b_bundle.LoadAsset<Mesh>("t72b_tur.asset");
+            t72b_vis_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72b_k5_hull_mesh = t72b_bundle.LoadAsset<Mesh>("t72b_k5_hull_mesh");
+            t72b_k5_hull_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72b3_turret_mesh = t72b_bundle.LoadAsset<Mesh>("t72b3 turret");
+            t72b3_turret_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72b3ubh_turret_mesh = t72b_bundle.LoadAsset<Mesh>("t72b3m_turret_mesh");
+            t72b3ubh_turret_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72b_armour_turret = t72b_bundle.LoadAsset<Mesh>("t72b_tur_collider.asset");
+            t72b_armour_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72b_turret_nera = t72b_bundle.LoadAsset<GameObject>("t72n_nera_cheeks.prefab");
+            t72b_turret_nera.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            GameObject reflective_plates = t72b_turret_nera.transform.Find("REFLECTIVE PLATES").gameObject;
+            GameObject backing_plate = t72b_turret_nera.transform.Find("BACKING PLATE").gameObject;
+
+            reflective_plates.tag = "Penetrable";
+            reflective_plates.layer = 8;
+            VariableArmor t72b_turret_nera_va = reflective_plates.AddComponent<VariableArmor>();
+            t72b_turret_nera_va.SetName("reflective plate array");
+            t72b_turret_nera_va._armorType = Armour.composite_armor;
+            t72b_turret_nera_va._spallForwardRatio = 0.2f;
+            AarVisual t72b_turret_nera_aar = reflective_plates.AddComponent<AarVisual>();
+            t72b_turret_nera_aar.SwitchMaterials = false;
+            t72b_turret_nera_aar.HideUntilAar = true;
+
+            backing_plate.tag = "Penetrable";
+            backing_plate.layer = 8;
+            VariableArmor backing_plate_va = backing_plate.AddComponent<VariableArmor>();
+            backing_plate_va.SetName("steel backing plate");
+            backing_plate_va._armorType = Armour.ru_hhs_armor;
+            backing_plate_va._spallForwardRatio = 0.5f;
+            AarVisual backing_plate_aar = backing_plate.AddComponent<AarVisual>();
+            backing_plate_aar.SwitchMaterials = false;
+            backing_plate_aar.HideUntilAar = true;
+
+            t72b_k1_full = t72b_bundle.LoadAsset<GameObject>("T72B_K1");
+            t72b_k1_full.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72b_only_smoke = t72b_bundle.LoadAsset<GameObject>("T72B ONLY SMOKE");
+            t72b_only_smoke.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            sosna_u = t72b_bundle.LoadAsset<GameObject>("SOSNA U");
+            sosna_u.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72b_hull = t72b_bundle.LoadAsset<Mesh>("t72b_hull");
+            t72b_hull.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72av_k1_full = t72av_bundle.LoadAsset<GameObject>("T72AV");
+            t72av_k1_full.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72av_turret = t72av_bundle.LoadAsset<Mesh>("t72av_turret");
+            t72av_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72av_sosna_turret = t72av_bundle.LoadAsset<Mesh>("t72av_sosnau");
+            t72av_sosna_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72b_k5_1989_full = t72b_bundle.LoadAsset<GameObject>("T72B 1989 K5");
+            t72b_k5_1989_full.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72b_k5_b3_full = t72b_bundle.LoadAsset<GameObject>("T72B3 K5");
+            t72b_k5_b3_full.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t72b3m_ubh_kit = t72b_bundle.LoadAsset<GameObject>("T72B UBH KIT");
+            t72b3m_ubh_kit.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            Util.SetupFLIRShaders(t72b_k1_full);
+            Util.SetupFLIRShaders(t72av_k1_full);
+            Util.SetupFLIRShaders(t72b_k5_1989_full);
+            Util.SetupFLIRShaders(t72b_k5_b3_full);
+            Util.SetupFLIRShaders(t72b3m_ubh_kit);
+            Util.SetupFLIRShaders(sosna_u);
+
+            Transform hull_k1 = t72b_k1_full.transform.Find("HULL ERA/ARMOUR");
+            Transform turret_k1 = t72b_k1_full.transform.Find("TURRET ERA/ARMOUR");
+            Transform mantlet_k1 = t72b_k1_full.transform.Find("MANTLET MOUNT/MANTLET K1 ARMOUR");
+            Kontakt1.Setup(hull_k1, hull_k1.parent);
+            Kontakt1.Setup(turret_k1, turret_k1.parent);
+            Kontakt1.Setup(mantlet_k1, mantlet_k1.parent.Find("K1 MANTLET"));
+
+            hull_k1 = t72av_k1_full.transform.Find("HULL ERA/ARMOUR");
+            turret_k1 = t72av_k1_full.transform.Find("TURRET ERA/ARMOUR");
+            mantlet_k1 = t72av_k1_full.transform.Find("MANTLET MOUNT/MANTLET K1 ARMOUR");
+            Kontakt1.Setup(hull_k1, hull_k1.parent);
+            Kontakt1.Setup(turret_k1, turret_k1.parent);
+            Kontakt1.Setup(mantlet_k1, mantlet_k1.parent.Find("K1 MANTLET"));
+
+            GameObject turret_plate = t72b_k5_1989_full.transform.Find("TURRET PLATE/ARMOUR").gameObject;
+            turret_plate.tag = "Penetrable";
+            turret_plate.layer = 8;
+            UniformArmor turret_plate_armor = turret_plate.AddComponent<UniformArmor>();
+            turret_plate_armor._name = "plate";
+            turret_plate_armor.PrimaryHeatRha = 5f;
+            turret_plate_armor.PrimarySabotRha = 5f;
+
+            GameObject hull_plate = t72b_k5_1989_full.transform.Find("HULL PLATE/ARMOUR").gameObject;
+            hull_plate.tag = "Penetrable";
+            hull_plate.layer = 8;
+            UniformArmor hull_plate_armor = hull_plate.AddComponent<UniformArmor>();
+            hull_plate_armor._name = "mounting plate";
+            hull_plate_armor.PrimaryHeatRha = 15f;
+            hull_plate_armor.PrimarySabotRha = 15f;
+
+            GameObject splash_guard = t72b_k5_1989_full.transform.Find("HULL PLATE/SPLASH GUARD ARMOUR").gameObject;
+            splash_guard.tag = "Penetrable";
+            splash_guard.layer = 8;
+            UniformArmor splash_guard_armor = splash_guard.AddComponent<UniformArmor>();
+            splash_guard_armor._name = "splash guard";
+            splash_guard_armor.PrimaryHeatRha = 2f;
+            splash_guard_armor.PrimarySabotRha = 2f;
+
+            Transform hull_k5 = t72b_k5_1989_full.transform.Find("HULL ERA/ARMOUR");
+            Transform hull_front_k5 = t72b_k5_1989_full.transform.Find("HULL ERA FRONT HULL/ARMOUR");
+            Transform turret_k5 = t72b_k5_1989_full.transform.Find("TURRET ERA/ARMOUR");
+            Kontakt5.Setup(hull_k5, hull_k5.parent);
+            Kontakt5.Setup(hull_front_k5, hull_front_k5.parent, hide_on_detonate: false, destroyed_mat: t72b_k5_plate_destroyed);
+            Kontakt5.Setup(turret_k5, turret_k5.parent);
+
+            Transform b3_turret_k5 = t72b_k5_b3_full.transform.Find("TURRET ERA/ARMOUR");
+            Kontakt5.Setup(b3_turret_k5, b3_turret_k5.parent);
+
+            Transform ubh_turret_k5 = t72b3m_ubh_kit.transform.Find("TURRET STUFF/TURRET K5/ARMOUR");
+            Transform ubh_turret_relikt = t72b3m_ubh_kit.transform.Find("TURRET STUFF/TURRET RELIKT/ARMOUR");
+            Transform ubh_hull_relikt = t72b3m_ubh_kit.transform.Find("HULL STUFF/RELIKT BAGS/ARMOUR");
+
+            Kontakt5.Setup(ubh_turret_k5, ubh_turret_k5.parent);
+            Relikt.Setup(ubh_turret_relikt, ubh_turret_relikt.parent);
+            Relikt.Setup(ubh_hull_relikt, ubh_hull_relikt.parent);
+
+            GameObject turret_slat = t72b3m_ubh_kit.transform.Find("TURRET STUFF/TURRET SLAT/ARMOUR").gameObject;
+            turret_slat.tag = "Penetrable";
+            turret_slat.layer = 8;
+            UniformArmor turret_slat_armor = turret_slat.AddComponent<UniformArmor>();
+            turret_slat_armor._name = "turret slat armour";
+            turret_slat_armor.PrimaryHeatRha = 60f;
+            turret_slat_armor.PrimarySabotRha = 15f;
+
+            GameObject hull_slat = t72b3m_ubh_kit.transform.Find("HULL STUFF/SIDE SLAT/ARMOUR").gameObject;
+            hull_slat.tag = "Penetrable";
+            hull_slat.layer = 8;
+            UniformArmor hull_slat_armor = hull_slat.AddComponent<UniformArmor>();
+            hull_slat_armor._name = "hull side slat armour";
+            hull_slat_armor.PrimaryHeatRha = 60f;
+            hull_slat_armor.PrimarySabotRha = 15f;
+
+            GameObject sosna_sight_complex = sosna_u.transform.Find("SOSNA U/SIGHT COMPLEX").gameObject;
+            sosna_sight_complex.tag = "Penetrable";
+            sosna_sight_complex.layer = 8;
+            UniformArmor sosna_sight_complex_armor = sosna_sight_complex.AddComponent<UniformArmor>();
+            sosna_sight_complex_armor._name = "Sosna-U sight complex";
+            sosna_sight_complex_armor.PrimaryHeatRha = 30f;
+            sosna_sight_complex_armor.PrimarySabotRha = 30f;
+
+            GameObject sosna_cover = sosna_u.transform.Find("SOSNA U/FRONT COVER").gameObject;
+            sosna_cover.tag = "Penetrable";
+            sosna_cover.layer = 8;
+            UniformArmor sosna_cover_armor = sosna_cover.AddComponent<UniformArmor>();
+            sosna_cover_armor._name = "front cover";
+            sosna_cover_armor.PrimaryHeatRha = 10f;
+            sosna_cover_armor.PrimarySabotRha = 10f;
+
+            GameObject sosna_shield = sosna_u.transform.Find("SOSNA U/SHIELD").gameObject;
+            sosna_shield.tag = "Penetrable";
+            sosna_shield.layer = 8;
+            UniformArmor sosna_shield_armor = sosna_shield.AddComponent<UniformArmor>();
+            sosna_shield_armor._name = "shield";
+            sosna_shield_armor.PrimaryHeatRha = 15f;
+            sosna_shield_armor.PrimarySabotRha = 15f;
+
+            assets_loaded = true;
+        }
+
         public static void Init()
         {
             if (!t72_patch.Value) return;
-
-            if (abrams_vic_controller == null)
-            {
-                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                {
-                    if (obj.gameObject.name == "_M1IP (variant)")
-                    {
-                        abrams_vic_controller = obj.GetComponent<VehicleController>();
-                        break;
-                    }
-                }
-            }
-
-            foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
-            {
-                if (s.name == "clip_3BK18M") { clip_codex_3bk18m = s; break; }
-            }
-
-            if (soviet_crew_voice == null)
-            {
-                foreach (CrewVoiceHandler obj in Resources.FindObjectsOfTypeAll(typeof(CrewVoiceHandler)))
-                {
-                    if (obj.name != "RU Tank Voice") continue;
-                    soviet_crew_voice = obj.gameObject;
-                    break;
-                }
-            }
-
-            if (t72b_k5_plate_destroyed == null)
-            {       
-                AssetBundle t72b_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72b"));
-                AssetBundle t72av_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72av"));
-
-                t72b_k5_plate_destroyed = t72b_bundle.LoadAsset<Material>("DESTROYED K5 PLATE");
-                t72b_k5_plate_destroyed.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72b_vis_turret = t72b_bundle.LoadAsset<Mesh>("t72b_tur.asset");
-                t72b_vis_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72b_k5_hull_mesh = t72b_bundle.LoadAsset<Mesh>("t72b_k5_hull_mesh");
-                t72b_k5_hull_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72b3_turret_mesh = t72b_bundle.LoadAsset<Mesh>("t72b3 turret");
-                t72b3_turret_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72b3ubh_turret_mesh = t72b_bundle.LoadAsset<Mesh>("t72b3m_turret_mesh");
-                t72b3ubh_turret_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72b_armour_turret = t72b_bundle.LoadAsset<Mesh>("t72b_tur_collider.asset");
-                t72b_armour_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72b_turret_nera = t72b_bundle.LoadAsset<GameObject>("t72n_nera_cheeks.prefab");
-                t72b_turret_nera.hideFlags = HideFlags.DontUnloadUnusedAsset;
-  
-                GameObject reflective_plates = t72b_turret_nera.transform.Find("REFLECTIVE PLATES").gameObject;
-                GameObject backing_plate = t72b_turret_nera.transform.Find("BACKING PLATE").gameObject;
-
-                reflective_plates.tag = "Penetrable";
-                reflective_plates.layer = 8;
-                VariableArmor t72b_turret_nera_va = reflective_plates.AddComponent<VariableArmor>();
-                t72b_turret_nera_va.SetName("reflective plate array");
-                t72b_turret_nera_va._armorType = Armour.composite_armor;
-                t72b_turret_nera_va._spallForwardRatio = 0.2f;
-                AarVisual t72b_turret_nera_aar = reflective_plates.AddComponent<AarVisual>();
-                t72b_turret_nera_aar.SwitchMaterials = false;
-                t72b_turret_nera_aar.HideUntilAar = true;
-
-                backing_plate.tag = "Penetrable";
-                backing_plate.layer = 8;
-                VariableArmor backing_plate_va = backing_plate.AddComponent<VariableArmor>();
-                backing_plate_va.SetName("steel backing plate");
-                backing_plate_va._armorType = Armour.ru_hhs_armor;
-                backing_plate_va._spallForwardRatio = 0.5f;
-                AarVisual backing_plate_aar = backing_plate.AddComponent<AarVisual>();
-                backing_plate_aar.SwitchMaterials = false;
-                backing_plate_aar.HideUntilAar = true;
-
-                t72b_k1_full = t72b_bundle.LoadAsset<GameObject>("T72B_K1");
-                t72b_k1_full.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72b_only_smoke = t72b_bundle.LoadAsset<GameObject>("T72B ONLY SMOKE");
-                t72b_only_smoke.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                sosna_u = t72b_bundle.LoadAsset<GameObject>("SOSNA U");
-                sosna_u.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72b_hull = t72b_bundle.LoadAsset<Mesh>("t72b_hull");
-                t72b_hull.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72av_k1_full = t72av_bundle.LoadAsset<GameObject>("T72AV");
-                t72av_k1_full.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72av_turret = t72av_bundle.LoadAsset<Mesh>("t72av_turret");
-                t72av_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72av_sosna_turret = t72av_bundle.LoadAsset<Mesh>("t72av_sosnau");
-                t72av_sosna_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72b_k5_1989_full = t72b_bundle.LoadAsset<GameObject>("T72B 1989 K5");
-                t72b_k5_1989_full.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72b_k5_b3_full = t72b_bundle.LoadAsset<GameObject>("T72B3 K5");
-                t72b_k5_b3_full.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t72b3m_ubh_kit = t72b_bundle.LoadAsset<GameObject>("T72B UBH KIT");
-                t72b3m_ubh_kit.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                       
-                Util.SetupFLIRShaders(t72b_k1_full);
-                Util.SetupFLIRShaders(t72av_k1_full);
-                Util.SetupFLIRShaders(t72b_k5_1989_full);
-                Util.SetupFLIRShaders(t72b_k5_b3_full);
-                Util.SetupFLIRShaders(t72b3m_ubh_kit);
-                Util.SetupFLIRShaders(sosna_u);
-
-                Transform hull_k1 = t72b_k1_full.transform.Find("HULL ERA/ARMOUR");
-                Transform turret_k1 = t72b_k1_full.transform.Find("TURRET ERA/ARMOUR");
-                Transform mantlet_k1 = t72b_k1_full.transform.Find("MANTLET MOUNT/MANTLET K1 ARMOUR");
-                Kontakt1.Setup(hull_k1, hull_k1.parent);
-                Kontakt1.Setup(turret_k1, turret_k1.parent);
-                Kontakt1.Setup(mantlet_k1, mantlet_k1.parent.Find("K1 MANTLET"));
-
-                hull_k1 = t72av_k1_full.transform.Find("HULL ERA/ARMOUR");
-                turret_k1 = t72av_k1_full.transform.Find("TURRET ERA/ARMOUR");
-                mantlet_k1 = t72av_k1_full.transform.Find("MANTLET MOUNT/MANTLET K1 ARMOUR");
-                Kontakt1.Setup(hull_k1, hull_k1.parent);
-                Kontakt1.Setup(turret_k1, turret_k1.parent);
-                Kontakt1.Setup(mantlet_k1, mantlet_k1.parent.Find("K1 MANTLET"));
-
-                GameObject turret_plate = t72b_k5_1989_full.transform.Find("TURRET PLATE/ARMOUR").gameObject;
-                turret_plate.tag = "Penetrable";
-                turret_plate.layer = 8;
-                UniformArmor turret_plate_armor = turret_plate.AddComponent<UniformArmor>();
-                turret_plate_armor._name = "plate";
-                turret_plate_armor.PrimaryHeatRha = 5f;
-                turret_plate_armor.PrimarySabotRha = 5f;
-
-                GameObject hull_plate = t72b_k5_1989_full.transform.Find("HULL PLATE/ARMOUR").gameObject;
-                hull_plate.tag = "Penetrable";
-                hull_plate.layer = 8;
-                UniformArmor hull_plate_armor = hull_plate.AddComponent<UniformArmor>();
-                hull_plate_armor._name = "mounting plate";
-                hull_plate_armor.PrimaryHeatRha = 15f;
-                hull_plate_armor.PrimarySabotRha = 15f;
-
-                GameObject splash_guard = t72b_k5_1989_full.transform.Find("HULL PLATE/SPLASH GUARD ARMOUR").gameObject;
-                splash_guard.tag = "Penetrable";
-                splash_guard.layer = 8;
-                UniformArmor splash_guard_armor = splash_guard.AddComponent<UniformArmor>();
-                splash_guard_armor._name = "splash guard";
-                splash_guard_armor.PrimaryHeatRha = 2f;
-                splash_guard_armor.PrimarySabotRha = 2f;
-
-                Transform hull_k5 = t72b_k5_1989_full.transform.Find("HULL ERA/ARMOUR");
-                Transform hull_front_k5 = t72b_k5_1989_full.transform.Find("HULL ERA FRONT HULL/ARMOUR");
-                Transform turret_k5 = t72b_k5_1989_full.transform.Find("TURRET ERA/ARMOUR");
-                Kontakt5.Setup(hull_k5, hull_k5.parent);
-                Kontakt5.Setup(hull_front_k5, hull_front_k5.parent, hide_on_detonate: false, destroyed_mat: t72b_k5_plate_destroyed);
-                Kontakt5.Setup(turret_k5, turret_k5.parent);
-
-                Transform b3_turret_k5 = t72b_k5_b3_full.transform.Find("TURRET ERA/ARMOUR");
-                Kontakt5.Setup(b3_turret_k5, b3_turret_k5.parent);
-
-                Transform ubh_turret_k5 = t72b3m_ubh_kit.transform.Find("TURRET STUFF/TURRET K5/ARMOUR");
-                Transform ubh_turret_relikt = t72b3m_ubh_kit.transform.Find("TURRET STUFF/TURRET RELIKT/ARMOUR");
-                Transform ubh_hull_relikt = t72b3m_ubh_kit.transform.Find("HULL STUFF/RELIKT BAGS/ARMOUR");
-
-                Kontakt5.Setup(ubh_turret_k5, ubh_turret_k5.parent);
-                Relikt.Setup(ubh_turret_relikt, ubh_turret_relikt.parent);
-                Relikt.Setup(ubh_hull_relikt, ubh_hull_relikt.parent);
-
-                GameObject turret_slat = t72b3m_ubh_kit.transform.Find("TURRET STUFF/TURRET SLAT/ARMOUR").gameObject;
-                turret_slat.tag = "Penetrable";
-                turret_slat.layer = 8;
-                UniformArmor turret_slat_armor = turret_slat.AddComponent<UniformArmor>();
-                turret_slat_armor._name = "turret slat armour";
-                turret_slat_armor.PrimaryHeatRha = 60f;
-                turret_slat_armor.PrimarySabotRha = 15f;
-
-                GameObject hull_slat = t72b3m_ubh_kit.transform.Find("HULL STUFF/SIDE SLAT/ARMOUR").gameObject;
-                hull_slat.tag = "Penetrable";
-                hull_slat.layer = 8;
-                UniformArmor hull_slat_armor = hull_slat.AddComponent<UniformArmor>();
-                hull_slat_armor._name = "hull side slat armour";
-                hull_slat_armor.PrimaryHeatRha = 60f;
-                hull_slat_armor.PrimarySabotRha = 15f;
-
-                GameObject sosna_sight_complex = sosna_u.transform.Find("SOSNA U/SIGHT COMPLEX").gameObject;
-                sosna_sight_complex.tag = "Penetrable";
-                sosna_sight_complex.layer = 8;
-                UniformArmor sosna_sight_complex_armor = sosna_sight_complex.AddComponent<UniformArmor>();
-                sosna_sight_complex_armor._name = "Sosna-U sight complex";
-                sosna_sight_complex_armor.PrimaryHeatRha = 30f;
-                sosna_sight_complex_armor.PrimarySabotRha = 30f;
-
-                GameObject sosna_cover = sosna_u.transform.Find("SOSNA U/FRONT COVER").gameObject;
-                sosna_cover.tag = "Penetrable";
-                sosna_cover.layer = 8;
-                UniformArmor sosna_cover_armor = sosna_cover.AddComponent<UniformArmor>();
-                sosna_cover_armor._name = "front cover";
-                sosna_cover_armor.PrimaryHeatRha = 10f;
-                sosna_cover_armor.PrimarySabotRha = 10f;
-
-                GameObject sosna_shield = sosna_u.transform.Find("SOSNA U/SHIELD").gameObject;
-                sosna_shield.tag = "Penetrable";
-                sosna_shield.layer = 8;
-                UniformArmor sosna_shield_armor = sosna_shield.AddComponent<UniformArmor>();
-                sosna_shield_armor._name = "shield";
-                sosna_shield_armor.PrimaryHeatRha = 15f;
-                sosna_shield_armor.PrimarySabotRha = 15f;
-            }
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }

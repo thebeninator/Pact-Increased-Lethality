@@ -7,11 +7,6 @@ namespace PactIncreasedLethality
     public class DigitalZoomSnapper : MonoBehaviour
     {
         private float cd = 0f;
-        private CameraManager camera_manager;
-
-        void Awake() { 
-            camera_manager = GameObject.Find("_APP_GHPC_").GetComponent<CameraManager>();
-        }
 
         void Update()
         {
@@ -25,7 +20,7 @@ namespace PactIncreasedLethality
 
                 cam.FovIndex = cam.FovIndex < cam.OtherFovs.Length ? cam.OtherFovs.Length : 0;
 
-                camera_manager.ZoomChanged();
+                Mod.camera_manager.ZoomChanged();
             }
         }
     }

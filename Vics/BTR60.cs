@@ -35,7 +35,8 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> use_3ubr8;
         static MelonPreferences_Entry<bool> use_3uof8;
         static MelonPreferences_Entry<bool> stab;
-        static GameObject m60a1;
+
+        private static bool assets_loaded = false;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -50,60 +51,9 @@ namespace PactIncreasedLethality
             use_3uof8.Comment = "Mixed belt of 3UOR6 and 3UOF8 (1:2); 3UOF8 has more explosive filler but no tracer";
         }
 
-        public class SharedNightSight : MonoBehaviour
-        {
-            public GameObject nvs;
-            UsableOptic day_optic;
-            bool in_day_sight = true;
-            PostProcessVolume ppv; 
-
-            void Awake()
-            {
-                day_optic = GetComponent<UsableOptic>();
-                ppv = nvs.GetComponent<PostProcessVolume>();
-            }
-
-            void Update()
-            {
-                bool button = InputUtil.MainPlayer.GetButtonDown("Toggle Night Sight");
-
-                if (!button) return;
-
-                in_day_sight = !in_day_sight;
-
-                if (!in_day_sight)
-                {
-                    ppv.enabled = true;
-                    day_optic.slot.BaseBlur = 0.1f;
-                }
-                else
-                {
-                    ppv.enabled = false;
-                    day_optic.slot.BaseBlur = 0f;
-                }
-            }
-        }
-
-        public class CasingFix : MonoBehaviour
-        {
-            public static bool definitely_a_prefab = true;
-
-            void Awake()
-            {
-                if (definitely_a_prefab)
-                {
-                    definitely_a_prefab = false;
-                    return;
-                }
-
-                GetComponent<Rigidbody>().useGravity = true;
-                GetComponent<DestroyInSeconds>().enabled = true;
-            }
-        }
-
         public static IEnumerator Convert(GameState _)
         {
-            foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
+            foreach (Vehicle vic in Mod.vics)
             {
                 GameObject vic_go = vic.gameObject;
 
@@ -202,8 +152,8 @@ namespace PactIncreasedLethality
 
                     btr_gun.Find("Gun Aimable/gunner sight/GPS/Quad").gameObject.SetActive(false);
 
-                    AmmoClipCodexScriptable ap = use_3ubr8.Value ? AMMO_30MM.clip_codex_3ubr8 : AMMO_30MM.clip_codex_3ubr6;
-                    AmmoClipCodexScriptable he = use_3uof8.Value ? AMMO_30MM.clip_codex_3uof8 : AMMO_30MM.clip_codex_3uor6;
+                    AmmoClipCodexScriptable ap = use_3ubr8.Value ? Ammo_30mm.clip_codex_3ubr8 : Assets.clip_codex_3ubr6;
+                    AmmoClipCodexScriptable he = use_3uof8.Value ? Ammo_30mm.clip_codex_3uof8 : Assets.clip_codex_3uor6;
 
                     feed.AmmoTypeInBreech = null;
                     feed.ReadyRack.ClipTypes = new AmmoType.AmmoClip[] { ap.ClipType, he.ClipType };
@@ -226,129 +176,6 @@ namespace PactIncreasedLethality
                     }
 
                     feed.RoundCycleStages[0].EjectedPrefab = casing;
-
-                    if (!reticleSO)
-                    {
-                        if (!ReticleMesh.cachedReticles.ContainsKey("BMP-2_BPK-1-42"))
-                        {
-                            foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                            {
-                                if (obj.gameObject.name == "BMP2 Soviet")
-                                {
-                                    obj.transform.Find("fire control/gunner day sight 1P3-3/Optic/Reticle Mesh").GetComponent<ReticleMesh>().Load();
-                                    break;
-                                }
-                            }
-                        }
-
-                        reticleSO = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["BMP-2_BPK-1-42"].tree);
-                        reticleSO.name = "btr80a";
-
-                        Util.ShallowCopy(reticle_cached, ReticleMesh.cachedReticles["BMP-2_BPK-1-42"]);
-                        reticle_cached.tree = reticleSO;
-
-                        reticle_cached.tree.lights = new List<ReticleTree.Light>() {
-                            new ReticleTree.Light(),
-                        };
-
-                        reticle_cached.tree.lights[0].color = new RGB(5.9922f, 0.502f, 0f, true);
-                        reticle_cached.tree.lights[0].type = ReticleTree.Light.Type.NightIllumination;
-
-                        ReticleTree.Angular angular1 = (reticle_cached.tree.planes[0].elements[0] as ReticleTree.Angular);
-                        ReticleTree.Angular angular2 = (reticle_cached.tree.planes[0].elements[1] as ReticleTree.Angular);
-
-                        ReticleTree.Line range_line_l = angular1.elements[0] as ReticleTree.Line;
-                        ReticleTree.Line range_line_r = angular1.elements[1] as ReticleTree.Line;
-
-                        range_line_l.visualType = ReticleTree.VisualElement.Type.Painted;
-                        range_line_l.illumination = ReticleTree.Light.Type.NightIllumination;
-                        range_line_r.visualType = ReticleTree.VisualElement.Type.Painted;
-                        range_line_r.illumination = ReticleTree.Light.Type.NightIllumination;
-
-                        range_line_l.thickness.mrad = 0.1745f;
-                        range_line_r.thickness.mrad = 0.1745f;
-
-                        range_line_l.length.mrad = 20f;
-                        range_line_r.length.mrad = 20f;
-
-                        range_line_l.position.x += 26.1f;
-                        range_line_r.position.x -= 27.1f;
-
-                        for (int i = 0; i <= 2; i++)
-                        {
-                            ReticleTree.Angular ammo = angular2.elements[i] as ReticleTree.Angular;
-                            (ammo.elements[0] as ReticleTree.Text).visualType = ReticleTree.VisualElement.Type.Painted;
-                            (ammo.elements[0] as ReticleTree.Text).illumination = ReticleTree.Light.Type.NightIllumination;
-
-                            ammo.position.x -= Math.Sign(ammo.position.x) * 20f;
-
-                            ReticleTree.VerticalBallistic ballistic = ammo.elements[1] as ReticleTree.VerticalBallistic;
-
-                            for (int j = 0; j < ballistic.elements.Count; j++)
-                            {
-                                ReticleTree.Angular marking = ballistic.elements[j] as ReticleTree.Angular;
-
-                                for (int k = 0; k < marking.elements.Count; k++)
-                                {
-                                    (marking.elements[k] as ReticleTree.VisualElement).visualType = ReticleTree.VisualElement.Type.Painted;
-                                    (marking.elements[k] as ReticleTree.VisualElement).illumination = ReticleTree.Light.Type.NightIllumination;
-                                }
-                            }
-                        }
-
-                        ReticleTree.Angular horizontal = angular2.elements[3] as ReticleTree.Angular;
-                        for (int i = 0; i < horizontal.elements.Count; i++)
-                        {
-                            ReticleTree.Angular marking = horizontal.elements[i] as ReticleTree.Angular;
-
-                            for (int j = 0; j < marking.elements.Count; j++)
-                            {
-                                ReticleTree.Line line = marking.elements[j] as ReticleTree.Line;
-                                line.length.mrad = 3.1416f;
-                                line.thickness.mrad /= 1.2f;
-                                line.visualType = ReticleTree.VisualElement.Type.Painted;
-                                line.illumination = ReticleTree.Light.Type.NightIllumination;
-
-                                if (i > 0)
-                                {
-                                    line.position.y = -1.46f;
-                                }
-                            }
-                        }
-
-                        foreach (int i in new int[] { 1, 3 })
-                        {
-                            ReticleTree.Angular line = new ReticleTree.Angular(new Vector2(0f, 0f), null);
-                            Util.ShallowCopy(line, horizontal.elements[i] as ReticleTree.Angular);
-                            line.position = new ReticleTree.Position(horizontal.elements[i].position.x * 3f, 0);
-                            horizontal.elements.Add(line);
-
-                            line = new ReticleTree.Angular(new Vector2(0f, 0f), null);
-                            Util.ShallowCopy(line, horizontal.elements[i] as ReticleTree.Angular);
-                            line.position = new ReticleTree.Position(horizontal.elements[i].position.x * 4f, 0);
-                            horizontal.elements.Add(line);
-                        }
-
-                        ReticleTree.Angular stadia = angular2.elements[4] as ReticleTree.Angular;
-                        stadia.position.x -= 18f;
-                        (stadia.elements[0] as ReticleTree.Line).visualType = ReticleTree.VisualElement.Type.Painted;
-                        (stadia.elements[0] as ReticleTree.Line).illumination = ReticleTree.Light.Type.NightIllumination;
-
-                        (stadia.elements[1] as ReticleTree.Line).visualType = ReticleTree.VisualElement.Type.Painted;
-                        (stadia.elements[1] as ReticleTree.Line).illumination = ReticleTree.Light.Type.NightIllumination;
-
-                        ReticleTree.Stadia the_real_stadia = stadia.elements[2] as ReticleTree.Stadia;
-                        for (int i = 0; i < the_real_stadia.elements.Count; i++)
-                        {
-                            ReticleTree.Angular marking = the_real_stadia.elements[i] as ReticleTree.Angular;
-
-                            for (int k = 0; k < marking.elements.Count; k++)
-                            {
-                                (marking.elements[k] as ReticleTree.VisualElement).visualType = ReticleTree.VisualElement.Type.Painted;
-                                (marking.elements[k] as ReticleTree.VisualElement).illumination = ReticleTree.Light.Type.NightIllumination;
-                            }
-                        }
-                    }
 
                     day_optic.reticleMesh.smoothTime = 0.1f;
                     day_optic.reticleMesh.reticleSO = reticleSO;
@@ -374,62 +201,220 @@ namespace PactIncreasedLethality
             yield break;
         }
 
-        public static void Init()
+        public class SharedNightSight : MonoBehaviour
         {
-            if (!btr60_patch.Value) return;
+            public GameObject nvs;
+            UsableOptic day_optic;
+            bool in_day_sight = true;
+            PostProcessVolume ppv;
 
-            if (m60a1_nvs == null)
+            void Awake()
             {
-                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
+                day_optic = GetComponent<UsableOptic>();
+                ppv = nvs.GetComponent<PostProcessVolume>();
+            }
+
+            void Update()
+            {
+                bool button = InputUtil.MainPlayer.GetButtonDown("Toggle Night Sight");
+
+                if (!button) return;
+
+                in_day_sight = !in_day_sight;
+
+                if (!in_day_sight)
                 {
-                    if (obj.gameObject.name == "M60A1")
+                    ppv.enabled = true;
+                    day_optic.slot.BaseBlur = 0.1f;
+                }
+                else
+                {
+                    ppv.enabled = false;
+                    day_optic.slot.BaseBlur = 0f;
+                }
+            }
+        }
+
+        public class CasingFix : MonoBehaviour
+        {
+            public static bool definitely_a_prefab = true;
+
+            void Awake()
+            {
+                if (definitely_a_prefab)
+                {
+                    definitely_a_prefab = false;
+                    return;
+                }
+
+                GetComponent<Rigidbody>().useGravity = true;
+                GetComponent<DestroyInSeconds>().enabled = true;
+            }
+        }
+
+        private static void Reticle()
+        {
+            reticleSO = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["BMP-2_BPK-1-42"].tree);
+            reticleSO.name = "btr80a";
+
+            Util.ShallowCopy(reticle_cached, ReticleMesh.cachedReticles["BMP-2_BPK-1-42"]);
+                
+            reticle_cached.tree = reticleSO;
+
+            reticle_cached.tree.lights = new List<ReticleTree.Light>() {
+                new ReticleTree.Light(),
+            };
+
+            reticle_cached.tree.lights[0].color = new RGB(5.9922f, 0.502f, 0f, true);
+            reticle_cached.tree.lights[0].type = ReticleTree.Light.Type.NightIllumination;
+
+            ReticleTree.Angular angular1 = (reticle_cached.tree.planes[0].elements[0] as ReticleTree.Angular);
+            ReticleTree.Angular angular2 = (reticle_cached.tree.planes[0].elements[1] as ReticleTree.Angular);
+
+            ReticleTree.Line range_line_l = angular1.elements[0] as ReticleTree.Line;
+            ReticleTree.Line range_line_r = angular1.elements[1] as ReticleTree.Line;
+
+            range_line_l.visualType = ReticleTree.VisualElement.Type.Painted;
+            range_line_l.illumination = ReticleTree.Light.Type.NightIllumination;
+            range_line_r.visualType = ReticleTree.VisualElement.Type.Painted;
+            range_line_r.illumination = ReticleTree.Light.Type.NightIllumination;
+
+            range_line_l.thickness.mrad = 0.1745f;
+            range_line_r.thickness.mrad = 0.1745f;
+
+            range_line_l.length.mrad = 20f;
+            range_line_r.length.mrad = 20f;
+
+            range_line_l.position.x += 26.1f;
+            range_line_r.position.x -= 27.1f;
+
+            for (int i = 0; i <= 2; i++)
+            {
+                ReticleTree.Angular ammo = angular2.elements[i] as ReticleTree.Angular;
+                (ammo.elements[0] as ReticleTree.Text).visualType = ReticleTree.VisualElement.Type.Painted;
+                (ammo.elements[0] as ReticleTree.Text).illumination = ReticleTree.Light.Type.NightIllumination;
+
+                ammo.position.x -= Math.Sign(ammo.position.x) * 20f;
+
+                ReticleTree.VerticalBallistic ballistic = ammo.elements[1] as ReticleTree.VerticalBallistic;
+
+                for (int j = 0; j < ballistic.elements.Count; j++)
+                {
+                    ReticleTree.Angular marking = ballistic.elements[j] as ReticleTree.Angular;
+
+                    for (int k = 0; k < marking.elements.Count; k++)
                     {
-                        m60a1 = obj.gameObject;
-                        m60a1_nvs = GameObject.Instantiate(obj.transform.Find("Turret Scripts/Sights/NVS").gameObject);
-                        m60a1_nvs.SetActive(false);
-                        UnityEngine.Object.Destroy(m60a1_nvs.transform.GetChild(0).gameObject);
-                        GameObject.Destroy(m60a1_nvs.transform.GetChild(0).gameObject);
-                        Component.Destroy(m60a1_nvs.GetComponent<UsableOptic>());
-                        Component.Destroy(m60a1_nvs.GetComponent<CameraSlot>());
-                        m60a1_nvs.GetComponent<PostProcessVolume>().enabled = false;
-                        m60a1_nvs.GetComponent<PostProcessVolume>().priority = 0;
+                        (marking.elements[k] as ReticleTree.VisualElement).visualType = ReticleTree.VisualElement.Type.Painted;
+                        (marking.elements[k] as ReticleTree.VisualElement).illumination = ReticleTree.Light.Type.NightIllumination;
                     }
                 }
             }
 
-            if (btr60a_turret_complete == null)
+            ReticleTree.Angular horizontal = angular2.elements[3] as ReticleTree.Angular;
+            for (int i = 0; i < horizontal.elements.Count; i++)
             {
-                var bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr80a"));
-                btr60a_turret_complete = bundle.LoadAsset<GameObject>("BTR80A_TURRET.prefab");
-                btr60a_turret_complete.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                btr60a_turret_complete.transform.localScale = new Vector3(1.1f, 1.1f, 1.1f);
+                ReticleTree.Angular marking = horizontal.elements[i] as ReticleTree.Angular;
 
-                Transform turret = btr60a_turret_complete.transform.Find("BTR_80_B");
-                Transform gun = btr60a_turret_complete.transform.Find("BTR_80_C");
+                for (int j = 0; j < marking.elements.Count; j++)
+                {
+                    ReticleTree.Line line = marking.elements[j] as ReticleTree.Line;
+                    line.length.mrad = 3.1416f;
+                    line.thickness.mrad /= 1.2f;
+                    line.visualType = ReticleTree.VisualElement.Type.Painted;
+                    line.illumination = ReticleTree.Light.Type.NightIllumination;
 
-                GameObject turret_armour = turret.transform.Find("ARMOUR").gameObject;
-                GameObject gun_armour = gun.transform.Find("ARMOUR").gameObject;
-                turret_armour.tag = "Penetrable";
-                gun_armour.tag = "Penetrable";
-                turret_armour.layer = 8;
-                gun_armour.layer = 8;
-
-                UniformArmor turret_u_armour = turret_armour.AddComponent<UniformArmor>();
-                turret_u_armour.PrimaryHeatRha = 20f;
-                turret_u_armour.PrimarySabotRha = 20f;
-                turret_u_armour.SetName("turret");
-
-                UniformArmor gun_u_armour = gun_armour.AddComponent<UniformArmor>();
-                gun_u_armour.PrimaryHeatRha = 10f;
-                gun_u_armour.PrimarySabotRha = 10f;
-                gun_u_armour.SetName("weapons assembly");
-
-                turret.GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)"); ;
-                turret.gameObject.AddComponent<HeatSource>().heat = 5f;
-
-                gun.GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)"); ;
-                gun.gameObject.AddComponent<HeatSource>().heat = 5f;
+                    if (i > 0)
+                    {
+                        line.position.y = -1.46f;
+                    }
+                }
             }
+
+            foreach (int i in new int[] { 1, 3 })
+            {
+                ReticleTree.Angular line = new ReticleTree.Angular(new Vector2(0f, 0f), null);
+                Util.ShallowCopy(line, horizontal.elements[i] as ReticleTree.Angular);
+                line.position = new ReticleTree.Position(horizontal.elements[i].position.x * 3f, 0);
+                horizontal.elements.Add(line);
+
+                line = new ReticleTree.Angular(new Vector2(0f, 0f), null);
+                Util.ShallowCopy(line, horizontal.elements[i] as ReticleTree.Angular);
+                line.position = new ReticleTree.Position(horizontal.elements[i].position.x * 4f, 0);
+                horizontal.elements.Add(line);
+            }
+
+            ReticleTree.Angular stadia = angular2.elements[4] as ReticleTree.Angular;
+            stadia.position.x -= 18f;
+            (stadia.elements[0] as ReticleTree.Line).visualType = ReticleTree.VisualElement.Type.Painted;
+            (stadia.elements[0] as ReticleTree.Line).illumination = ReticleTree.Light.Type.NightIllumination;
+
+            (stadia.elements[1] as ReticleTree.Line).visualType = ReticleTree.VisualElement.Type.Painted;
+            (stadia.elements[1] as ReticleTree.Line).illumination = ReticleTree.Light.Type.NightIllumination;
+
+            ReticleTree.Stadia the_real_stadia = stadia.elements[2] as ReticleTree.Stadia;
+            for (int i = 0; i < the_real_stadia.elements.Count; i++)
+            {
+                ReticleTree.Angular marking = the_real_stadia.elements[i] as ReticleTree.Angular;
+
+                for (int k = 0; k < marking.elements.Count; k++)
+                {
+                    (marking.elements[k] as ReticleTree.VisualElement).visualType = ReticleTree.VisualElement.Type.Painted;
+                    (marking.elements[k] as ReticleTree.VisualElement).illumination = ReticleTree.Light.Type.NightIllumination;
+                }
+            }
+        }
+
+        public static void LoadAssets()
+        {
+            if (assets_loaded) return;
+            if (!btr60_patch.Value) return;
+
+            m60a1_nvs = GameObject.Instantiate(Assets.m60a1_nvs);
+            m60a1_nvs.SetActive(false);
+            UnityEngine.Object.Destroy(m60a1_nvs.transform.GetChild(0).gameObject);
+            GameObject.Destroy(m60a1_nvs.transform.GetChild(0).gameObject);
+            Component.Destroy(m60a1_nvs.GetComponent<UsableOptic>());
+            Component.Destroy(m60a1_nvs.GetComponent<CameraSlot>());
+            m60a1_nvs.GetComponent<PostProcessVolume>().enabled = false;
+            m60a1_nvs.GetComponent<PostProcessVolume>().priority = 0;
+
+            var bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr80a"));
+            btr60a_turret_complete = bundle.LoadAsset<GameObject>("BTR80A_TURRET.prefab");
+            btr60a_turret_complete.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            btr60a_turret_complete.transform.localScale = new Vector3(1.1f, 1.1f, 1.1f);
+
+            Transform turret = btr60a_turret_complete.transform.Find("BTR_80_B");
+            Transform gun = btr60a_turret_complete.transform.Find("BTR_80_C");
+
+            GameObject turret_armour = turret.transform.Find("ARMOUR").gameObject;
+            GameObject gun_armour = gun.transform.Find("ARMOUR").gameObject;
+            turret_armour.tag = "Penetrable";
+            gun_armour.tag = "Penetrable";
+            turret_armour.layer = 8;
+            gun_armour.layer = 8;
+
+            UniformArmor turret_u_armour = turret_armour.AddComponent<UniformArmor>();
+            turret_u_armour.PrimaryHeatRha = 20f;
+            turret_u_armour.PrimarySabotRha = 20f;
+            turret_u_armour.SetName("turret");
+
+            UniformArmor gun_u_armour = gun_armour.AddComponent<UniformArmor>();
+            gun_u_armour.PrimaryHeatRha = 10f;
+            gun_u_armour.PrimarySabotRha = 10f;
+            gun_u_armour.SetName("weapons assembly");
+
+            turret.GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
+            gun.GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
+            btr60a_turret_complete.gameObject.AddComponent<HeatSource>().heat = 5f;
+
+            Reticle();
+
+            assets_loaded = true;
+        }
+
+        public static void Init()
+        {
+            if (!btr60_patch.Value) return;
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }

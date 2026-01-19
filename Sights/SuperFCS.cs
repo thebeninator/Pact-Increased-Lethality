@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using GHPC.Camera;
+using GHPC.Crew;
 using GHPC.Equipment.Optics;
-using GHPC.Player;
 using GHPC.Utility;
-using GHPC.Vehicle;
 using GHPC.Weapons;
 using MelonLoader.Utils;
 using Reticle;
@@ -15,41 +15,49 @@ using UnityEngine.UI;
 
 namespace PactIncreasedLethality
 {
-    public class Sosna
+    public class SuperFCS
     {
         static GameObject range_readout;
         static GameObject thermal_canvas;
 
-        static GameObject sosna_monitor; 
+        static GameObject sosna_monitor;
+        static GameObject vesna_monitor;
 
         static ReticleSO reticleSO_sosna;
         static ReticleMesh.CachedReticle reticle_cached_sosna;
 
-        private static ReticleSO reticleSO_sosna_thermal;
-        private static ReticleMesh.CachedReticle reticle_cached_sosna_thermal;
-
-        private static ReticleSO reticleSO_sosna_thermal_wide;
-        private static ReticleMesh.CachedReticle reticle_cached_sosna_thermal_wide;
-
-        private static PostProcessVolume post_sosna;
+        private static bool assets_loaded = false;
 
         public class ThermalMonitor : MonoBehaviour {
-            Transform wfov_ui;
-            Transform crosshair_ui;
-            Transform crosshairs;
-            Transform stab;
-            Transform apfsds;
-            Transform heat;
-            Transform pk;
-            Transform he;
-            Transform atgm;
-            TextMeshProUGUI range;
+            private Transform wfov_ui;
+            private Transform crosshair_ui;
+            private Transform crosshair_holder;
+            private Transform crosshairs;
+            private Transform vesna_holder;
+            private Transform active_vesna_crosshair;
+            private Transform vesna_track_crosshair;
+            private Transform vesna_no_track_crosshair;
+            private Transform stab;
+            private Transform apfsds;
+            private Transform heat;
+            private Transform pk;
+            private Transform he;
+            private Transform atgm;
+            private TextMeshProUGUI range;
+            private FireControlSystem fcs;
+            private CameraSlot night_slot;
+            private LockOnLead lockon;
+            private bool guiding = false;
+            private bool firing = false;
+            private bool is_vesna = false;
+
             public Transform tracking_gates;
 
             void Awake() {
                 crosshair_ui = transform.Find("CROSSHAIR UI");
                 wfov_ui = transform.Find("WFOV UI");
-                crosshairs = transform.Find("CROSSHAIR");
+                crosshair_holder = transform.Find("CROSSHAIR HOLDER");
+                crosshairs = crosshair_holder.Find("CROSSHAIR");
 
                 apfsds = crosshair_ui.Find("AMMO (AP)");
                 atgm = crosshair_ui.Find("AMMO (ATGM)");
@@ -59,33 +67,144 @@ namespace PactIncreasedLethality
                 range = crosshair_ui.Find("RANGE").GetComponentInChildren<TextMeshProUGUI>();
                 stab = wfov_ui.Find("STAB");
                 tracking_gates = crosshair_ui.Find("TRACKING GATE HOLDER");
+
+                UsableOptic night_optic = GetComponentInParent<UsableOptic>();
+                fcs = night_optic.FCS;
+                night_slot = night_optic.slot;
+                lockon = fcs.GetComponent<LockOnLead>();
+                GunnerBrain gunner_brain = GetComponentInParent<CrewManager>().GetCrewBrain(CrewPosition.Gunner) as GunnerBrain;
+
+                night_slot.ZoomChanged += CameraSlot_ZoomChanged;
+                fcs.StabsActiveChanged += FCS_StabsActiveChanged;
+                fcs.AmmoTypeChanged += FCS_AmmoTypeChanged;
+                gunner_brain.WeaponsModule.WeaponSystemChanged += GunnerBrain_WeaponSystemChanged;
+                lockon.TargetLockChanged += LockOnLead_TargetLockChanged;
+
+                is_vesna = transform.Find("VESNA CROSSHAIRS") != null;
+
+                if (is_vesna)
+                {
+                    vesna_holder = transform.Find("VESNA CROSSHAIRS");
+                    vesna_no_track_crosshair = vesna_holder.Find("CROSSHAIR NO TRACK VESNA");
+                    vesna_track_crosshair = vesna_holder.Find("CROSSHAIR TRACK VESNA");
+                    vesna_holder.gameObject.SetActive(true);
+                    crosshairs.gameObject.SetActive(false);
+                    active_vesna_crosshair = vesna_no_track_crosshair;
+
+                    foreach (WeaponSystemInfo weapon_info in gunner_brain.WeaponsModule.Weapons)
+                    {
+                        WeaponSystem weapon = weapon_info.Weapon;
+
+                        weapon.TriggerDown += WeaponSystem_TriggerDown;
+                        weapon.TriggerUp += WeaponSystem_TriggerUp;
+
+                        if (weapon.GuidanceUnit)
+                        {
+                            weapon.GuidanceUnit.GuidanceStarted += GuidanceUnit_Started;
+                            weapon.GuidanceUnit.GuidanceStopped += GuidanceUnit_Stopped;
+                        }
+                    }
+                }
+
+                pk.gameObject.SetActive(false);
+                atgm.gameObject.SetActive(false);
+                heat.gameObject.SetActive(false);
+                he.gameObject.SetActive(false);
+            }
+
+            private void VesnaHide()
+            {
+                crosshairs.gameObject.SetActive(true);
+                active_vesna_crosshair.gameObject.SetActive(false);
+            }
+
+            private void VesnaShow()
+            {
+                crosshairs.gameObject.SetActive(false);
+                active_vesna_crosshair.gameObject.SetActive(true);
+            }
+
+            private void GuidanceUnit_Started()
+            {
+                guiding = true;
+                VesnaHide();
+            }
+
+            private void GuidanceUnit_Stopped()
+            {
+                guiding = false;
+                VesnaShow();
+            }
+
+            private void WeaponSystem_TriggerDown()
+            {
+                firing = true;
+                if (guiding) return;
+                VesnaHide();
+            }
+
+            private void WeaponSystem_TriggerUp()
+            {
+                firing = false;
+                if (guiding) return;
+                VesnaShow();
+            }
+
+            private void LockOnLead_TargetLockChanged(bool has_target)
+            {
+                tracking_gates.gameObject.SetActive(has_target);
+
+                if (!is_vesna) return;
+
+                active_vesna_crosshair = has_target ? vesna_track_crosshair : vesna_no_track_crosshair;
+                if (guiding || firing) return;
+                vesna_no_track_crosshair.gameObject.SetActive(!has_target);
+                vesna_track_crosshair.gameObject.SetActive(has_target);
+            }
+
+            private void GunnerBrain_WeaponSystemChanged(WeaponSystemInfo old_weapon, WeaponSystemInfo new_weapon)
+            {
+                pk.gameObject.SetActive(new_weapon.Weapon.MetaName == "Coaxial MG");
+            }
+
+            private void FCS_StabsActiveChanged(bool active)
+            {
+                stab.gameObject.SetActive(active);
+            }
+
+            private void FCS_AmmoTypeChanged(AmmoType ammo_type)
+            {
+                apfsds.gameObject.SetActive(ammo_type.Category == AmmoType.AmmoCategory.Penetrator);
+                heat.gameObject.SetActive(ammo_type.Category == AmmoType.AmmoCategory.ShapedCharge && ammo_type.Guidance == AmmoType.GuidanceType.Unguided);
+                he.gameObject.SetActive(ammo_type.Category == AmmoType.AmmoCategory.Explosive);
+                atgm.gameObject.SetActive(ammo_type.Guidance > AmmoType.GuidanceType.Unguided);
+            }
+
+            private void CameraSlot_ZoomChanged()
+            {
+                Vector3 scale = night_slot.CurrentFov == 2.95f ?
+                    new Vector3(0.42f, 0.42f, 1f) : new Vector3(0.35f, 0.35f, 1f);
+
+                crosshairs.localScale = scale;
+
+                if (is_vesna)
+                {
+                    vesna_no_track_crosshair.localScale = scale;
+                    vesna_track_crosshair.localScale = scale;
+                }
             }
 
             void LateUpdate()
             {
-                FireControlSystem fcs = PlayerInput.Instance?.CurrentPlayerWeapon?.FCS;
-
-                if (fcs.NightOptic.slot.CurrentFov == 2.95f)
-                {
-                    crosshairs.localScale = new Vector3(0.5f, 0.5f, 1f);
-                }
-                else
-                {
-                    crosshairs.localScale = new Vector3(0.42f, 0.42f, 1f);
-                }
-
-                apfsds.gameObject.SetActive(fcs.CurrentAmmoType.Category == AmmoType.AmmoCategory.Penetrator);
-                heat.gameObject.SetActive(fcs.CurrentAmmoType.Category == AmmoType.AmmoCategory.ShapedCharge && fcs.CurrentAmmoType.Guidance == AmmoType.GuidanceType.Unguided);
-                he.gameObject.SetActive(fcs.CurrentAmmoType.Category == AmmoType.AmmoCategory.Explosive);
-                atgm.gameObject.SetActive(fcs.CurrentAmmoType.Guidance > AmmoType.GuidanceType.Unguided);
-                pk.gameObject.SetActive(fcs.CurrentWeaponSystem.MetaName == "Coaxial MG");
-                tracking_gates.gameObject.SetActive(fcs.GetComponent<LockOnLead>().target != null);
+                if (fcs == null) return;
+           
                 range.text = ((int)MathUtil.RoundFloatToMultipleOf(fcs.CurrentRange, 5)).ToString("0000");
-                stab.gameObject.SetActive(fcs.StabsActive);
             }
         }
 
-        public static void Add(UsableOptic day_optic, UsableOptic night_optic, WeaponSystemInfo coax, WeaponSystemInfo main, CustomGuidanceComputer mgu) {
+        public static void Add(UsableOptic day_optic, UsableOptic night_optic, WeaponSystemInfo coax, 
+            WeaponSystemInfo main, CustomGuidanceComputer mgu, bool vesna = false) 
+        {
             FireControlSystem fcs = day_optic.FCS;
             fcs._fixParallaxForVectorMode = true;
             fcs.SuperelevateWeapon = true;
@@ -110,6 +229,8 @@ namespace PactIncreasedLethality
             fcs._autoDumpViaPalmSwitches = true;
             fcs._autoModeOnLase = false;
             fcs.IgnoreHorizontalForFireGating = true;
+            fcs.MaxLaserRange = 4000f;
+            fcs.WeaponAuthoritative = false;
             coax.ExcludeFromFcsUpdates = false;
             coax.PreAimWeapon = WeaponSystemRole.Coaxial;
 
@@ -194,23 +315,29 @@ namespace PactIncreasedLethality
             night_optic.slot.CanToggleFlirPolarity = true;
             night_optic.slot.FLIRFilterMode = FilterMode.Point;
 
-            GameObject monitor_canvas = GameObject.Instantiate(sosna_monitor, night_optic.transform);
+            GameObject monitor_canvas = GameObject.Instantiate(vesna ? vesna_monitor : sosna_monitor, night_optic.transform);
             ThermalMonitor monitor = monitor_canvas.AddComponent<ThermalMonitor>();
 
             GameObject wfov_reticle = monitor_canvas.transform.Find("WFOV").gameObject;
             GameObject wfov_elements = monitor_canvas.transform.Find("WFOV UI").gameObject;
-            GameObject crosshair_reticle = monitor_canvas.transform.Find("CROSSHAIR").gameObject;
+            GameObject crosshair_reticle = monitor_canvas.transform.Find("CROSSHAIR HOLDER").gameObject;
             GameObject crosshair_elements = monitor_canvas.transform.Find("CROSSHAIR UI").gameObject;
 
+            List<GameObject> narrow_fov_items = new List<GameObject>() { crosshair_elements, crosshair_reticle };
+            if (vesna) 
+            {
+                narrow_fov_items.Add(monitor_canvas.transform.Find("VESNA CROSSHAIRS").gameObject);
+            }
+
             night_optic.FovLimitedItems = new UsableOptic.FovLimitedItem[] {
-                new UsableOptic.FovLimitedItem() { 
+                new UsableOptic.FovLimitedItem() {
                     FovRange = new Vector2(10f, 15f),
-                    ExclusiveObjects = new GameObject[] { wfov_reticle, wfov_elements}
+                    ExclusiveObjects = new GameObject[] { wfov_reticle, wfov_elements }
                 },
 
                 new UsableOptic.FovLimitedItem() {
                     FovRange = new Vector2(2f, 7f),
-                    ExclusiveObjects = new GameObject[] { crosshair_reticle, crosshair_elements }
+                    ExclusiveObjects = narrow_fov_items.ToArray()
                 }
             };
 
@@ -218,7 +345,7 @@ namespace PactIncreasedLethality
             night_optic.OverridingObject = crosshair_elements.transform.Find("CMDR CONTROL").gameObject;
             night_optic.RangeText = crosshair_elements.transform.Find("RANGE").GetComponentInChildren<TMP_Text>();
 
-            GameObject post = GameObject.Instantiate(PactThermal.flir_post, night_optic.transform);
+            GameObject post = GameObject.Instantiate(Assets.flir_post_green, night_optic.transform);
             PostProcessProfile profile = post.transform.Find("FLIR Only Volume").GetComponent<PostProcessVolume>().profile;
             ColorGrading color_grading;
             profile.TryGetSettings<ColorGrading>(out color_grading);
@@ -229,25 +356,16 @@ namespace PactIncreasedLethality
             s.guidance_computer = mgu;
             s.tracking_gates = crosshair_elements.transform.Find("TRACKING GATE HOLDER").GetComponent<RectTransform>();
 
-            fcs.RegisteredRangeLimits = new Vector2(100f, 4000f);
-            fcs._originalRangeLimits = new Vector2(100f, 4000f);
-            fcs._currentRange = 100f;
+            fcs.RegisteredRangeLimits = new Vector2(0f, 4000f);
+            fcs._originalRangeLimits = new Vector2(0f, 4000f);
+            fcs._currentRange = 0f;
             fcs.UpdateRange();
+
+            night_optic.gameObject.SetActive(true);
+            night_optic.gameObject.SetActive(false);
         }
 
         private static void Reticle() {
-            if (!ReticleMesh.cachedReticles.ContainsKey("T55"))
-            {
-                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                {
-                    if (obj.gameObject.name == "T55A")
-                    {
-                        obj.WeaponsManager.Weapons[0].FCS.AuthoritativeOptic.reticleMesh.Load();
-                        break;
-                    }
-                }
-            }
-
             reticleSO_sosna = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55"].tree);
             reticleSO_sosna.name = "sosna u";
 
@@ -258,7 +376,7 @@ namespace PactIncreasedLethality
 
             Util.ShallowCopy(reticle_cached_sosna.tree.lights[0], ReticleMesh.cachedReticles["T55"].tree.lights[0]);
             reticle_cached_sosna.tree.lights[0].type = ReticleTree.Light.Type.Powered;
-            reticle_cached_sosna.tree.lights[0].color = new RGB(12f, 0f, 0f, true);
+            reticle_cached_sosna.tree.lights[0].color = new RGB(7.5f, 0f, 0f, true);
             reticle_cached_sosna.mesh = null;
 
             ReticleTree.Angular impact = new ReticleTree.Angular(new Vector2(), null);
@@ -353,52 +471,40 @@ namespace PactIncreasedLethality
             reticleSO_sosna.planes[0].elements.Add(impact);         
         }
 
-        public static void Init() {
-            if (reticleSO_sosna == null)
-            {
-                AssetBundle bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "sosna_monitor"));
-                sosna_monitor = bundle.LoadAsset<GameObject>("SOSNA MONITOR CANVAS.prefab");
-                sosna_monitor.hideFlags = HideFlags.DontUnloadUnusedAsset;
+        public static void LoadAssets() 
+        {
+            if (assets_loaded) return;
 
-                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                {
-                    if (obj.gameObject.name == "_M1IP (variant)")
-                    {
-                        range_readout = GameObject.Instantiate(obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas").gameObject);
-                        GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
-                        //GameObject.Destroy(range_readout.transform.GetChild(0).gameObject);
-                        range_readout.AddComponent<Reparent>();
-                        range_readout.SetActive(false);
-                        range_readout.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                        range_readout.name = "t72 range canvas";
+            AssetBundle sosna_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "sosna_monitor"));
+            sosna_monitor = sosna_bundle.LoadAsset<GameObject>("SOSNA MONITOR CANVAS.prefab");
+            sosna_monitor.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-                        TextMeshProUGUI text = range_readout.GetComponentInChildren<TextMeshProUGUI>();
-                        text.color = new Color(255f, 0f, 0f);
-                        text.faceColor = new Color(255f, 0f, 0f);
-                        text.outlineColor = new Color(100f, 0f, 0f, 0.5f);
+            AssetBundle vesna_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "vesna_monitor"));
+            vesna_monitor = vesna_bundle.LoadAsset<GameObject>("VESNA K CANVAS.prefab");
+            vesna_monitor.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-                        if (!ReticleMesh.cachedReticles.ContainsKey("WFOV"))
-                        {
-                            obj.transform.Find("Turret Scripts/GPS/FLIR/Reticle Mesh WFOV").GetComponent<ReticleMesh>().Load();
-                        }
+            range_readout = GameObject.Instantiate(Assets.m1ip_range_canvas);
+            GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
+            range_readout.AddComponent<Reparent>();
+            range_readout.SetActive(false);
+            range_readout.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            range_readout.name = "t72 range canvas";
 
-                    }
+            TextMeshProUGUI text = range_readout.GetComponentInChildren<TextMeshProUGUI>();
+            text.color = new Color(255f, 0f, 0f);
+            text.faceColor = new Color(255f, 0f, 0f);
+            text.outlineColor = new Color(100f, 0f, 0f, 0.5f);
 
-                    if (obj.gameObject.name == "M2 Bradley")
-                    {
-                        thermal_canvas = GameObject.Instantiate(obj.transform.Find("FCS and sights/GPS Optic/M2 Bradley GPS canvas").gameObject);
-                        GameObject.Destroy(thermal_canvas.transform.GetChild(2).gameObject);
-                        thermal_canvas.AddComponent<Reparent>();
-                        thermal_canvas.SetActive(false);
-                        thermal_canvas.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                        thermal_canvas.name = "t72 thermal canvas";
-                    }
+            thermal_canvas = GameObject.Instantiate(Assets.m2_bradley_canvas);
+            GameObject.Destroy(thermal_canvas.transform.GetChild(2).gameObject);
+            thermal_canvas.AddComponent<Reparent>();
+            thermal_canvas.SetActive(false);
+            thermal_canvas.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            thermal_canvas.name = "t72 thermal canvas";
 
-                    if (thermal_canvas && range_readout) break;
-                }
+            Reticle();
 
-                Reticle();
-            }
+            assets_loaded = true;
         }
     }
 }

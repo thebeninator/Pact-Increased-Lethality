@@ -10,10 +10,8 @@ using System.Collections;
 using MelonLoader;
 using GHPC;
 using TMPro;
-using GHPC.Camera;
 using MelonLoader.Utils;
 using System.IO;
-using GHPC.Thermals;
 using NWH.VehiclePhysics;
 using GHPC.Weaponry;
 
@@ -21,7 +19,7 @@ namespace PactIncreasedLethality
 {
     public class T55
     {
-        static GameObject range_readout;
+        internal static GameObject range_readout;
         static ReticleSO reticleSO;
         static ReticleMesh.CachedReticle reticle_cached;
 
@@ -37,16 +35,11 @@ namespace PactIncreasedLethality
         static AmmoType ammo_3bk17m;
         static GameObject ammo_3bk17m_vis = null;
 
-        static AmmoClipCodexScriptable clip_codex_9m117;
+        internal static AmmoClipCodexScriptable clip_codex_9m117;
         static AmmoType.AmmoClip clip_9m117;
         static AmmoCodexScriptable ammo_codex_9m117;
         static AmmoType ammo_9m117;
         static GameObject ammo_9m117_vis = null;
-
-        static AmmoType ammo_3bk5m;
-        static AmmoType ammo_3of412;
-        static AmmoType ammo_9m111;
-        static AmmoType ammo_3bm20;
 
         static MelonPreferences_Entry<bool> t55_patch;
         static MelonPreferences_Entry<bool> use_3bk17m;
@@ -60,7 +53,6 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> applique;
         static MelonPreferences_Entry<bool> engine_upr;
 
-        static AmmoClipCodexScriptable clip_codex_br412d;
         static Material t55am_turret_material;
         static GameObject t55am_turret_parts;
         static GameObject t55am_hull_parts;
@@ -68,6 +60,8 @@ namespace PactIncreasedLethality
         static GameObject t55am_skirts;
         static Mesh t55am_hull;
         static Texture2D cleaned_texture;
+
+        private static bool assets_loaded = false;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -105,7 +99,7 @@ namespace PactIncreasedLethality
 
         public static IEnumerator Convert(GameState _)
         {
-            foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
+            foreach (Vehicle vic in Mod.vics)
             {
                 GameObject vic_go = vic.gameObject;
 
@@ -233,7 +227,7 @@ namespace PactIncreasedLethality
                     loadout_manager.LoadedAmmoList.AmmoClips[0] = clip_codex_3bm25;
 
                 if (use_br412d.Value) 
-                    loadout_manager.LoadedAmmoList.AmmoClips[2] = clip_codex_br412d;
+                    loadout_manager.LoadedAmmoList.AmmoClips[2] = Assets.clip_codex_br412d;
 
                 if (use_3bk17m.Value) 
                     loadout_manager.LoadedAmmoList.AmmoClips[1] = clip_codex_3bk17m;
@@ -242,23 +236,20 @@ namespace PactIncreasedLethality
                 {
                     GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
 
-                    if (use_9m117.Value)
+                    if (use_9m117.Value && (i == 0 || i == 3))
                     {
-                        if (i == 0 || i == 3)
-                        {
-                            loadout_manager.RackLoadouts[i].FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] {
-                                new LoadoutManager.RackLoadoutFixedChoice() {
-                                    AmmoClipIndex = 3,
-                                    RackSlotIndex = 0,
-                                },
-                                new LoadoutManager.RackLoadoutFixedChoice() {
-                                    AmmoClipIndex = 3,
-                                    RackSlotIndex = 1,
-                                }
-                            };
-                        }
+                        loadout_manager.RackLoadouts[i].FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] {
+                            new LoadoutManager.RackLoadoutFixedChoice() {
+                                AmmoClipIndex = 3,
+                                RackSlotIndex = 0,
+                            },
+                            new LoadoutManager.RackLoadoutFixedChoice() {
+                                AmmoClipIndex = 3,
+                                RackSlotIndex = 1,
+                            }
+                        };
                     }
-
+                    
                     Util.EmptyRack(rack);
                 }
 
@@ -266,46 +257,6 @@ namespace PactIncreasedLethality
                 weapon.Feed.AmmoTypeInBreech = null;
                 weapon.Feed.Start();
                 loadout_manager.RegisterAllBallistics();
-
-                //if (has_drozd.Value)
-                //{
-                //    List<DrozdLauncher> launchers = new List<DrozdLauncher>();
-
-                //    Vector3[] launcher_positions = new Vector3[] {
-                //        new Vector3(-1.2953f, -0.0083f, 0.1166f),
-                //        new Vector3(-1.3443f, 0.2091f, 0.0169f),
-                //        new Vector3(1.2153f, -0.0083f, 0.1166f),
-                //        new Vector3(1.2943f, 0.2091f, 0.0169f),
-                //    };
-
-                //    Vector3[] launcher_rots = new Vector3[] {
-                //        new Vector3(0f, 0f, 0f),
-                //        new Vector3(0f, -13.5494f, 0f),
-                //        new Vector3(0f, 0f, 0f),
-                //        new Vector3(0f, 13.5494f, 0f)
-                //    };
-
-                //    for (var i = 0; i < launcher_positions.Length; i++)
-                //    {
-                //        GameObject launcher = GameObject.Instantiate(DrozdLauncher.drozd_launcher_visual, vic.transform.Find("T55A_skeleton/HULL/Turret"));
-                //        launcher.transform.localPosition = launcher_positions[i];
-                //        launcher.transform.localEulerAngles = launcher_rots[i];
-
-                //        if (i > 1)
-                //        {
-                //            launcher.transform.localScale = Vector3.Scale(launcher.transform.localScale, new Vector3(-1f, 1f, 1f));
-                //        }
-
-                //        launchers.Add(launcher.GetComponent<DrozdLauncher>());
-                //    }
-
-                //    Drozd.AttachDrozd(
-                //        vic.transform.Find("T55A_skeleton/HULL/Turret"), vic, new Vector3(0f, 0f, 5f),
-                //        launchers.GetRange(0, 2).ToArray(), launchers.GetRange(2, 2).ToArray()
-                //    );
-
-                //    vic._friendlyName += "D";
-                //}
 
                 if (tpn3.Value) {
                     TPN3.Add(fcs, day_optic.slot.LinkedNightSight.PairedOptic, day_optic.slot.LinkedNightSight);
@@ -380,263 +331,217 @@ namespace PactIncreasedLethality
             yield break;
         }
 
+        public static void LoadAssets() {
+            if (assets_loaded) return;
+            if (!t55_patch.Value) return;
+
+            range_readout = GameObject.Instantiate(Assets.m1ip_range_canvas);
+            GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
+            GameObject.Destroy(range_readout.transform.GetChild(0).gameObject);
+            range_readout.AddComponent<Reparent>();
+            range_readout.SetActive(false);
+            range_readout.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            range_readout.name = "t55 range canvas";
+
+            TextMeshProUGUI text = range_readout.GetComponentInChildren<TextMeshProUGUI>();
+            text.color = new Color(255f, 0f, 0f);
+            text.faceColor = new Color(255f, 0f, 0f);
+            text.outlineColor = new Color(100f, 0f, 0f, 0.5f);
+
+            var t55am_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t55am"));
+            t55am_turret_material = t55am_bundle.LoadAsset<Material>("CLEANED MATERIAL.mat");
+            t55am_turret_material.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t55am_turret_parts = t55am_bundle.LoadAsset<GameObject>("T55AM TURRET PARTS.prefab");
+            t55am_turret_parts.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t55am_hull_parts = t55am_bundle.LoadAsset<GameObject>("T55AM HULL PARTS.prefab");
+            t55am_hull_parts.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t55am_skirts = t55am_bundle.LoadAsset<GameObject>("SKIRTS.prefab");
+            t55am_skirts.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t55am_lrf = t55am_bundle.LoadAsset<GameObject>("T55AM LRF.prefab");
+            t55am_lrf.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            cleaned_texture = t55am_bundle.LoadAsset<Texture2D>("CLEANED TEXTURE.png");
+            cleaned_texture.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t55am_hull = t55am_bundle.LoadAsset<Mesh>("hull.asset");
+            t55am_hull.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            Util.SetupFLIRShaders(t55am_turret_parts);
+            Util.SetupFLIRShaders(t55am_hull_parts);
+            Util.SetupFLIRShaders(t55am_skirts);
+            Util.SetupFLIRShaders(t55am_lrf);
+
+            Transform armour = t55am_turret_parts.transform.Find("ARMOUR");
+            foreach (Transform t in armour.GetComponentsInChildren<Transform>())
+            {
+                t.gameObject.tag = "Penetrable";
+                t.gameObject.layer = 8;
+            }
+
+            Transform hull_armour = t55am_hull_parts.transform.Find("ARMOUR");
+            foreach (Transform t in hull_armour.GetComponentsInChildren<Transform>())
+            {
+                t.gameObject.tag = "Penetrable";
+                t.gameObject.layer = 8;
+            }
+
+            GameObject lrf = t55am_lrf.transform.Find("LRF/LRF").gameObject;
+            lrf.gameObject.tag = "Penetrable";
+            lrf.gameObject.layer = 8;
+
+            UniformArmor armor_lrf = lrf.AddComponent<UniformArmor>();
+            armor_lrf.SetName("laser rangefinder");
+            armor_lrf.PrimaryHeatRha = 15f;
+            armor_lrf.PrimarySabotRha = 15f;
+
+            GameObject turret_left_cheek = armour.transform.Find("L COMP CHEEK").gameObject;
+            VariableArmor armor_turret_l_cheek = turret_left_cheek.AddComponent<VariableArmor>();
+            armor_turret_l_cheek.SetName("metal-polymer block");
+            armor_turret_l_cheek._armorType = Armour.cheek_metal_polymer;
+            armor_turret_l_cheek._spallForwardRatio = 0.2f;
+            AarVisual aar_l_cheek = turret_left_cheek.AddComponent<AarVisual>();
+            aar_l_cheek.SwitchMaterials = false;
+            aar_l_cheek.HideUntilAar = true;
+
+            GameObject turret_right_cheek = armour.transform.Find("R COMP CHEEK").gameObject;
+            VariableArmor armor_turret_r_cheek = turret_right_cheek.AddComponent<VariableArmor>();
+            armor_turret_r_cheek.SetName("metal-polymer block");
+            armor_turret_r_cheek._armorType = Armour.cheek_metal_polymer;
+            armor_turret_r_cheek._spallForwardRatio = 0.2f;
+            AarVisual aar_r_cheek = turret_right_cheek.AddComponent<AarVisual>();
+            aar_r_cheek.SwitchMaterials = false;
+            aar_r_cheek.HideUntilAar = true;
+
+            GameObject turret_left_applique = armour.transform.Find("L APPLIQUE CHEEK").gameObject;
+            VariableArmor armor_turret_l_applique = turret_left_applique.AddComponent<VariableArmor>();
+            armor_turret_l_applique.SetName("applique cheek armor");
+            armor_turret_l_applique._armorType = Armour.bdd_cast_armor;
+            armor_turret_l_applique._spallForwardRatio = 0.2f;
+
+            GameObject turret_right_applique = armour.transform.Find("R APPLIQUE CHEEK").gameObject;
+            VariableArmor armor_turret_r_applique = turret_right_applique.AddComponent<VariableArmor>();
+            armor_turret_r_applique.SetName("applique cheek armor");
+            armor_turret_r_applique._armorType = Armour.bdd_cast_armor;
+            armor_turret_r_applique._spallForwardRatio = 0.2f;
+
+            GameObject hull_mpoly_block = hull_armour.transform.Find("MPOLY BLOCK").gameObject;
+            VariableArmor armor_mpoly_block = hull_mpoly_block.AddComponent<VariableArmor>();
+            armor_mpoly_block.SetName("metal-polymer block");
+            armor_mpoly_block._armorType = Armour.hull_metal_polymer;
+            armor_mpoly_block._spallForwardRatio = 0.01f;
+            AarVisual aar_mpoly_block = hull_mpoly_block.AddComponent<AarVisual>();
+            aar_mpoly_block.SwitchMaterials = false;
+            aar_mpoly_block.HideUntilAar = true;
+
+            GameObject hull_casing = hull_armour.transform.Find("OUTER CASING ").gameObject;
+            VariableArmor armor_casing = hull_casing.AddComponent<VariableArmor>();
+            armor_casing.SetName("upper glacis applique armor");
+            armor_casing._armorType = Armour.ru_welded_armor;
+            armor_casing._spallForwardRatio = 0.01f;
+
+            ammo_3bm25 = new AmmoType();
+            Util.ShallowCopy(ammo_3bm25, Assets.ammo_3bm20);
+            ammo_3bm25.Name = "3BM25 APFSDS-T";
+            ammo_3bm25.RhaPenetration = 380f;
+
+            ammo_codex_3bm25 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+            ammo_codex_3bm25.AmmoType = ammo_3bm25;
+            ammo_codex_3bm25.name = "ammo_3bm25";
+
+            clip_3bm25 = new AmmoType.AmmoClip();
+            clip_3bm25.Capacity = 1;
+            clip_3bm25.Name = "3BM25 APFSDS-T";
+            clip_3bm25.MinimalPattern = new AmmoCodexScriptable[1];
+            clip_3bm25.MinimalPattern[0] = ammo_codex_3bm25;
+
+            clip_codex_3bm25 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+            clip_codex_3bm25.name = "clip_3bm25";
+            clip_codex_3bm25.ClipType = clip_3bm25;
+
+            ammo_3bm25_vis = GameObject.Instantiate(Assets.ammo_3bm20.VisualModel);
+            ammo_3bm25_vis.name = "3bm25 visual";
+            ammo_3bm25.VisualModel = ammo_3bm25_vis;
+            ammo_3bm25.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm25;
+            ammo_3bm25.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm25;
+
+            ammo_3bk17m = new AmmoType();
+            Util.ShallowCopy(ammo_3bk17m, Assets.ammo_3bk5m);
+            ammo_3bk17m.Name = "3BK17M HEAT-FS-T";
+            ammo_3bk17m.Mass = 10.0f;
+            ammo_3bk17m.Coeff = 0.25f;
+            ammo_3bk17m.MuzzleVelocity = 1085f;
+            ammo_3bk17m.RhaPenetration = 400f;
+            ammo_3bk17m.TntEquivalentKg = 0.25f;
+
+            ammo_codex_3bk17m = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+            ammo_codex_3bk17m.AmmoType = ammo_3bk17m;
+            ammo_codex_3bk17m.name = "ammo_3bk17m";
+
+            clip_3bk17m = new AmmoType.AmmoClip();
+            clip_3bk17m.Capacity = 1;
+            clip_3bk17m.Name = "3BK17M HEAT-FS-T";
+            clip_3bk17m.MinimalPattern = new AmmoCodexScriptable[1];
+            clip_3bk17m.MinimalPattern[0] = ammo_codex_3bk17m;
+
+            clip_codex_3bk17m = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+            clip_codex_3bk17m.name = "clip_3bk17m";
+            clip_codex_3bk17m.ClipType = clip_3bk17m;
+
+            ammo_3bk17m_vis = GameObject.Instantiate(Assets.ammo_3bk5m.VisualModel);
+            ammo_3bk17m_vis.name = "3bk17m visual";
+            ammo_3bk17m.VisualModel = ammo_3bk17m_vis;
+            ammo_3bk17m.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bk17m;
+            ammo_3bk17m.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bk17m;
+
+            ammo_9m117 = new AmmoType();
+            Util.ShallowCopy(ammo_9m117, Assets.ammo_9m111);
+            ammo_9m117.Name = "9M117 Bastion";
+            ammo_9m117.Mass = 18.8f;
+            ammo_9m117.Coeff = 0.25f;
+            ammo_9m117.Caliber = 100f;
+            ammo_9m117.MuzzleVelocity = 350f;
+            ammo_9m117.RhaPenetration = 550f;
+            ammo_9m117.TntEquivalentKg = 4.77f;
+            ammo_9m117.Guidance = AmmoType.GuidanceType.SACLOS;
+            ammo_9m117.TurnSpeed = 0.25f;
+            ammo_9m117.RangedFuseTime = 12.5f;
+            ammo_9m117.SpiralPower = 25f;
+            ammo_9m117.SpiralAngularRate = 1800f;
+            ammo_9m117.ArmingDistance = 45f;
+            ammo_9m117.ImpactAudio = GHPC.Audio.ImpactAudioType.Missile;
+            ammo_9m117.ShortName = AmmoType.AmmoShortName.Missile;
+            ammo_9m117.CachedIndex = -1;
+
+            ammo_codex_9m117 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+            ammo_codex_9m117.AmmoType = ammo_9m117;
+            ammo_codex_9m117.name = "ammo_9m117";
+
+            clip_9m117 = new AmmoType.AmmoClip();
+            clip_9m117.Capacity = 1;
+            clip_9m117.Name = "9M117 Bastion";
+            clip_9m117.MinimalPattern = new AmmoCodexScriptable[1];
+            clip_9m117.MinimalPattern[0] = ammo_codex_9m117;
+
+            clip_codex_9m117 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+            clip_codex_9m117.name = "clip_9m117";
+            clip_codex_9m117.ClipType = clip_9m117;
+
+            ammo_9m117_vis = GameObject.Instantiate(Assets.ammo_3of412.VisualModel);
+            ammo_9m117_vis.name = "9M117 visual";
+            ammo_9m117.VisualModel = ammo_9m117_vis;
+            ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m117;
+            ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m117;
+
+            assets_loaded = true;
+        }
+
         public static void Init()
         {
             if (!t55_patch.Value) return;
-
-            if (!range_readout)
-            {
-                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                {
-                    if (obj.name == "_M1IP (variant)")
-                    {
-                        range_readout = GameObject.Instantiate(obj.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas").gameObject);
-                        GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
-                        GameObject.Destroy(range_readout.transform.GetChild(0).gameObject);
-                        range_readout.AddComponent<Reparent>();
-                        range_readout.SetActive(false);
-                        range_readout.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                        range_readout.name = "t55 range canvas";
-
-                        TextMeshProUGUI text = range_readout.GetComponentInChildren<TextMeshProUGUI>();
-                        text.color = new Color(255f, 0f, 0f);
-                        text.faceColor = new Color(255f, 0f, 0f);
-                        text.outlineColor = new Color(100f, 0f, 0f, 0.5f);
-
-                        break;
-                    }
-                }
-            }
-
-            if (has_lrf.Value && !ReticleMesh.cachedReticles.ContainsKey("T72"))
-            {
-                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                {
-                    if (obj.gameObject.name == "T72M1")
-                    {
-                        obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
-                        break;
-                    }
-                }
-            }
-
-            if (ammo_3bk17m == null)
-            {
-                var t55am_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t55am"));
-                t55am_turret_material = t55am_bundle.LoadAsset<Material>("CLEANED MATERIAL.mat");
-                t55am_turret_material.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t55am_turret_parts = t55am_bundle.LoadAsset<GameObject>("T55AM TURRET PARTS.prefab");
-                t55am_turret_parts.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t55am_hull_parts = t55am_bundle.LoadAsset<GameObject>("T55AM HULL PARTS.prefab");
-                t55am_hull_parts.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t55am_skirts = t55am_bundle.LoadAsset<GameObject>("SKIRTS.prefab");
-                t55am_skirts.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t55am_lrf = t55am_bundle.LoadAsset<GameObject>("T55AM LRF.prefab");
-                t55am_lrf.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                cleaned_texture = t55am_bundle.LoadAsset<Texture2D>("CLEANED TEXTURE.png");
-                cleaned_texture.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t55am_hull = t55am_bundle.LoadAsset<Mesh>("hull.asset");
-                t55am_hull.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t55am_turret_parts.transform.Find("T55AM.002").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t55am_turret_parts.transform.Find("T55AM.002 (1)").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t55am_turret_parts.transform.Find("T55AM.002 (1)/rondels").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t55am_turret_parts.transform.Find("LAMP").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t55am_turret_parts.AddComponent<HeatSource>().heat = 5f;
-
-                t55am_hull_parts.transform.Find("HULL APPLIQUE").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t55am_hull_parts.AddComponent<HeatSource>().heat = 5f;
-
-                t55am_lrf.transform.Find("LRF").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t55am_lrf.AddComponent<HeatSource>().heat = 5f;
-
-                t55am_skirts.transform.Find("SKIRT1").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t55am_skirts.transform.Find("SKIRT2").GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-                t55am_skirts.AddComponent<HeatSource>().heat = 5f;
-
-                Transform armour = t55am_turret_parts.transform.Find("ARMOUR");
-                foreach (Transform t in armour.GetComponentsInChildren<Transform>())
-                {
-                    t.gameObject.tag = "Penetrable";
-                    t.gameObject.layer = 8;
-                }
-
-                Transform hull_armour = t55am_hull_parts.transform.Find("ARMOUR");
-                foreach (Transform t in hull_armour.GetComponentsInChildren<Transform>())
-                {
-                    t.gameObject.tag = "Penetrable";
-                    t.gameObject.layer = 8;
-                }
-
-                GameObject lrf = t55am_lrf.transform.Find("LRF/LRF").gameObject;
-                lrf.gameObject.tag = "Penetrable";
-                lrf.gameObject.layer = 8;
-
-                UniformArmor armor_lrf = lrf.AddComponent<UniformArmor>();
-                armor_lrf.SetName("laser rangefinder");
-                armor_lrf.PrimaryHeatRha = 15f;
-                armor_lrf.PrimarySabotRha = 15f;
-
-                GameObject turret_left_cheek = armour.transform.Find("L COMP CHEEK").gameObject;
-                VariableArmor armor_turret_l_cheek = turret_left_cheek.AddComponent<VariableArmor>();
-                armor_turret_l_cheek.SetName("metal-polymer block");
-                armor_turret_l_cheek._armorType = Armour.cheek_metal_polymer;
-                armor_turret_l_cheek._spallForwardRatio = 0.2f;
-                AarVisual aar_l_cheek = turret_left_cheek.AddComponent<AarVisual>();
-                aar_l_cheek.SwitchMaterials = false;
-                aar_l_cheek.HideUntilAar = true;
-
-                GameObject turret_right_cheek = armour.transform.Find("R COMP CHEEK").gameObject;
-                VariableArmor armor_turret_r_cheek = turret_right_cheek.AddComponent<VariableArmor>();
-                armor_turret_r_cheek.SetName("metal-polymer block");
-                armor_turret_r_cheek._armorType = Armour.cheek_metal_polymer;
-                armor_turret_r_cheek._spallForwardRatio = 0.2f;
-                AarVisual aar_r_cheek = turret_right_cheek.AddComponent<AarVisual>();
-                aar_r_cheek.SwitchMaterials = false;
-                aar_r_cheek.HideUntilAar = true;
-
-                GameObject turret_left_applique = armour.transform.Find("L APPLIQUE CHEEK").gameObject;
-                VariableArmor armor_turret_l_applique = turret_left_applique.AddComponent<VariableArmor>();
-                armor_turret_l_applique.SetName("applique cheek armor");
-                armor_turret_l_applique._armorType = Armour.bdd_cast_armor;
-                armor_turret_l_applique._spallForwardRatio = 0.2f;
-
-                GameObject turret_right_applique = armour.transform.Find("R APPLIQUE CHEEK").gameObject;
-                VariableArmor armor_turret_r_applique = turret_right_applique.AddComponent<VariableArmor>();
-                armor_turret_r_applique.SetName("applique cheek armor");
-                armor_turret_r_applique._armorType = Armour.bdd_cast_armor;
-                armor_turret_r_applique._spallForwardRatio = 0.2f;
-
-                GameObject hull_mpoly_block = hull_armour.transform.Find("MPOLY BLOCK").gameObject;
-                VariableArmor armor_mpoly_block = hull_mpoly_block.AddComponent<VariableArmor>();
-                armor_mpoly_block.SetName("metal-polymer block");
-                armor_mpoly_block._armorType = Armour.hull_metal_polymer;
-                armor_mpoly_block._spallForwardRatio = 0.01f;
-                AarVisual aar_mpoly_block = hull_mpoly_block.AddComponent<AarVisual>();
-                aar_mpoly_block.SwitchMaterials = false;
-                aar_mpoly_block.HideUntilAar = true;
-
-                GameObject hull_casing = hull_armour.transform.Find("OUTER CASING ").gameObject;
-                VariableArmor armor_casing = hull_casing.AddComponent<VariableArmor>();
-                armor_casing.SetName("upper glacis applique armor");
-                armor_casing._armorType = Armour.ru_welded_armor;
-                armor_casing._spallForwardRatio = 0.01f;
-
-                foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
-                {
-                    if (s.AmmoType.Name == "3BK5M HEAT-FS-T") ammo_3bk5m = s.AmmoType;
-                    if (s.AmmoType.Name == "9M111 Fagot") ammo_9m111 = s.AmmoType;
-                    if (s.AmmoType.Name == "3OF412 HE-T") ammo_3of412 = s.AmmoType;
-                    if (s.AmmoType.Name == "3BM20 APFSDS-T") ammo_3bm20 = s.AmmoType;
-
-                    if (ammo_3bm20 != null && ammo_3bk5m != null && ammo_9m111 != null && ammo_3of412 != null) break;
-                }
-
-                foreach (AmmoClipCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoClipCodexScriptable)))
-                {
-                    if (s.name == "clip_BR-412D") { clip_codex_br412d = s; break; }
-                }
-
-                ammo_3bm25 = new AmmoType();
-                Util.ShallowCopy(ammo_3bm25, ammo_3bm20);
-                ammo_3bm25.Name = "3BM25 APFSDS-T";
-                ammo_3bm25.RhaPenetration = 380f;
-
-                ammo_codex_3bm25 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_3bm25.AmmoType = ammo_3bm25;
-                ammo_codex_3bm25.name = "ammo_3bm25";
-
-                clip_3bm25 = new AmmoType.AmmoClip();
-                clip_3bm25.Capacity = 1;
-                clip_3bm25.Name = "3BM25 APFSDS-T";
-                clip_3bm25.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_3bm25.MinimalPattern[0] = ammo_codex_3bm25;
-
-                clip_codex_3bm25 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_3bm25.name = "clip_3bm25";
-                clip_codex_3bm25.ClipType = clip_3bm25;
-
-                ammo_3bm25_vis = GameObject.Instantiate(ammo_3bm20.VisualModel);
-                ammo_3bm25_vis.name = "3bm25 visual";
-                ammo_3bm25.VisualModel = ammo_3bm25_vis;
-                ammo_3bm25.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm25;
-                ammo_3bm25.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm25;
-
-                ammo_3bk17m = new AmmoType();
-                Util.ShallowCopy(ammo_3bk17m, ammo_3bk5m);
-                ammo_3bk17m.Name = "3BK17M HEAT-FS-T";
-                ammo_3bk17m.Mass = 10.0f;
-                ammo_3bk17m.Coeff = 0.25f;
-                ammo_3bk17m.MuzzleVelocity = 1085f;
-                ammo_3bk17m.RhaPenetration = 400f;
-                ammo_3bk17m.TntEquivalentKg = 0.25f;
-
-                ammo_codex_3bk17m = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_3bk17m.AmmoType = ammo_3bk17m;
-                ammo_codex_3bk17m.name = "ammo_3bk17m";
-
-                clip_3bk17m = new AmmoType.AmmoClip();
-                clip_3bk17m.Capacity = 1;
-                clip_3bk17m.Name = "3BK17M HEAT-FS-T";
-                clip_3bk17m.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_3bk17m.MinimalPattern[0] = ammo_codex_3bk17m;
-
-                clip_codex_3bk17m = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_3bk17m.name = "clip_3bk17m";
-                clip_codex_3bk17m.ClipType = clip_3bk17m;
-
-                ammo_3bk17m_vis = GameObject.Instantiate(ammo_3bk5m.VisualModel);
-                ammo_3bk17m_vis.name = "3bk17m visual";
-                ammo_3bk17m.VisualModel = ammo_3bk17m_vis;
-                ammo_3bk17m.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bk17m;
-                ammo_3bk17m.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bk17m;
-
-                ammo_9m117 = new AmmoType();
-                Util.ShallowCopy(ammo_9m117, ammo_9m111);
-                ammo_9m117.Name = "9M117 Bastion";
-                ammo_9m117.Mass = 18.8f;
-                ammo_9m117.Coeff = 0.25f;
-                ammo_9m117.Caliber = 100f;
-                ammo_9m117.MuzzleVelocity = 350f;
-                ammo_9m117.RhaPenetration = 550f;
-                ammo_9m117.TntEquivalentKg = 4.77f;
-                ammo_9m117.Guidance = AmmoType.GuidanceType.SACLOS;
-                ammo_9m117.TurnSpeed = 0.25f;
-                ammo_9m117.RangedFuseTime = 12.5f;
-                ammo_9m117.SpiralPower = 25f;
-                ammo_9m117.SpiralAngularRate = 1800f;
-                ammo_9m117.ArmingDistance = 45f;
-                ammo_9m117.ImpactAudio = GHPC.Audio.ImpactAudioType.Missile;
-                ammo_9m117.ShortName = AmmoType.AmmoShortName.Missile;
-
-                ammo_codex_9m117 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_9m117.AmmoType = ammo_9m117;
-                ammo_codex_9m117.name = "ammo_9m117";
-
-                clip_9m117 = new AmmoType.AmmoClip();
-                clip_9m117.Capacity = 1;
-                clip_9m117.Name = "9M117 Bastion";
-                clip_9m117.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_9m117.MinimalPattern[0] = ammo_codex_9m117;
-
-                clip_codex_9m117 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_9m117.name = "clip_9m117";
-                clip_codex_9m117.ClipType = clip_9m117;
-
-                ammo_9m117_vis = GameObject.Instantiate(ammo_3of412.VisualModel);
-                ammo_9m117_vis.name = "9M117 visual";
-                ammo_9m117.VisualModel = ammo_9m117_vis;
-                ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m117;
-                ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m117;
-
-                ammo_9m117.CachedIndex = -1;
-            }
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }

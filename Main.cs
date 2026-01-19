@@ -2,7 +2,6 @@
 using MelonLoader;
 using UnityEngine;
 using GHPC.State;
-using PactIncreasedLethality;
 using System.Collections;
 using MelonLoader.Utils;
 using System.IO;
@@ -11,13 +10,14 @@ using GHPC.Player;
 using GHPC.Camera;
 using FMOD;
 using GHPC.Vehicle;
+using PactIncreasedLethality;
 
-[assembly: MelonInfo(typeof(PactIncreasedLethalityMod), "Pact Increased Lethality", "2.0.6C6", "ATLAS")]
+[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.0.7", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
 {
-    public class PactIncreasedLethalityMod : MelonMod
+    public class Mod : MelonMod
     {
         public static Vehicle[] vics;
         public static MelonPreferences_Category cfg;
@@ -69,56 +69,45 @@ namespace PactIncreasedLethality
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            if (!Assets.done && (sceneName == "MainMenu2_Scene" || sceneName == "MainMenu2-1_Scene" || sceneName == "t64_menu"))
+            if (sceneName == "MainMenu2_Scene" || sceneName == "MainMenu2-1_Scene" || sceneName == "t64_menu")
             {
                 Assets.Load();
+                T72.LoadAssets();
+                T80.LoadAssets();
+                T62.LoadAssets();
+                T55.LoadAssets();
+                BMP2.LoadAssets();
+                BTR60.LoadAssets();
+                BOM.LoadAssets();
+                PactThermal.LoadAssets();
+                FireControlSystem1A40.LoadAssets();
+                SuperFCS.LoadAssets();
+                Ammo_125mm.LoadAssets();
+                Ammo_30mm.LoadAssets();
+                TrackingDimensions.Generate();
             }
-
-            TrackingDimensions.Generate();
 
             if (Util.menu_screens.Contains(sceneName)) return;
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(GetVics), GameStatePriority.Medium);
-
+            
             PactEra.Init();
-
-            BOM.Init();
-
             Armour.Init();
 
-            CRTShock.Init();
-
-            FireControlSystem1A40.Init();
-
-            AMMO_125mm.Init();
-
-            AMMO_30MM.Init();
-
-            PactThermal.Init();
-
-            Sosna.Init();
-
-            //Drozd.Init();
-
             ProximityFuse.Init();
-
             EFP.Init();
 
             T72.Init();
-
-            BMP2.Init();
+            T80.Init();
 
             T55.Init();
-
-            BMP1.Init();
-
-            T64A.Init();
-
-            T64B.Init();
-
             T62.Init();
 
-            T80.Init();
+            T64A.Init();
+            T64B.Init();
+
+            BMP1.Init();
+            BMP2.Init();
 
             BTR60.Init();
         }

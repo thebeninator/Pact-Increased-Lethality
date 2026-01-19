@@ -13,13 +13,8 @@ using UnityEngine;
 using NWH.VehiclePhysics;
 using MelonLoader.Utils;
 using System.IO;
-using GHPC.Thermals;
-using HarmonyLib;
-using GHPC.Audio;
-using GHPC.Effects;
 using GHPC.Equipment;
 using Reticle;
-using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
@@ -27,7 +22,6 @@ namespace PactIncreasedLethality
     {
         static MelonPreferences_Entry<bool> t80_patch;
         static MelonPreferences_Entry<bool> super_engine;
-        static VehicleController abrams_vic_controller;
         static MelonPreferences_Entry<string> t80_ammo_type;
         static MelonPreferences_Entry<bool> t80_random_ammo;
         static MelonPreferences_Entry<string> t80_atgm_type;
@@ -65,98 +59,7 @@ namespace PactIncreasedLethality
 
         static WeaponSystemCodexScriptable gun_2a46m4;
 
-        public class Kontakt5Visual : MonoBehaviour {
-            public MeshRenderer visual;
-            public string type;
-            public static Dictionary<string, Material> destroyed_mats = new Dictionary<string, Material>() {
-                ["HULL"] = hull_destroyed,
-                ["TURRET"] = turret_destroyed,
-                ["SIDES"] = sides_destroyed
-            };
-        }
-
-        [HarmonyPatch(typeof(GHPC.UniformArmor), "Detonate")]
-        public static class K5Detonate {
-            private static void Postfix(GHPC.UniformArmor __instance) {
-                if (__instance.transform.GetComponent<Kontakt5Visual>() == null) return;
-                Kontakt5Visual vis = __instance.transform.GetComponent<Kontakt5Visual>();
-
-                Material[] new_mat = vis.visual.materials;
-
-                for (int i = 0; i < new_mat.Length; i++)
-                {
-                    if (new_mat[i].name.Contains("plate") && !new_mat[i].name.Contains("dark")) {
-                        new_mat[i] = Kontakt5Visual.destroyed_mats[vis.type];
-                    }
-                }
-
-                vis.visual.materials = new_mat;
-
-                ParticleEffectsManager.Instance.CreateImpactEffectOfType(
-                    PactEra.dummy_he, ParticleEffectsManager.FusedStatus.Fuzed, ParticleEffectsManager.SurfaceMaterial.Steel, false, __instance.transform.position);
-                ImpactSFXManager.Instance.PlaySimpleImpactAudio(ImpactAudioType.MainGunHeat, __instance.transform.position);
-            }
-        }
-
-        static void K5Setup(Transform vis_transform, Transform k5_t, string type) {
-            UniformArmor k5_armour = k5_t.gameObject.AddComponent<UniformArmor>();
-            k5_armour._name = "Kontakt-5";
-            k5_armour.PrimaryHeatRha = 550f;
-            k5_armour.PrimarySabotRha = 200f;
-            k5_armour.SecondaryHeatRha = 0f;
-            k5_armour.SecondarySabotRha = 0f;
-            k5_armour._canShatterLongRods = true;
-            k5_armour._normalizesHits = false;
-            k5_armour.AngleMatters = false;
-            k5_armour._isEra = true;
-            k5_armour._armorType = Kontakt5.schema.era_so;
-
-            Kontakt5Visual vis = k5_t.gameObject.AddComponent<Kontakt5Visual>();
-            vis.visual = vis_transform.transform.GetChild(k5_t.GetSiblingIndex()).GetComponent<MeshRenderer>();
-            vis.type = type;
-            vis.enabled = false;
-        }
-
-        public class UpdateAmmoTypeUI : MonoBehaviour
-        {
-            GameObject ap;
-            GameObject heat;
-            GameObject he;
-            GameObject glatgm;
-            GameObject current_display;
-            public FireControlSystem fcs;
-            public Transform canvas; 
-
-            Dictionary<AmmoType.AmmoShortName, GameObject> displays;
-
-            void Awake()
-            {
-                ap = canvas.transform.Find("ammo text APFSDS (TMP)").gameObject;
-                heat = canvas.transform.Find("ammo text HEAT (TMP)").gameObject;
-                he = canvas.transform.Find("ammo text HE (TMP)").gameObject;
-                glatgm = canvas.transform.Find("ammo text GLATGM (TMP)").gameObject;
-
-                current_display = ap;
-
-                displays = new Dictionary<AmmoType.AmmoShortName, GameObject>()
-                {
-                    [AmmoType.AmmoShortName.Sabot] = ap,
-                    [AmmoType.AmmoShortName.Heat] = heat,
-                    [AmmoType.AmmoShortName.He] = he,
-                    [AmmoType.AmmoShortName.Missile] = glatgm,
-                };
-            }
-
-            void Update()
-            {
-                if (displays[fcs.CurrentAmmoType.ShortName] != current_display)
-                {
-                    current_display.SetActive(false);
-                    current_display = displays[fcs.CurrentAmmoType.ShortName];
-                    current_display.SetActive(true);
-                }
-            }
-        }
+        private static bool assets_loaded = false;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -210,7 +113,7 @@ namespace PactIncreasedLethality
 
         public static IEnumerator Convert(GameState _)
         {
-            foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
+            foreach (Vehicle vic in Mod.vics)
             {
                 GameObject vic_go = vic.gameObject;
 
@@ -228,7 +131,7 @@ namespace PactIncreasedLethality
                 if (zoom_snapper.Value && !super_fcs_t80.Value)
                     day_optic.gameObject.AddComponent<DigitalZoomSnapper>();
 
-                int rand = UnityEngine.Random.Range(0, AMMO_125mm.ap.Count);
+                int rand = UnityEngine.Random.Range(0, Ammo_125mm.ap.Count);
                 string ammo_str = t80_random_ammo.Value ? t80_random_ammo_pool.Value.ElementAt(rand) : t80_ammo_type.Value;
 
                 vic.AimablePlatforms[1].transform.Find("optic cover parent").gameObject.SetActive(false);
@@ -245,11 +148,10 @@ namespace PactIncreasedLethality
                 try
                 {
                     if (ammo_str != "3BM15")
-                        loadout_manager.LoadedAmmoList.AmmoClips[0] = AMMO_125mm.ap[ammo_str];
+                        loadout_manager.LoadedAmmoList.AmmoClips[0] = Ammo_125mm.ap[ammo_str];
 
                     if (t80_atgm_type.Value != "9M112M")
-                        loadout_manager.LoadedAmmoList.AmmoClips[3] = AMMO_125mm.atgm[t80_atgm_type.Value];
-
+                        loadout_manager.LoadedAmmoList.AmmoClips[3] = Ammo_125mm.atgm[t80_atgm_type.Value];
 
                     for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
                     {
@@ -270,17 +172,14 @@ namespace PactIncreasedLethality
 
                 Transform canvas = vic.transform.Find("T80B_rig/HULL/TURRET/gun/---MAIN GUN SCRIPTS---/2A46-2/1G42 gunner's sight/GPS/1G42 Canvas/GameObject");
                 canvas.Find("ammo text APFSDS (TMP)").gameObject.SetActive(true);
-                UpdateAmmoTypeUI ui_fix = day_optic.gameObject.AddComponent<UpdateAmmoTypeUI>();
-                ui_fix.canvas = canvas;
-                ui_fix.fcs = weapon.FCS;
 
                 if (super_engine.Value)
                 {
                     VehicleController this_vic_controller = vic_go.GetComponent<VehicleController>();
                     NwhChassis chassis = vic_go.GetComponent<NwhChassis>();
 
-                    Util.ShallowCopy(this_vic_controller.engine, abrams_vic_controller.engine);
-                    Util.ShallowCopy(this_vic_controller.transmission, abrams_vic_controller.transmission);
+                    Util.ShallowCopy(this_vic_controller.engine, Assets.abrams_vic_controller.engine);
+                    Util.ShallowCopy(this_vic_controller.transmission, Assets.abrams_vic_controller.transmission);
 
                     this_vic_controller.engine.vc = vic_go.GetComponent<VehicleController>();
                     this_vic_controller.transmission.vc = vic_go.GetComponent<VehicleController>();
@@ -301,7 +200,7 @@ namespace PactIncreasedLethality
                     gc.fcs = weapon.FCS;
                     gc.mgu = weapon.FCS.GetComponent<MissileGuidanceUnit>();
 
-                    Sosna.Add(day_optic, weapon.FCS.NightOptic, vic.WeaponsManager.Weapons[1], vic.WeaponsManager.Weapons[0], gc);
+                    SuperFCS.Add(day_optic, weapon.FCS.NightOptic, vic.WeaponsManager.Weapons[1], vic.WeaponsManager.Weapons[0], gc);
 
                     day_optic.transform.Find("Quad").gameObject.SetActive(false);
                     vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
@@ -406,29 +305,29 @@ namespace PactIncreasedLethality
                     GameObject k5_turret = GameObject.Instantiate(t80u_turret, turret_rend);
                     k5_turret.transform.localEulerAngles = new Vector3(90f, 0f, 180f);
 
-                    LateFollow k5_turret_follow = k5_turret.transform.Find("armour").gameObject.AddComponent<LateFollow>();
+                    LateFollow k5_turret_follow = k5_turret.AddComponent<LateFollow>();
                     k5_turret_follow.FollowTarget = turret;
                     k5_turret_follow.enabled = true;
                     k5_turret_follow.Awake();
-                    k5_turret.transform.Find("armour").parent = null;
+                    k5_turret.transform.parent = null;
 
                     GameObject k5_hull = GameObject.Instantiate(t80u_hull, hull_rend);
                     k5_hull.transform.localEulerAngles = new Vector3(0f, -180f, 0f);
 
-                    LateFollow k5_hull_follow = k5_hull.transform.Find("armour").gameObject.AddComponent<LateFollow>();
+                    LateFollow k5_hull_follow = k5_hull.AddComponent<LateFollow>();
                     k5_hull_follow.FollowTarget = vic.transform;
                     k5_hull_follow.enabled = true;
                     k5_hull_follow.Awake();
-                    k5_hull.transform.Find("armour").parent = null;
+                    k5_hull.transform.parent = null;
 
                     GameObject k5_sides = GameObject.Instantiate(t80u_hull_sides, skirts_rend);
                     k5_sides.transform.localEulerAngles = new Vector3(0f, -180f, 0f);
 
-                    LateFollow k5_sides_follow = k5_sides.transform.Find("armour").gameObject.AddComponent<LateFollow>();
+                    LateFollow k5_sides_follow = k5_sides.AddComponent<LateFollow>();
                     k5_sides_follow.FollowTarget = vic.transform;
                     k5_sides_follow.enabled = true;
                     k5_sides_follow.Awake();
-                    k5_sides.transform.Find("armour").parent = null;
+                    k5_sides.transform.parent = null;
 
                     GameObject front_flaps = GameObject.Instantiate(t80u_front_flaps, hull_rend);
                     front_flaps.transform.localEulerAngles = new Vector3(0f, 270f, 0f);
@@ -513,184 +412,151 @@ namespace PactIncreasedLethality
             yield break;
         }
 
+        public static void LoadAssets()
+        {
+            if (assets_loaded) return;
+            if (!t80_patch.Value) return;
+
+            gun_2a46m4 = ScriptableObject.CreateInstance<WeaponSystemCodexScriptable>();
+            gun_2a46m4.name = "gun_2a46m4";
+            gun_2a46m4.CaliberMm = 125;
+            gun_2a46m4.FriendlyName = "125mm Gun 2A46M-4";
+            gun_2a46m4.Type = WeaponSystemCodexScriptable.WeaponType.LargeCannon;        
+
+            var t80u_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t80u"));
+            var t80bv_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t80bv"));
+
+            t80u_turret_mat = t80u_bundle.LoadAsset<Material>("inserts mat.mat");
+            t80u_turret_mat.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t80u_turret_inserts = t80u_bundle.LoadAsset<Mesh>("t80u_cheek_inserts.asset");
+            t80u_turret_inserts.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t80u_hull = t80u_bundle.LoadAsset<GameObject>("hull plate.prefab");
+            t80u_hull.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t80u_hull_sides = t80u_bundle.LoadAsset<GameObject>("hull sides.prefab");
+            t80u_hull_sides.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t80u_turret = t80u_bundle.LoadAsset<GameObject>("turret stuff.prefab");
+            t80u_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t80u_front_flaps = t80u_bundle.LoadAsset<GameObject>("t80u_front_flaps.prefab");
+            t80u_front_flaps.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            turret_cleaned_mesh = t80u_bundle.LoadAsset<Mesh>("turret cleaned.asset");
+            turret_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            hull_cleaned_mesh = t80u_bundle.LoadAsset<Mesh>("hull cleaned.asset");
+            hull_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            skirts_cleaned_mesh = t80u_bundle.LoadAsset<Mesh>("skirts cleaned.asset");
+            skirts_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            hull_destroyed = t80u_bundle.LoadAsset<Material>("hp plate destroyed");
+            hull_destroyed.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            turret_destroyed = t80u_bundle.LoadAsset<Material>("turret plate destroyed");
+            turret_destroyed.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            sides_destroyed = t80u_bundle.LoadAsset<Material>("hs plate destroyed");
+            sides_destroyed.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            UniformArmor hull_plate = t80u_hull.transform.Find("PLATE/ARMOUR/plate").gameObject.AddComponent<UniformArmor>();
+            hull_plate.tag = "Penetrable";
+            hull_plate.gameObject.layer = 8;
+            hull_plate._name = "glacis addon plate";
+            hull_plate._armorType = Armour.ru_hhs_armor;
+            hull_plate.PrimaryHeatRha = 30f;
+            hull_plate.PrimarySabotRha = 30f;
+            hull_plate._canShatterLongRods = true;
+            hull_plate._normalizesHits = true;
+            hull_plate.AngleMatters = true;
+
+            UniformArmor hull_splash_guard = t80u_hull.transform.Find("PLATE/ARMOUR/splash").gameObject.AddComponent<UniformArmor>();
+            hull_splash_guard.tag = "Penetrable";
+            hull_splash_guard.gameObject.layer = 8;
+            hull_splash_guard._name = "glacis splash guard";
+            hull_splash_guard._armorType = Armour.ru_welded_armor;
+            hull_splash_guard.PrimaryHeatRha = 3f;
+            hull_splash_guard.PrimarySabotRha = 3f;
+            hull_splash_guard._canShatterLongRods = true;
+            hull_splash_guard._normalizesHits = true;
+            hull_splash_guard.AngleMatters = true;
+
+            GameObject t80u_front_flaps_armour = t80u_front_flaps.transform.Find("ARMOUR").gameObject;
+            t80u_front_flaps_armour.tag = "Penetrable";
+            t80u_front_flaps_armour.layer = 8;
+            UniformArmor front_rubber_flaps = t80u_front_flaps_armour.AddComponent<UniformArmor>();
+            front_rubber_flaps._name = "rubber flap";
+            front_rubber_flaps.PrimaryHeatRha = 5f;
+            front_rubber_flaps.PrimarySabotRha = 5f;
+            front_rubber_flaps._canShatterLongRods = false;
+            front_rubber_flaps._normalizesHits = false;
+            front_rubber_flaps.AngleMatters = false;
+
+            foreach (Transform rubber_transform in t80u_turret.transform.Find("TURRET RUBBER/ARMOUR")) {
+                rubber_transform.gameObject.tag = "Penetrable";
+                rubber_transform.gameObject.layer = 8;
+
+                UniformArmor rubber_flaps = rubber_transform.gameObject.AddComponent<UniformArmor>();
+                rubber_flaps._name = "rubber flap";
+                rubber_flaps.PrimaryHeatRha = 5f;
+                rubber_flaps.PrimarySabotRha = 5f;
+                rubber_flaps._canShatterLongRods = false;
+                rubber_flaps._normalizesHits = false;
+                rubber_flaps.AngleMatters = false;
+            }
+
+            foreach (Transform plate_transform in t80u_turret.transform.Find("TURRET PLATE/ARMOUR"))
+            {
+                plate_transform.gameObject.tag = "Penetrable";
+                plate_transform.gameObject.layer = 8;
+
+                UniformArmor steel_plate = plate_transform.gameObject.AddComponent<UniformArmor>();
+                steel_plate._name = "steel plate";
+                steel_plate.PrimaryHeatRha = 5f;
+                steel_plate.PrimarySabotRha = 5f;
+                steel_plate._canShatterLongRods = true;
+                steel_plate._normalizesHits = true;
+                steel_plate.AngleMatters = true;
+            }
+
+            Transform turret_k5 = t80u_turret.transform.Find("TURRET ERA/ARMOUR");
+            Transform hull_k5 = t80u_hull.transform.Find("HULL ERA/ARMOUR");
+            Transform hull_sides_k5 = t80u_hull_sides.transform.Find("HULL SIDE ERA/ARMOUR");
+
+            Kontakt5.Setup(turret_k5, turret_k5.parent, hide_on_detonate: false, destroyed_mat: turret_destroyed, destroyed_target: "turret plate");
+            Kontakt5.Setup(hull_k5, hull_k5.parent, hide_on_detonate: false, destroyed_mat: hull_destroyed, destroyed_target: "hp plate");
+            Kontakt5.Setup(hull_sides_k5, hull_sides_k5.parent, hide_on_detonate: false, destroyed_mat: sides_destroyed, destroyed_target: "hs plate");
+
+            Util.SetupFLIRShaders(t80u_front_flaps);
+            Util.SetupFLIRShaders(t80u_hull);
+            Util.SetupFLIRShaders(t80u_hull_sides);
+            Util.SetupFLIRShaders(t80u_turret);
+
+            t80bv_turret = t80bv_bundle.LoadAsset<Mesh>("t80bv_turret.asset");
+            t80bv_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t80bv_hull = t80bv_bundle.LoadAsset<Mesh>("t80bv_hull.asset");
+            t80bv_hull.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            t80bv_full = t80bv_bundle.LoadAsset<GameObject>("t80bv_k1_FULL.prefab");
+            t80bv_full.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            Transform hull_k1 = t80bv_full.transform.Find("HULL K1/HULL K1 ARMOUR");
+            Transform turret_k1 = t80bv_full.transform.Find("TURRET K1/TURRET K1 ARMOUR");
+            Kontakt1.Setup(hull_k1, hull_k1.parent);
+            Kontakt1.Setup(turret_k1, turret_k1.parent);
+
+            Util.SetupFLIRShaders(t80bv_full);
+
+            assets_loaded = true;
+        }
+
         public static void Init()
         {
             if (!t80_patch.Value) return;
-
-            if (abrams_vic_controller == null)
-            {
-                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                {
-                    if (obj.gameObject.name == "_M1IP (variant)")
-                    {
-                        abrams_vic_controller = obj.GetComponent<VehicleController>();
-                        break;
-                    }
-                }
-            }
-
-            if (gun_2a46m4 == null) {
-                gun_2a46m4 = ScriptableObject.CreateInstance<WeaponSystemCodexScriptable>();
-                gun_2a46m4.name = "gun_2a46m4";
-                gun_2a46m4.CaliberMm = 125;
-                gun_2a46m4.FriendlyName = "125mm Gun 2A46M-4";
-                gun_2a46m4.Type = WeaponSystemCodexScriptable.WeaponType.LargeCannon;
-            }
-
-            if (turret_cleaned_mesh == null)
-            {
-                var t80u_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t80u"));
-                var t80bv_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t80bv"));
-
-                t80u_turret_mat = t80u_bundle.LoadAsset<Material>("inserts mat.mat");
-                t80u_turret_mat.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t80u_turret_inserts = t80u_bundle.LoadAsset<Mesh>("t80u_cheek_inserts.asset");
-                t80u_turret_inserts.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t80u_hull = t80u_bundle.LoadAsset<GameObject>("hull plate.prefab");
-                t80u_hull.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t80u_hull_sides = t80u_bundle.LoadAsset<GameObject>("hull sides.prefab");
-                t80u_hull_sides.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t80u_turret = t80u_bundle.LoadAsset<GameObject>("turret stuff.prefab");
-                t80u_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t80u_front_flaps = t80u_bundle.LoadAsset<GameObject>("t80u_front_flaps.prefab");
-                t80u_front_flaps.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                turret_cleaned_mesh = t80u_bundle.LoadAsset<Mesh>("turret cleaned.asset");
-                turret_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                hull_cleaned_mesh = t80u_bundle.LoadAsset<Mesh>("hull cleaned.asset");
-                hull_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                skirts_cleaned_mesh = t80u_bundle.LoadAsset<Mesh>("skirts cleaned.asset");
-                skirts_cleaned_mesh.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                hull_destroyed = t80u_bundle.LoadAsset<Material>("hp plate destroyed");
-                hull_destroyed.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                
-                turret_destroyed = t80u_bundle.LoadAsset<Material>("turret plate destroyed");
-                turret_destroyed.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                sides_destroyed = t80u_bundle.LoadAsset<Material>("hs plate destroyed");
-                sides_destroyed.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                UniformArmor hull_plate = t80u_hull.transform.Find("armour/plate").gameObject.AddComponent<UniformArmor>();
-                hull_plate._name = "glacis addon plate";
-                hull_plate._armorType = Armour.ru_hhs_armor;
-                hull_plate.PrimaryHeatRha = 30f;
-                hull_plate.PrimarySabotRha = 30f;
-                hull_plate._canShatterLongRods = true;
-                hull_plate._normalizesHits = true;
-                hull_plate.AngleMatters = true; 
-
-                UniformArmor hull_splash_guard = t80u_hull.transform.Find("armour/splash").gameObject.AddComponent<UniformArmor>();
-                hull_splash_guard._name = "glacis splash guard";
-                hull_splash_guard._armorType = Armour.ru_welded_armor;
-                hull_splash_guard.PrimaryHeatRha = 3f;
-                hull_splash_guard.PrimarySabotRha = 3f;
-                hull_splash_guard._canShatterLongRods = true;
-                hull_splash_guard._normalizesHits = true;
-                hull_splash_guard.AngleMatters = true;
-
-                t80u_front_flaps.tag = "Penetrable";
-                t80u_front_flaps.layer = 8;
-                UniformArmor front_rubber_flaps = t80u_front_flaps.AddComponent<UniformArmor>();
-                front_rubber_flaps._name = "rubber flap";
-                front_rubber_flaps.PrimaryHeatRha = 5f;
-                front_rubber_flaps.PrimarySabotRha = 5f;
-                front_rubber_flaps._canShatterLongRods = false;
-                front_rubber_flaps._normalizesHits = false;
-                front_rubber_flaps.AngleMatters = false;
-
-                foreach (Transform t in t80u_hull.transform) {
-                    if (t.name == "armour") continue;
-                    foreach (Material mat in t.GetComponent<MeshRenderer>().materials) {
-                        mat.shader = Shader.Find("Standard (FLIR)");
-                    }
-                }
-                t80u_hull.AddComponent<HeatSource>().heat = 5f; 
-
-                foreach (Transform t in t80u_turret.transform)
-                {
-                    if (t.name == "armour") continue;
-                    if (t.name.Contains("rubber")) continue;
-                    if (t.name.Contains("t80u_smokes")) continue;
-                    foreach (Material mat in t.GetComponent<MeshRenderer>().materials)
-                    {
-                        mat.shader = Shader.Find("Standard (FLIR)");
-                    }
-                }
-                t80u_turret.AddComponent<HeatSource>();
-
-                foreach (Transform t in t80u_hull_sides.transform)
-                {
-                    if (t.name == "armour") continue;
-                    foreach (Material mat in t.GetComponent<MeshRenderer>().materials)
-                    {
-                        mat.shader = Shader.Find("Standard (FLIR)");
-                    }
-                }
-                t80u_hull_sides.AddComponent<HeatSource>().heat = 5f;
-
-                foreach (Transform armour_transform in t80u_hull.transform.Find("armour")) {
-                    armour_transform.gameObject.tag = "Penetrable";
-                    armour_transform.gameObject.layer = 8;
-
-                    if (!armour_transform.name.Contains("kontakt")) continue;
-
-                    K5Setup(t80u_hull.transform, armour_transform, "HULL");
-                }
-
-                foreach (Transform armour_transform in t80u_turret.transform.Find("armour"))
-                {
-                    armour_transform.gameObject.tag = "Penetrable";
-                    armour_transform.gameObject.layer = 8;
-
-                    if (armour_transform.name.Contains("rubber")) {
-                        UniformArmor rubber_flaps = armour_transform.gameObject.AddComponent<UniformArmor>();
-                        rubber_flaps._name = "rubber flap";
-                        rubber_flaps.PrimaryHeatRha = 5f;
-                        rubber_flaps.PrimarySabotRha = 5f;
-                        rubber_flaps._canShatterLongRods = false;
-                        rubber_flaps._normalizesHits = false;
-                        rubber_flaps.AngleMatters = false;
-                    }
-
-                    if (!armour_transform.name.Contains("kontakt")) continue;
-
-                    K5Setup(t80u_turret.transform, armour_transform, "TURRET");
-                }
-
-                foreach (Transform armour_transform in t80u_hull_sides.transform.Find("armour"))
-                {
-                    armour_transform.gameObject.tag = "Penetrable";
-                    armour_transform.gameObject.layer = 8;
-
-                    if (!armour_transform.name.Contains("kontakt")) continue;
-
-                    K5Setup(t80u_hull_sides.transform, armour_transform, "SIDES");
-                }
-
-                t80bv_turret = t80bv_bundle.LoadAsset<Mesh>("t80bv_turret.asset");
-                t80bv_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t80bv_hull = t80bv_bundle.LoadAsset<Mesh>("t80bv_hull.asset");
-                t80bv_hull.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                t80bv_full = t80bv_bundle.LoadAsset<GameObject>("t80bv_k1_FULL.prefab");
-                t80bv_full.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-                Transform hull_k1 = t80bv_full.transform.Find("HULL K1/HULL K1 ARMOUR");
-                Transform turret_k1 = t80bv_full.transform.Find("TURRET K1/TURRET K1 ARMOUR");
-                Kontakt1.Setup(hull_k1, hull_k1.parent);
-                Kontakt1.Setup(turret_k1, turret_k1.parent);
-
-                Util.SetupFLIRShaders(t80bv_full);
-            }
 
             StateController.WaitForComplete(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }

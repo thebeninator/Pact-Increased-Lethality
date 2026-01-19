@@ -19,7 +19,6 @@ namespace PactIncreasedLethality
     {
         static MelonPreferences_Entry<bool> t64_patch;
         static MelonPreferences_Entry<bool> super_engine;
-        static VehicleController abrams_vic_controller;
         static MelonPreferences_Entry<string> t64_ammo_type;
         static MelonPreferences_Entry<bool> t64_random_ammo;
         static MelonPreferences_Entry<bool> has_drozd;
@@ -80,7 +79,7 @@ namespace PactIncreasedLethality
 
         public static IEnumerator Convert(GameState _)
         {
-            foreach (Vehicle vic in PactIncreasedLethalityMod.vics)
+            foreach (Vehicle vic in Mod.vics)
             {
                 GameObject vic_go = vic.gameObject;
 
@@ -93,7 +92,7 @@ namespace PactIncreasedLethality
                 WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
                 LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
 
-                int rand = UnityEngine.Random.Range(0, AMMO_125mm.ap.Count);
+                int rand = UnityEngine.Random.Range(0, Ammo_125mm.ap.Count);
                 string ammo_str = t64_random_ammo.Value ? t64_random_ammo_pool.Value.ElementAt(rand) : t64_ammo_type.Value;
 
                 FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
@@ -134,7 +133,7 @@ namespace PactIncreasedLethality
                 try
                 {
                     if (ammo_str != "3BM15")
-                        loadout_manager.LoadedAmmoList.AmmoClips[0] = AMMO_125mm.ap[ammo_str];
+                        loadout_manager.LoadedAmmoList.AmmoClips[0] = Ammo_125mm.ap[ammo_str];
 
                     for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
                     {
@@ -157,8 +156,8 @@ namespace PactIncreasedLethality
                     VehicleController this_vic_controller = vic_go.GetComponent<VehicleController>();
                     NwhChassis chassis = vic_go.GetComponent<NwhChassis>();
 
-                    Util.ShallowCopy(this_vic_controller.engine, abrams_vic_controller.engine);
-                    Util.ShallowCopy(this_vic_controller.transmission, abrams_vic_controller.transmission);
+                    Util.ShallowCopy(this_vic_controller.engine, Assets.abrams_vic_controller.engine);
+                    Util.ShallowCopy(this_vic_controller.transmission, Assets.abrams_vic_controller.transmission);
 
                     this_vic_controller.engine.vc = vic_go.GetComponent<VehicleController>();
                     this_vic_controller.transmission.vc = vic_go.GetComponent<VehicleController>();
@@ -226,30 +225,6 @@ namespace PactIncreasedLethality
         public static void Init()
         {
             if (!t64_patch.Value) return;
-
-            if (!ReticleMesh.cachedReticles.ContainsKey("T72"))
-            {
-                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                {
-                    if (obj.gameObject.name == "T72M1")
-                    {
-                        obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
-                        break;
-                    }
-                }
-            }
-
-            if (abrams_vic_controller == null)
-            {
-                foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-                {
-                    if (obj.gameObject.name == "_M1IP (variant)")
-                    {
-                        abrams_vic_controller = obj.GetComponent<VehicleController>();
-                        break;
-                    }
-                }
-            }
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }

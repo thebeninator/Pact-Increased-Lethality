@@ -30,13 +30,11 @@ namespace PactIncreasedLethality
 
         private static ReticleSO reticleSO_hq_wide;
         private static ReticleMesh.CachedReticle reticle_cached_hq_wide;
-        private static TMP_FontAsset tpd_etch_sdf;
-        private static AmmoCodexScriptable ammo_3bk14m;
 
         private static Material white_flir_mat;
         internal static Material white_flir_mat_no_scope;
 
-        internal static GameObject flir_post;
+        private static bool assets_loaded = false;
 
         public class UpdateRange : MonoBehaviour
         {
@@ -67,11 +65,8 @@ namespace PactIncreasedLethality
             optic.slot.BaseBlur = 0f;
             optic.post = null;
 
-            GameObject post = GameObject.Instantiate(PactThermal.flir_post, optic.transform);
+            GameObject post = GameObject.Instantiate(Assets.flir_post_green, optic.transform);
             PostProcessProfile profile = post.transform.Find("FLIR Only Volume").GetComponent<PostProcessVolume>().profile;
-            //ColorGrading color_grading;
-            //profile.TryGetSettings<ColorGrading>(out color_grading);
-            //color_grading.postExposure.value = 1f;
 
             optic.slot.FLIRBlitMaterialOverride = white_flir_mat;
 
@@ -275,31 +270,6 @@ namespace PactIncreasedLethality
             line4.visualType = ReticleTree.VisualElement.Type.Painted;
             line4.illumination = ReticleTree.Light.Type.Powered;
 
-            /*
-            List<Vector3> box_pos = new List<Vector3>() {
-                new Vector3(0, -13.344f),
-                new Vector3(0, 13.344f),
-                new Vector3(15.344f, 0),
-                new Vector3(-15.344f,0),
-            };
-
-            foreach (Vector3 pos in box_pos) {
-                ReticleTree.Line box = new ReticleTree.Line();
-                box.roundness = 0f;
-                box.thickness.mrad = line2.thickness.mrad * 3.5f;
-                box.length.mrad = 8f;
-                box.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                box.length.unit = AngularLength.AngularUnit.MIL_USSR;    
-                box.rotation.mrad = pos.x == 0 ? line2.rotation.mrad : line1.rotation.mrad;
-     
-                box.position = new ReticleTree.Position(pos.x, pos.y, AngularLength.AngularUnit.MIL_NATO, LinearLength.LinearUnit.M);
-                box.visualType = ReticleTree.VisualElement.Type.Painted;
-                box.illumination = ReticleTree.Light.Type.Powered;
-
-                reticle_hq.elements.Add(box);
-            }
-            */
-
             ReticleTree.Line centre = new ReticleTree.Line();
             centre.roundness = 0f;
             centre.thickness.mrad = 0.2f;
@@ -312,18 +282,15 @@ namespace PactIncreasedLethality
 
             reticle_hq.elements.Add(line3);
             reticle_hq.elements.Add(line4);
-           // reticle_hq.elements.Add(centre);
 
             ReticleTree.Circle circle = new ReticleTree.Circle();
             circle.position = new ReticleTree.Position(0f, -0.6f);
             circle.radius = 0.6f;
             circle.segments = 3;
             circle.thickness.mrad = line2.thickness.mrad;
-            //circle.rotation.mrad = 785.398f;
             circle.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
             circle.visualType = ReticleTree.VisualElement.Type.Painted;
             circle.illumination = ReticleTree.Light.Type.Powered;
-            //reticle_hq.elements.Add(circle);
             
             reticleSO_hq_wide = ScriptableObject.Instantiate(reticleSO_hq);
             reticleSO_hq_wide.name = "PACT-TIS-HQ-WIDE";
@@ -354,74 +321,40 @@ namespace PactIncreasedLethality
 
             reticle_hq_wide.elements.Add(l1);
             reticle_hq_wide.elements.Add(l2);
-            //reticle_hq.elements.RemoveAt(1);
         }
 
-        public static void Init() {
-            if (reticleSO_lq != null) return;
+        public static void LoadAssets() 
+        {
+            if (assets_loaded) return;
 
             AssetBundle thermal_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "pilthermals"));
             Texture colour_ramp_white = thermal_bundle.LoadAsset<Texture>("FLIR White");
 
-            GameObject m1ip = Resources.FindObjectsOfTypeAll<Vehicle>().Where(o => o.name == "_M1IP (variant)").First().gameObject;
-            flir_post = m1ip.transform.Find("Turret Scripts/GPS/FLIR/FLIR Post Processing - Green").gameObject;
-            Material green_flir_mat = m1ip.transform.Find("Turret Scripts/GPS/FLIR").GetComponent<CameraSlot>().FLIRBlitMaterialOverride;
             white_flir_mat = new Material(Shader.Find("Blit (FLIR)/Blit Simple"));
-            white_flir_mat.SetTexture("_Noise", green_flir_mat.GetTexture("_Noise"));
-            white_flir_mat.SetTexture("_ScopeEdge", green_flir_mat.GetTexture("_ScopeEdge"));
+            white_flir_mat.SetTexture("_Noise", Assets.green_flir_mat.GetTexture("_Noise"));
+            white_flir_mat.SetTexture("_ScopeEdge", Assets.green_flir_mat.GetTexture("_ScopeEdge"));
             white_flir_mat.SetTexture("_ColorRamp", colour_ramp_white);
             white_flir_mat.EnableKeyword("_USE_COLOR_RAMP");
             white_flir_mat.EnableKeyword("_TONEMAP");
             white_flir_mat.EnableKeyword("_FLIR_POLARITY");
 
             white_flir_mat_no_scope = new Material(Shader.Find("Blit (FLIR)/Blit Simple"));
-            white_flir_mat_no_scope.SetTexture("_Noise", green_flir_mat.GetTexture("_Noise"));
+            white_flir_mat_no_scope.SetTexture("_Noise", Assets.green_flir_mat.GetTexture("_Noise"));
             white_flir_mat_no_scope.SetTexture("_ColorRamp", colour_ramp_white);
             white_flir_mat_no_scope.EnableKeyword("_USE_COLOR_RAMP");
             white_flir_mat_no_scope.EnableKeyword("_TONEMAP");
             white_flir_mat_no_scope.EnableKeyword("_FLIR_POLARITY");
 
-            foreach (Vehicle obj in Resources.FindObjectsOfTypeAll(typeof(Vehicle)))
-            {
-                if (!ReticleMesh.cachedReticles.ContainsKey("T55-NVS") && obj.gameObject.name == "T55A")
-                {
-                    UsableOptic night_optic = obj.transform.Find("Gun Scripts/Sights (and FCS)/NVS").GetComponent<UsableOptic>();
-                    night_optic.reticleMesh.Load();
-                }
-
-                if (!ReticleMesh.cachedReticles.ContainsKey("TPN3") && obj.gameObject.name == "T64B 1984")
-                {         
-                    obj.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPN‑3‑49 night sight/Reticle Mesh").GetComponent<ReticleMesh>().Load();
-                }
-
-                if (thermal_canvas == null && obj.name == "M2 Bradley")
-                {
-                    thermal_canvas = GameObject.Instantiate(obj.transform.Find("FCS and sights/GPS Optic/M2 Bradley GPS canvas").gameObject);
-                    GameObject.Destroy(thermal_canvas.transform.GetChild(2).gameObject);
-                    thermal_canvas.SetActive(false);
-                    thermal_canvas.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                    thermal_canvas.name = "pact thermal canvas";
-                }
-
-                if (thermal_canvas && ReticleMesh.cachedReticles.ContainsKey("T55-NVS") && ReticleMesh.cachedReticles.ContainsKey("T72")) break; 
-            }
-
-            foreach (TMP_FontAsset font in Resources.FindObjectsOfTypeAll(typeof(TMP_FontAsset))) {
-                if (font.name == "TPD_Etch SDF") {
-                    tpd_etch_sdf = font;
-                    break;
-                }
-            }
-
-            foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
-            {
-                if (s.AmmoType.Name == "3BK14M HEAT-FS-T") { ammo_3bk14m = s; }
-
-                if (ammo_3bk14m != null) break;
-            }
+            thermal_canvas = GameObject.Instantiate(Assets.m2_bradley_canvas);
+            GameObject.Destroy(thermal_canvas.transform.GetChild(2).gameObject);
+            thermal_canvas.SetActive(false);
+            thermal_canvas.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            thermal_canvas.name = "pact thermal canvas";
 
             LQThermalReticle();
             HQThermalReticle();
+
+            assets_loaded = true;
         }
     }
 }
