@@ -346,6 +346,7 @@ namespace PactIncreasedLethality
             night_optic.RangeText = crosshair_elements.transform.Find("RANGE").GetComponentInChildren<TMP_Text>();
 
             GameObject post = GameObject.Instantiate(Assets.flir_post_green, night_optic.transform);
+            post.SetActive(true);
             PostProcessProfile profile = post.transform.Find("FLIR Only Volume").GetComponent<PostProcessVolume>().profile;
             ColorGrading color_grading;
             profile.TryGetSettings<ColorGrading>(out color_grading);

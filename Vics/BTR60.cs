@@ -20,7 +20,7 @@ using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
-    public class BTR60
+    public class BTR60 : Module
     {
         static GameObject btr60a_turret_complete;
 
@@ -35,8 +35,6 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> use_3ubr8;
         static MelonPreferences_Entry<bool> use_3uof8;
         static MelonPreferences_Entry<bool> stab;
-
-        private static bool assets_loaded = false;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -152,8 +150,8 @@ namespace PactIncreasedLethality
 
                     btr_gun.Find("Gun Aimable/gunner sight/GPS/Quad").gameObject.SetActive(false);
 
-                    AmmoClipCodexScriptable ap = use_3ubr8.Value ? Ammo_30mm.clip_codex_3ubr8 : Assets.clip_codex_3ubr6;
-                    AmmoClipCodexScriptable he = use_3uof8.Value ? Ammo_30mm.clip_codex_3uof8 : Assets.clip_codex_3uor6;
+                    AmmoClipCodexScriptable ap = use_3ubr8.Value ? Ammo_30mm.clip_codex_3ubr8 : Ammo_30mm.clip_codex_3ubr8; //FIXME
+                    AmmoClipCodexScriptable he = use_3uof8.Value ? Ammo_30mm.clip_codex_3uof8 : Ammo_30mm.clip_codex_3ubr8; //FIXME
 
                     feed.AmmoTypeInBreech = null;
                     feed.ReadyRack.ClipTypes = new AmmoType.AmmoClip[] { ap.ClipType, he.ClipType };
@@ -364,9 +362,8 @@ namespace PactIncreasedLethality
             }
         }
 
-        public static void LoadAssets()
+        public override void LoadStaticAssets()
         {
-            if (assets_loaded) return;
             if (!btr60_patch.Value) return;
 
             m60a1_nvs = GameObject.Instantiate(Assets.m60a1_nvs);
@@ -408,8 +405,6 @@ namespace PactIncreasedLethality
             btr60a_turret_complete.gameObject.AddComponent<HeatSource>().heat = 5f;
 
             Reticle();
-
-            assets_loaded = true;
         }
 
         public static void Init()

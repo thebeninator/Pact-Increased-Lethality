@@ -66,6 +66,7 @@ namespace PactIncreasedLethality
             optic.post = null;
 
             GameObject post = GameObject.Instantiate(Assets.flir_post_green, optic.transform);
+            post.SetActive(true);
             PostProcessProfile profile = post.transform.Find("FLIR Only Volume").GetComponent<PostProcessVolume>().profile;
 
             optic.slot.FLIRBlitMaterialOverride = white_flir_mat;

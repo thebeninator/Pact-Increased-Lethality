@@ -11,11 +11,10 @@ using MelonLoader;
 using Reticle;
 using UnityEngine;
 using NWH.VehiclePhysics;
-using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
-    public class T64A
+    public class T64A : Module
     {
         static MelonPreferences_Entry<bool> t64_patch;
         static MelonPreferences_Entry<bool> super_engine;

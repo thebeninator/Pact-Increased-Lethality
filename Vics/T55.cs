@@ -17,7 +17,7 @@ using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
-    public class T55
+    public class T55 : Module
     {
         internal static GameObject range_readout;
         static ReticleSO reticleSO;
@@ -60,8 +60,6 @@ namespace PactIncreasedLethality
         static GameObject t55am_skirts;
         static Mesh t55am_hull;
         static Texture2D cleaned_texture;
-
-        private static bool assets_loaded = false;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -331,8 +329,7 @@ namespace PactIncreasedLethality
             yield break;
         }
 
-        public static void LoadAssets() {
-            if (assets_loaded) return;
+        public override void LoadStaticAssets() {
             if (!t55_patch.Value) return;
 
             range_readout = GameObject.Instantiate(Assets.m1ip_range_canvas);
@@ -535,8 +532,6 @@ namespace PactIncreasedLethality
             ammo_9m117.VisualModel = ammo_9m117_vis;
             ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m117;
             ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m117;
-
-            assets_loaded = true;
         }
 
         public static void Init()

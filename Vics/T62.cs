@@ -11,14 +11,11 @@ using MelonLoader;
 using MelonLoader.Utils;
 using NWH.VehiclePhysics;
 using Reticle;
-using GHPC.Thermals;
-using TMPro;
 using UnityEngine;
-using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
-    public class T62
+    public class T62 : Module
     {
         static MelonPreferences_Entry<bool> t62_patch;
         static MelonPreferences_Entry<bool> better_stab;
@@ -38,8 +35,6 @@ namespace PactIncreasedLethality
         static GameObject t62m_hull_parts;
         static GameObject t62m_skirts;
         static Mesh t62m_hull;
-
-        private static bool assets_loaded = false;
 
         private class HideLeftCheek : MonoBehaviour {
             public Transform cheek;
@@ -343,9 +338,8 @@ namespace PactIncreasedLethality
             yield break;
         }
 
-        public static void LoadAssets()
+        public override void LoadStaticAssets()
         {
-            if (assets_loaded) return;
             if (!t62_patch.Value) return;
 
             var t62m_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t62m"));
@@ -439,8 +433,6 @@ namespace PactIncreasedLethality
             armor_casing.SetName("upper glacis applique armor");
             armor_casing._armorType = Armour.ru_welded_armor;
             armor_casing._spallForwardRatio = 0.2f;
-
-            assets_loaded = true;
         }
 
         public static void Init()

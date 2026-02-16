@@ -22,7 +22,7 @@ using GHPC.Mission.Data;
 
 namespace PactIncreasedLethality
 {
-    public class T72
+    public class T72 : Module
     {
         static MelonPreferences_Entry<bool> t72_patch;
         static MelonPreferences_Entry<string> t72m_ammo_type;
@@ -106,8 +106,6 @@ namespace PactIncreasedLethality
         static Mesh t72b3_turret_mesh;
         static Mesh t72b_k5_hull_mesh;
         static Mesh t72b3ubh_turret_mesh;
-
-        private static bool assets_loaded = false;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -702,9 +700,8 @@ namespace PactIncreasedLethality
             }
         }
 
-        public static void LoadAssets() 
+        public override void LoadStaticAssets()
         {
-            if (assets_loaded) return;
             if (!t72_patch.Value) return;
 
             AssetBundle t72b_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t72b"));
@@ -886,8 +883,6 @@ namespace PactIncreasedLethality
             sosna_shield_armor._name = "shield";
             sosna_shield_armor.PrimaryHeatRha = 15f;
             sosna_shield_armor.PrimarySabotRha = 15f;
-
-            assets_loaded = true;
         }
 
         public static void Init()

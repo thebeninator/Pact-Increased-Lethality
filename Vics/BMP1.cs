@@ -14,7 +14,6 @@ using GHPC.Weaponry;
 
 namespace PactIncreasedLethality
 {
-
     [HarmonyPatch(typeof(WeaponAudio), "FinalStartLoop")]
     public class AGS17_Sound
     {
@@ -66,7 +65,7 @@ namespace PactIncreasedLethality
         }
     }
 
-    public class BMP1
+    public class BMP1 : Module
     {
         static MelonPreferences_Entry<bool> bmp1_patch;
         static MelonPreferences_Entry<bool> ags_17_bmp1;
@@ -133,95 +132,92 @@ namespace PactIncreasedLethality
             yield break;
         }
 
-        public static void Init()
+        public override void LoadStaticAssets()
         {
             if (!bmp1_patch.Value) return;
 
-            if (gun_ags17 == null)
+            var corSystem = FMODUnity.RuntimeManager.CoreSystem;
+
+            for (int i = 0; i < 6; i++)
             {
-                var corSystem = FMODUnity.RuntimeManager.CoreSystem;
-
-                for (int i = 0; i < 6; i++)
-                {
-                    corSystem.createSound(
-                        Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_1p_0" + (i + 1) + ".ogg"), MODE._3D_IGNOREGEOMETRY, out AGS17_Sound.sounds[i]);
-                    AGS17_Sound.sounds[i].set3DMinMaxDistance(35f, 5000f);
-                }
-
-                for (int i = 0; i < 7; i++)
-                {
-                    corSystem.createSound(
-                        Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_close_3p_0" + (i + 1) + ".ogg"), MODE._3D_INVERSETAPEREDROLLOFF, out AGS17_Sound.sounds_exterior[i]);
-                    AGS17_Sound.sounds_exterior[i].set3DMinMaxDistance(35f, 5000f);
-                }
-
-                foreach (AmmoCodexScriptable s in Resources.FindObjectsOfTypeAll(typeof(AmmoCodexScriptable)))
-                {
-                    if (s.AmmoType.Name == "3UOR6 HE-T") { ammo_3uor6 = s.AmmoType; break; } 
-                }
-
-                gun_ags17 = ScriptableObject.CreateInstance<WeaponSystemCodexScriptable>();
-                gun_ags17.name = "gun_ags17";
-                gun_ags17.CaliberMm = 30;
-                gun_ags17.FriendlyName = "30mm grenade launcher AGS-17D";
-                gun_ags17.Type = WeaponSystemCodexScriptable.WeaponType.GrenadeLauncher;
-
-                ammo_vog17 = new AmmoType();
-                Util.ShallowCopy(ammo_vog17, ammo_3uor6);
-                ammo_vog17.Name = "VOG-17M HE";
-                ammo_vog17.MuzzleVelocity = 600f;
-                ammo_vog17.VisualType = LiveRoundMarshaller.LiveRoundVisualType.Bullet;
-                ammo_vog17.UseTracer = false;
-                ammo_vog17.RhaPenetration = 5f;
-                ammo_vog17.DetonateSpallCount = 50;
-                ammo_vog17.TntEquivalentKg = 0.064f;
-                ammo_vog17.ArmingDistance = 25f;
-                ammo_vog17.ImpactFuseTime = 0f;
-
-                ammo_codex_vog17 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_vog17.AmmoType = ammo_vog17;
-                ammo_codex_vog17.name = "ammo_vog17";
-
-                clip_vog17 = new AmmoType.AmmoClip();
-                clip_vog17.Capacity = 300;
-                clip_vog17.Name = "VOG-17M HE";
-                clip_vog17.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_vog17.MinimalPattern[0] = ammo_codex_vog17;
-
-                clip_codex_vog17 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_vog17.name = "clip_vog17";
-                clip_codex_vog17.ClipType = clip_vog17;
-
-                ammo_vog17m1 = new AmmoType();
-                Util.ShallowCopy(ammo_vog17m1, ammo_3uor6);
-                ammo_vog17m1.Name = "VOG-17M1 HEDP";
-                ammo_vog17m1.MuzzleVelocity = 600f;
-                ammo_vog17m1.VisualType = LiveRoundMarshaller.LiveRoundVisualType.Bullet;
-                ammo_vog17m1.UseTracer = false;
-                ammo_vog17m1.RhaPenetration = 50f;
-                ammo_vog17m1.DetonateSpallCount = 20;
-                ammo_vog17m1.TntEquivalentKg = 0.032f;
-                ammo_vog17m1.ArmingDistance = 25f;
-                ammo_vog17m1.Category = AmmoType.AmmoCategory.ShapedCharge;
-                ammo_vog17m1.SpallMultiplier = 0.1f;
-                ammo_vog17m1.ImpactFuseTime = 0f;
-                ammo_vog17m1.ShatterOnRicochet = false;
-                ammo_vog17m1.AlwaysProduceBlast = true;
-
-                ammo_codex_vog17m1 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-                ammo_codex_vog17m1.AmmoType = ammo_vog17m1;
-                ammo_codex_vog17m1.name = "ammo_vog17m1";
-
-                clip_vog17m1 = new AmmoType.AmmoClip();
-                clip_vog17m1.Capacity = 300;
-                clip_vog17m1.Name = "VOG-17M1 HEDP";
-                clip_vog17m1.MinimalPattern = new AmmoCodexScriptable[1];
-                clip_vog17m1.MinimalPattern[0] = ammo_codex_vog17m1;
-
-                clip_codex_vog17m1 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-                clip_codex_vog17m1.name = "clip_vog17m1";
-                clip_codex_vog17m1.ClipType = clip_vog17m1;
+                corSystem.createSound(
+                    Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_1p_0" + (i + 1) + ".ogg"), MODE._3D_IGNOREGEOMETRY, out AGS17_Sound.sounds[i]);
+                AGS17_Sound.sounds[i].set3DMinMaxDistance(35f, 5000f);
             }
+
+            for (int i = 0; i < 7; i++)
+            {
+                corSystem.createSound(
+                    Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_close_3p_0" + (i + 1) + ".ogg"), MODE._3D_INVERSETAPEREDROLLOFF, out AGS17_Sound.sounds_exterior[i]);
+                AGS17_Sound.sounds_exterior[i].set3DMinMaxDistance(35f, 5000f);
+            }
+
+            gun_ags17 = ScriptableObject.CreateInstance<WeaponSystemCodexScriptable>();
+            gun_ags17.name = "gun_ags17";
+            gun_ags17.CaliberMm = 30;
+            gun_ags17.FriendlyName = "30mm grenade launcher AGS-17D";
+            gun_ags17.Type = WeaponSystemCodexScriptable.WeaponType.GrenadeLauncher;
+
+            ammo_vog17 = new AmmoType();
+            Util.ShallowCopy(ammo_vog17, ammo_3uor6); //FIXME
+            ammo_vog17.Name = "VOG-17M HE";
+            ammo_vog17.MuzzleVelocity = 600f;
+            ammo_vog17.VisualType = LiveRoundMarshaller.LiveRoundVisualType.Bullet;
+            ammo_vog17.UseTracer = false;
+            ammo_vog17.RhaPenetration = 5f;
+            ammo_vog17.DetonateSpallCount = 50;
+            ammo_vog17.TntEquivalentKg = 0.064f;
+            ammo_vog17.ArmingDistance = 25f;
+            ammo_vog17.ImpactFuseTime = 0f;
+
+            ammo_codex_vog17 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+            ammo_codex_vog17.AmmoType = ammo_vog17;
+            ammo_codex_vog17.name = "ammo_vog17";
+
+            clip_vog17 = new AmmoType.AmmoClip();
+            clip_vog17.Capacity = 300;
+            clip_vog17.Name = "VOG-17M HE";
+            clip_vog17.MinimalPattern = new AmmoCodexScriptable[1];
+            clip_vog17.MinimalPattern[0] = ammo_codex_vog17;
+
+            clip_codex_vog17 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+            clip_codex_vog17.name = "clip_vog17";
+            clip_codex_vog17.ClipType = clip_vog17;
+
+            ammo_vog17m1 = new AmmoType();
+            Util.ShallowCopy(ammo_vog17m1, ammo_3uor6); //FIXME
+            ammo_vog17m1.Name = "VOG-17M1 HEDP";
+            ammo_vog17m1.MuzzleVelocity = 600f;
+            ammo_vog17m1.VisualType = LiveRoundMarshaller.LiveRoundVisualType.Bullet;
+            ammo_vog17m1.UseTracer = false;
+            ammo_vog17m1.RhaPenetration = 50f;
+            ammo_vog17m1.DetonateSpallCount = 20;
+            ammo_vog17m1.TntEquivalentKg = 0.032f;
+            ammo_vog17m1.ArmingDistance = 25f;
+            ammo_vog17m1.Category = AmmoType.AmmoCategory.ShapedCharge;
+            ammo_vog17m1.SpallMultiplier = 0.1f;
+            ammo_vog17m1.ImpactFuseTime = 0f;
+            ammo_vog17m1.ShatterOnRicochet = false;
+            ammo_vog17m1.AlwaysProduceBlast = true;
+
+            ammo_codex_vog17m1 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+            ammo_codex_vog17m1.AmmoType = ammo_vog17m1;
+            ammo_codex_vog17m1.name = "ammo_vog17m1";
+
+            clip_vog17m1 = new AmmoType.AmmoClip();
+            clip_vog17m1.Capacity = 300;
+            clip_vog17m1.Name = "VOG-17M1 HEDP";
+            clip_vog17m1.MinimalPattern = new AmmoCodexScriptable[1];
+            clip_vog17m1.MinimalPattern[0] = ammo_codex_vog17m1;
+
+            clip_codex_vog17m1 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+            clip_codex_vog17m1.name = "clip_vog17m1";
+            clip_codex_vog17m1.ClipType = clip_vog17m1;
+        }
+
+        public static void Init()
+        {
+            if (!bmp1_patch.Value) return;
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Lowest);
         }

@@ -119,6 +119,7 @@
     <Compile Include="ERA\Relikt.cs" />
     <Compile Include="Assets.cs" />
     <Compile Include="LaserPointCorrection.cs" />
+    <Compile Include="Module.cs" />
     <Compile Include="Sights\1A40.cs" />
     <Compile Include="Ammo_30mm.cs" />
     <Compile Include="Ammo_125mm.cs" />

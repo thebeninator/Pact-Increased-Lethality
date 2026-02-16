@@ -51,9 +51,8 @@ namespace PactIncreasedLethality
 
         public static Dictionary<string, AmmoClipCodexScriptable> atgm;
 
-        public static void LoadAssets() {
-            if (assets_loaded) return;
-
+        public static void CreateCompositeOptimizations() 
+        {
             var composite_optimizations_3bm26 = new List<AmmoType.ArmorOptimization>() { };
             var composite_optimizations_3bm42 = new List<AmmoType.ArmorOptimization>() { };
 
@@ -83,6 +82,13 @@ namespace PactIncreasedLethality
                 composite_optimizations_3bm42.Add(optimization_3bm42);
             }
 
+            ammo_3bm26.ArmorOptimizations = composite_optimizations_3bm26.ToArray<AmmoType.ArmorOptimization>();
+            ammo_3bm42.ArmorOptimizations = composite_optimizations_3bm42.ToArray<AmmoType.ArmorOptimization>();
+        }
+
+        public static void LoadAssets() {
+            if (assets_loaded) return;
+
             ammo_3bm26 = new AmmoType();
             Util.ShallowCopy(ammo_3bm26, Assets.ammo_3bm32);
             ammo_3bm26.Name = "3BM26 APFSDS-T";
@@ -90,7 +96,6 @@ namespace PactIncreasedLethality
             ammo_3bm26.RhaPenetration = 440f;
             ammo_3bm26.Mass = 4.8f;
             ammo_3bm26.MuzzleVelocity = 1720f;
-            ammo_3bm26.ArmorOptimizations = composite_optimizations_3bm26.ToArray<AmmoType.ArmorOptimization>();
             ammo_3bm26.SpallMultiplier = 0.9f;
 
             ammo_codex_3bm26 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
@@ -124,7 +129,6 @@ namespace PactIncreasedLethality
             ammo_3bm42.MaxSpallRha = 24f;
             ammo_3bm42.MinSpallRha = 6f;
             ammo_3bm26.SpallMultiplier = 0.9f;
-            ammo_3bm42.ArmorOptimizations = composite_optimizations_3bm42.ToArray<AmmoType.ArmorOptimization>();
 
             ammo_codex_3bm42 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
             ammo_codex_3bm42.AmmoType = ammo_3bm42;

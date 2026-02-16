@@ -32,7 +32,7 @@ namespace PactIncreasedLethality
                 schema.era_armour.CanRicochet = true;
                 schema.era_armour.CrushThicknessModifier = 1f;
                 schema.era_armour.NormalizesHits = true;
-                schema.era_armour.CanShatterLongRods = true;
+                schema.era_armour.CanShatterLongRods = false;
                 schema.era_armour.ThicknessSource = ArmorType.RhaSource.Multipliers;
 
                 schema.era_so.name = schema.name + " armour";
@@ -47,7 +47,7 @@ namespace PactIncreasedLethality
                 era_armour.PrimarySabotRha = schema.ke_rha;
                 era_armour.SecondaryHeatRha = 0f;
                 era_armour.SecondarySabotRha = 0f;
-                era_armour._canShatterLongRods = true;
+                era_armour._canShatterLongRods = false;
                 era_armour._normalizesHits = true;
                 era_armour.AngleMatters = true;
                 era_armour._isEra = true;

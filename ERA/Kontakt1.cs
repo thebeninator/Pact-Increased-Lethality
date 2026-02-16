@@ -11,7 +11,7 @@ namespace PactIncreasedLethality
             era_armour = new ArmorType(),
             name = "Kontakt-1",
             heat_rha = 350f,
-            ke_rha = 20f,
+            ke_rha = 10f,
         };
 
         public static void Setup(Transform era_armour_parent, Transform visual_parent,
