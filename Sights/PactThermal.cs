@@ -16,7 +16,7 @@ using static Reticle.ReticleTree;
 
 namespace PactIncreasedLethality
 {
-    public class PactThermal
+    public class PactThermal : Module
     {
         private static GameObject thermal_canvas;
         private static ReticleSO reticleSO_lq;
@@ -34,7 +34,7 @@ namespace PactIncreasedLethality
         private static Material white_flir_mat;
         internal static Material white_flir_mat_no_scope;
 
-        private static bool assets_loaded = false;
+        private static Texture colour_ramp_white;
 
         public class UpdateRange : MonoBehaviour
         {
@@ -65,7 +65,7 @@ namespace PactIncreasedLethality
             optic.slot.BaseBlur = 0f;
             optic.post = null;
 
-            GameObject post = GameObject.Instantiate(Assets.flir_post_green, optic.transform);
+            GameObject post = GameObject.Instantiate(SharedAssets.flir_post_green, optic.transform);
             post.SetActive(true);
             PostProcessProfile profile = post.transform.Find("FLIR Only Volume").GetComponent<PostProcessVolume>().profile;
 
@@ -324,29 +324,35 @@ namespace PactIncreasedLethality
             reticle_hq_wide.elements.Add(l2);
         }
 
-        public static void LoadAssets() 
+        public override void UnloadDynamicAssets()
         {
-            if (assets_loaded) return;
+            Material.DestroyImmediate(white_flir_mat);
+            Material.DestroyImmediate(white_flir_mat_no_scope);
+            Material.DestroyImmediate(thermal_canvas);
+            ScriptableObject.DestroyImmediate(reticleSO_hq);
+            ScriptableObject.DestroyImmediate(reticleSO_lq);
+            ScriptableObject.DestroyImmediate(reticleSO_tpdk1_hq);
+            ScriptableObject.DestroyImmediate(reticleSO_hq_wide);
+        }
 
-            AssetBundle thermal_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "pilthermals"));
-            Texture colour_ramp_white = thermal_bundle.LoadAsset<Texture>("FLIR White");
-
+        public override void LoadDynamicAssets()
+        {
             white_flir_mat = new Material(Shader.Find("Blit (FLIR)/Blit Simple"));
-            white_flir_mat.SetTexture("_Noise", Assets.green_flir_mat.GetTexture("_Noise"));
-            white_flir_mat.SetTexture("_ScopeEdge", Assets.green_flir_mat.GetTexture("_ScopeEdge"));
+            white_flir_mat.SetTexture("_Noise", SharedAssets.green_flir_mat.GetTexture("_Noise"));
+            white_flir_mat.SetTexture("_ScopeEdge", SharedAssets.green_flir_mat.GetTexture("_ScopeEdge"));
             white_flir_mat.SetTexture("_ColorRamp", colour_ramp_white);
             white_flir_mat.EnableKeyword("_USE_COLOR_RAMP");
             white_flir_mat.EnableKeyword("_TONEMAP");
             white_flir_mat.EnableKeyword("_FLIR_POLARITY");
 
             white_flir_mat_no_scope = new Material(Shader.Find("Blit (FLIR)/Blit Simple"));
-            white_flir_mat_no_scope.SetTexture("_Noise", Assets.green_flir_mat.GetTexture("_Noise"));
+            white_flir_mat_no_scope.SetTexture("_Noise", SharedAssets.green_flir_mat.GetTexture("_Noise"));
             white_flir_mat_no_scope.SetTexture("_ColorRamp", colour_ramp_white);
             white_flir_mat_no_scope.EnableKeyword("_USE_COLOR_RAMP");
             white_flir_mat_no_scope.EnableKeyword("_TONEMAP");
             white_flir_mat_no_scope.EnableKeyword("_FLIR_POLARITY");
 
-            thermal_canvas = GameObject.Instantiate(Assets.m2_bradley_canvas);
+            thermal_canvas = GameObject.Instantiate(SharedAssets.m2_bradley_canvas);
             GameObject.Destroy(thermal_canvas.transform.GetChild(2).gameObject);
             thermal_canvas.SetActive(false);
             thermal_canvas.hideFlags = HideFlags.DontUnloadUnusedAsset;
@@ -354,8 +360,12 @@ namespace PactIncreasedLethality
 
             LQThermalReticle();
             HQThermalReticle();
+        }
 
-            assets_loaded = true;
+        public override void LoadStaticAssets()
+        {
+            AssetBundle thermal_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "pilthermals"));
+            colour_ramp_white = thermal_bundle.LoadAsset<Texture>("FLIR White");
         }
     }
 }

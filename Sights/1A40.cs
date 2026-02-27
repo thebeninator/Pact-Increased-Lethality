@@ -6,17 +6,16 @@ using TMPro;
 using UnityEngine;
 using Reticle;
 using static Reticle.ReticleTree;
+using GHPC.Vehicle;
 
 namespace PactIncreasedLethality
 {
-    public class FireControlSystem1A40
+    public class FireControlSystem1A40 : Module
     {
         private static GameObject lead_readout_canvas;
 
         private static ReticleSO reticleSO;
         private static ReticleMesh.CachedReticle reticle_cached;
-
-        private static bool assets_loaded = false;
 
         public static void Add(FireControlSystem fcs, UsableOptic optic, Vector3 offset) {
             fcs.RecordTraverseRateBuffer = true;
@@ -63,7 +62,7 @@ namespace PactIncreasedLethality
 
                 if (ang.elements.Count > 1)
                 {
-                    (ang.elements[0] as ReticleTree.Text).font = Assets.tpd_etch_sdf;
+                    (ang.elements[0] as ReticleTree.Text).font = SharedAssets.tpd_etch_sdf;
                     (ang.elements[0] as ReticleTree.Text).fontSize = 9f;
                 }
             }
@@ -72,7 +71,7 @@ namespace PactIncreasedLethality
             {
                 ReticleTree.Angular ang = stadia.elements[i] as ReticleTree.Angular;
 
-                (ang.elements[0] as ReticleTree.Text).font = Assets.tpd_etch_sdf;
+                (ang.elements[0] as ReticleTree.Text).font = SharedAssets.tpd_etch_sdf;
                 (ang.elements[0] as ReticleTree.Text).fontSize = 9f;
             }
 
@@ -84,7 +83,7 @@ namespace PactIncreasedLethality
                     int n = 4 * (j + 1) + 8 * ((i - 1) % 4);
                     ReticleTree.Text number = new ReticleTree.Text();
                     number.alignment = TextAlignmentOptions.Center;
-                    number.font = Assets.tpd_etch_sdf;
+                    number.font = SharedAssets.tpd_etch_sdf;
                     number.fontSize = 9f;
                     number.text = n.ToString();
                     number.illumination = ReticleTree.Light.Type.NightIllumination;
@@ -103,7 +102,7 @@ namespace PactIncreasedLethality
 
                     ReticleTree.Text number = new ReticleTree.Text();
                     number.alignment = TextAlignmentOptions.Center;
-                    number.font = Assets.tpd_etch_sdf;
+                    number.font = SharedAssets.tpd_etch_sdf;
                     number.fontSize = 9f;
                     number.text = (n).ToString();
                     number.illumination = ReticleTree.Light.Type.NightIllumination;
@@ -116,13 +115,21 @@ namespace PactIncreasedLethality
             }
         }
 
-        public static void LoadAssets()
+        public override void UnloadDynamicAssets()
         {
-            if (assets_loaded) return;
+            GameObject.DestroyImmediate(lead_readout_canvas);
+            ScriptableObject.DestroyImmediate(reticleSO);
+        }
 
-            Reticle();
+        public override void LoadDynamicAssets()
+        {
+            bool lead_calc_t72m = AssetUtil.VehicleInMission("T72M") && T72.lead_calculator_t72m.Value;
+            bool lead_calc_t72m1 = AssetUtil.VehicleInMission("T72M1") && T72.lead_calculator_t72m1.Value;
+            bool lead_calc_t64a = AssetUtil.VehicleInMission("T64A 1979") && T64A.lead_calculator_t64.Value;
 
-            lead_readout_canvas = GameObject.Instantiate(Assets.t80b_canvas);
+            if (!lead_calc_t64a && !lead_calc_t72m && !lead_calc_t72m1) return;
+
+            lead_readout_canvas = GameObject.Instantiate(SharedAssets.t80b_canvas);
             GameObject.DestroyImmediate(lead_readout_canvas.transform.GetChild(3).gameObject);
             GameObject.DestroyImmediate(lead_readout_canvas.transform.GetChild(2).gameObject);
             GameObject.DestroyImmediate(lead_readout_canvas.transform.GetChild(0).gameObject);
@@ -133,7 +140,14 @@ namespace PactIncreasedLethality
             GameObject.DestroyImmediate(lead_readout_canvas.transform.GetChild(0).GetChild(1).gameObject);
             lead_readout_canvas.SetActive(false);
 
-            assets_loaded = true;
+            Vehicle t72m1 = AssetUtil.LoadVanillaVehicle("T72M1");
+            t72m1.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
+
+            Reticle();
+        }
+
+        public override void LoadStaticAssets()
+        {
         }
     }
 }

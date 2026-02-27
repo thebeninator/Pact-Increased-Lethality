@@ -5,6 +5,7 @@ using GHPC.Equipment.Optics;
 using GHPC.Weapons;
 using GHPC.Thermals;
 using UnityEngine;
+using GHPC.Mission;
 
 namespace PactIncreasedLethality
 {

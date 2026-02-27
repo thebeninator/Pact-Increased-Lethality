@@ -12,7 +12,6 @@ using FMOD;
 using GHPC.Vehicle;
 using PactIncreasedLethality;
 using System.Collections.Generic;
-using System;
 
 [assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.0.7", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
@@ -38,7 +37,7 @@ namespace PactIncreasedLethality
             camera_manager = game_manager.GetComponent<CameraManager>();
             vics = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
 
-            //Ammo_125mm.CreateCompositeOptimizations();
+            Ammo_125mm.CreateCompositeOptimizations();
 
             foreach (string id in modules.Keys)
             {
@@ -79,14 +78,19 @@ namespace PactIncreasedLethality
             corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.ogg"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound_alt);
             BMP2.ReplaceSound.sound_alt.set3DMinMaxDistance(30f, 1300f);
 
-            //modules.Add("T72", new T72());
-            //modules.Add("T80", new T80());
+            modules.Add("SharedAssets", new SharedAssets());
+            modules.Add("AMMO_30MM", new Ammo_30mm());
+            modules.Add("T72", new T72());
+            modules.Add("T80", new T80());
             //modules.Add("T55", new T55());
             //modules.Add("T62", new T62());
-            //modules.Add("BMP2", new BMP2());
-            //modules.Add("BMP1", new BMP1());
-            //modules.Add("BTR60", new BTR60());
-            modules.Add("AMMO_30MM", new Ammo_30mm());
+            modules.Add("BMP2", new BMP2());
+            modules.Add("BMP1", new BMP1());
+            modules.Add("BTR60", new BTR60());
+            modules.Add("SuperFCS", new SuperFCS());
+            modules.Add("PactThermal", new PactThermal());
+            modules.Add("1A40", new FireControlSystem1A40());
+            modules.Add("BOM", new BOM());
         }
 
         public override void OnUpdate() 
@@ -98,8 +102,6 @@ namespace PactIncreasedLethality
         {
             if (sceneName == "MainMenu2_Scene" || sceneName == "MainMenu2-1_Scene" || sceneName == "t64_menu")
             {
-                Assets.Load();
-
                 foreach (string id in modules.Keys) 
                 {
                     Module module = modules[id];
@@ -117,39 +119,28 @@ namespace PactIncreasedLethality
                     }
                 }
 
-                //BOM.LoadAssets();
-                //PactThermal.LoadAssets();
-                //FireControlSystem1A40.LoadAssets();
-                //SuperFCS.LoadAssets();
-                //Ammo_125mm.LoadAssets();
-                //Ammo_30mm.LoadAssets();
+                Ammo_125mm.LoadAssets();
 
-                Assets.ReleaseVanillaAssets();
+                AssetUtil.ReleaseVanillaAssets();
             }
 
             if (Util.menu_screens.Contains(sceneName)) return;
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(OnGameReady), GameStatePriority.Medium);
             
-            //PactEra.Init();
-            //Armour.Init();
-
-            //ProximityFuse.Init();
-            //EFP.Init();
-
-            //T72.Init();
-            //T80.Init();
-
-            //T55.Init();
-            //T62.Init();
-
-            //T64A.Init();
-            //T64B.Init();
-
-            //BMP1.Init();
-            //BMP2.Init();
-
-            //BTR60.Init();
+            PactEra.Init();
+            Armour.Init();
+            ProximityFuse.Init();
+            EFP.Init();
+            T72.Init();
+            T80.Init();
+            T55.Init();
+            T62.Init();
+            T64A.Init();
+            T64B.Init();
+            BMP1.Init();
+            BMP2.Init();
+            BTR60.Init();
         }
     }
 }

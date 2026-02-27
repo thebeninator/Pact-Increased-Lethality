@@ -117,7 +117,7 @@
     <Compile Include="ERA\EraVisual.cs" />
     <Compile Include="ERA\PactEra.cs" />
     <Compile Include="ERA\Relikt.cs" />
-    <Compile Include="Assets.cs" />
+    <Compile Include="SharedAssets.cs" />
     <Compile Include="LaserPointCorrection.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="Sights\1A40.cs" />
@@ -125,6 +125,7 @@
     <Compile Include="Ammo_125mm.cs" />
     <Compile Include="Armour.cs" />
     <Compile Include="Sights\TrackingDimensions.cs" />
+    <Compile Include="AssetUtil.cs" />
     <Compile Include="Vics\BMP1.cs" />
     <Compile Include="Vics\BMP2.cs" />
     <Compile Include="Sights\BOM.cs" />

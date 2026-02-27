@@ -70,7 +70,12 @@ namespace PactIncreasedLethality
 
             foreach (string name in composite_names)
             {
-                ArmorCodexScriptable armour = armours.Where(o => o.name == name).First();
+                IEnumerable<ArmorCodexScriptable> possible_armours = armours.Where(o => o.name == name);
+
+                if (possible_armours.Count() == 0) continue;
+
+                ArmorCodexScriptable armour = possible_armours.First();
+
                 AmmoType.ArmorOptimization optimization_3bm26 = new AmmoType.ArmorOptimization();
                 optimization_3bm26.Armor = armour;
                 optimization_3bm26.RhaRatio = 0.80f;
@@ -90,7 +95,7 @@ namespace PactIncreasedLethality
             if (assets_loaded) return;
 
             ammo_3bm26 = new AmmoType();
-            Util.ShallowCopy(ammo_3bm26, Assets.ammo_3bm32);
+            Util.ShallowCopy(ammo_3bm26, SharedAssets.ammo_3bm32);
             ammo_3bm26.Name = "3BM26 APFSDS-T";
             ammo_3bm26.Caliber = 125;
             ammo_3bm26.RhaPenetration = 440f;
@@ -112,14 +117,14 @@ namespace PactIncreasedLethality
             clip_codex_3bm26.name = "clip_3bm26";
             clip_codex_3bm26.ClipType = clip_3bm26;
 
-            ammo_3bm26_vis = GameObject.Instantiate(Assets.ammo_3bm32.VisualModel);
+            ammo_3bm26_vis = GameObject.Instantiate(SharedAssets.ammo_3bm32.VisualModel);
             ammo_3bm26_vis.name = "3bm26 visual";
             ammo_3bm26.VisualModel = ammo_3bm26_vis;
             ammo_3bm26.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm26;
             ammo_3bm26.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm26;
 
             ammo_3bm42 = new AmmoType();
-            Util.ShallowCopy(ammo_3bm42, Assets.ammo_3bm32);
+            Util.ShallowCopy(ammo_3bm42, SharedAssets.ammo_3bm32);
             ammo_3bm42.Name = "3BM42 APFSDS-T";
             ammo_3bm42.Coeff = 0.152f;
             ammo_3bm42.Caliber = 125;
@@ -144,14 +149,14 @@ namespace PactIncreasedLethality
             clip_codex_3bm42.name = "clip_3bm42";
             clip_codex_3bm42.ClipType = clip_3bm42;
 
-            ammo_3bm42_vis = GameObject.Instantiate(Assets.ammo_3bm32.VisualModel);
+            ammo_3bm42_vis = GameObject.Instantiate(SharedAssets.ammo_3bm32.VisualModel);
             ammo_3bm42_vis.name = "3bm42 visual";
             ammo_3bm42.VisualModel = ammo_3bm42_vis;
             ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm42;
             ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm42;
 
             ammo_3bm46 = new AmmoType();
-            Util.ShallowCopy(ammo_3bm46, Assets.ammo_3bm32);
+            Util.ShallowCopy(ammo_3bm46, SharedAssets.ammo_3bm32);
             ammo_3bm46.Name = "3BM46 APFSDS-T";
             ammo_3bm46.Caliber = 125;
             ammo_3bm46.RhaPenetration = 615f;
@@ -175,14 +180,14 @@ namespace PactIncreasedLethality
             clip_codex_3bm46.name = "clip_3bm46";
             clip_codex_3bm46.ClipType = clip_3bm46;
 
-            ammo_3bm46_vis = GameObject.Instantiate(Assets.ammo_3bm32.VisualModel);
+            ammo_3bm46_vis = GameObject.Instantiate(SharedAssets.ammo_3bm32.VisualModel);
             ammo_3bm46_vis.name = "3bm46 visual";
             ammo_3bm46.VisualModel = ammo_3bm46_vis;
             ammo_3bm46.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm46;
             ammo_3bm46.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm46;
 
             ammo_3bm60 = new AmmoType();
-            Util.ShallowCopy(ammo_3bm60, Assets.ammo_3bm32);
+            Util.ShallowCopy(ammo_3bm60, SharedAssets.ammo_3bm32);
             ammo_3bm60.Name = "3BM60 APFSDS-T";
             ammo_3bm60.Caliber = 125;
             ammo_3bm60.RhaPenetration = 728f;
@@ -206,14 +211,14 @@ namespace PactIncreasedLethality
             clip_codex_3bm60.name = "clip_3bm60";
             clip_codex_3bm60.ClipType = clip_3bm60;
 
-            ammo_3bm60_vis = GameObject.Instantiate(Assets.ammo_3bm32.VisualModel);
+            ammo_3bm60_vis = GameObject.Instantiate(SharedAssets.ammo_3bm32.VisualModel);
             ammo_3bm60_vis.name = "3bm60 visual";
             ammo_3bm60.VisualModel = ammo_3bm60_vis;
             ammo_3bm60.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm60;
             ammo_3bm60.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm60;
 
             ammo_9m119m1 = new AmmoType();
-            Util.ShallowCopy(ammo_9m119m1, Assets.ammo_kobra);
+            Util.ShallowCopy(ammo_9m119m1, SharedAssets.ammo_kobra);
             ammo_9m119m1.Name = "9M119M1 Invar-M";
             ammo_9m119m1.Caliber = 125;
             ammo_9m119m1.RhaPenetration = 960f;
@@ -239,14 +244,14 @@ namespace PactIncreasedLethality
             clip_codex_9m119m1.name = "clip_9m119m1_refleks";
             clip_codex_9m119m1.ClipType = clip_9m119m1;
 
-            ammo_9m119m1_vis = GameObject.Instantiate(Assets.ammo_kobra.VisualModel);
+            ammo_9m119m1_vis = GameObject.Instantiate(SharedAssets.ammo_kobra.VisualModel);
             ammo_9m119m1_vis.name = "9m119m1 visual";
             ammo_9m119m1.VisualModel = ammo_9m119m1_vis;
             ammo_9m119m1.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m119m1;
             ammo_9m119m1.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m119m1;
 
             ammo_9m119 = new AmmoType();
-            Util.ShallowCopy(ammo_9m119, Assets.ammo_kobra);
+            Util.ShallowCopy(ammo_9m119, SharedAssets.ammo_kobra);
             ammo_9m119.Name = "9M119 Refleks";
             ammo_9m119.Caliber = 125;
             ammo_9m119.RhaPenetration = 750f;
@@ -272,7 +277,7 @@ namespace PactIncreasedLethality
             clip_codex_9m119.name = "clip_9m119_refleks";
             clip_codex_9m119.ClipType = clip_9m119;
 
-            ammo_9m119_vis = GameObject.Instantiate(Assets.ammo_kobra.VisualModel);
+            ammo_9m119_vis = GameObject.Instantiate(SharedAssets.ammo_kobra.VisualModel);
             ammo_9m119_vis.name = "9m119 visual";
             ammo_9m119.VisualModel = ammo_9m119_vis;
             ammo_9m119.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m119;
@@ -280,9 +285,9 @@ namespace PactIncreasedLethality
 
             ap = new Dictionary<string, AmmoClipCodexScriptable>()
             {
-                ["3BM22"] = Assets.clip_codex_3bm22,
+                ["3BM22"] = SharedAssets.clip_codex_3bm22,
                 ["3BM26"] = clip_codex_3bm26,
-                ["3BM32"] = Assets.clip_codex_3bm32,
+                ["3BM32"] = SharedAssets.clip_codex_3bm32,
                 ["3BM42"] = clip_codex_3bm42,
                 ["3BM46"] = clip_codex_3bm46,
                 ["3BM60"] = clip_codex_3bm60,

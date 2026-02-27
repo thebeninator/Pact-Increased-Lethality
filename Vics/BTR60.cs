@@ -31,7 +31,7 @@ namespace PactIncreasedLethality
         static GameObject m60a1_nvs;
 
         static MelonPreferences_Entry<bool> btr60_patch;
-        static MelonPreferences_Entry<bool> autocannon;
+        internal static MelonPreferences_Entry<bool> autocannon;
         static MelonPreferences_Entry<bool> use_3ubr8;
         static MelonPreferences_Entry<bool> use_3uof8;
         static MelonPreferences_Entry<bool> stab;
@@ -150,8 +150,8 @@ namespace PactIncreasedLethality
 
                     btr_gun.Find("Gun Aimable/gunner sight/GPS/Quad").gameObject.SetActive(false);
 
-                    AmmoClipCodexScriptable ap = use_3ubr8.Value ? Ammo_30mm.clip_codex_3ubr8 : Ammo_30mm.clip_codex_3ubr8; //FIXME
-                    AmmoClipCodexScriptable he = use_3uof8.Value ? Ammo_30mm.clip_codex_3uof8 : Ammo_30mm.clip_codex_3ubr8; //FIXME
+                    AmmoClipCodexScriptable ap = use_3ubr8.Value ? Ammo_30mm.clip_codex_3ubr8 : Ammo_30mm.clip_codex_3ubr6;
+                    AmmoClipCodexScriptable he = use_3uof8.Value ? Ammo_30mm.clip_codex_3uof8 : Ammo_30mm.clip_codex_3uor6;
 
                     feed.AmmoTypeInBreech = null;
                     feed.ReadyRack.ClipTypes = new AmmoType.AmmoClip[] { ap.ClipType, he.ClipType };
@@ -362,11 +362,21 @@ namespace PactIncreasedLethality
             }
         }
 
-        public override void LoadStaticAssets()
+
+        public override void UnloadDynamicAssets()
+        {
+            GameObject.DestroyImmediate(m60a1_nvs);
+            GameObject.DestroyImmediate(reticleSO);
+        }
+
+        public override void LoadDynamicAssets()
         {
             if (!btr60_patch.Value) return;
+            if (!autocannon.Value) return;
 
-            m60a1_nvs = GameObject.Instantiate(Assets.m60a1_nvs);
+            Vehicle m60a1 = AssetUtil.LoadVanillaVehicle("M60A1");
+
+            m60a1_nvs = GameObject.Instantiate(m60a1.transform.Find("Turret Scripts/Sights/NVS").gameObject);
             m60a1_nvs.SetActive(false);
             UnityEngine.Object.Destroy(m60a1_nvs.transform.GetChild(0).gameObject);
             GameObject.Destroy(m60a1_nvs.transform.GetChild(0).gameObject);
@@ -374,6 +384,16 @@ namespace PactIncreasedLethality
             Component.Destroy(m60a1_nvs.GetComponent<CameraSlot>());
             m60a1_nvs.GetComponent<PostProcessVolume>().enabled = false;
             m60a1_nvs.GetComponent<PostProcessVolume>().priority = 0;
+
+            Vehicle bmp2 = AssetUtil.LoadVanillaVehicle("BMP2_SA");
+            bmp2.transform.Find("fire control/gunner day sight 1P3-3/Optic/Reticle Mesh").GetComponent<ReticleMesh>().Load();
+
+            Reticle();
+        }
+
+        public override void LoadStaticAssets()
+        {
+            if (!btr60_patch.Value) return;
 
             var bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr80a"));
             btr60a_turret_complete = bundle.LoadAsset<GameObject>("BTR80A_TURRET.prefab");
@@ -403,8 +423,6 @@ namespace PactIncreasedLethality
             turret.GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
             gun.GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
             btr60a_turret_complete.gameObject.AddComponent<HeatSource>().heat = 5f;
-
-            Reticle();
         }
 
         public static void Init()

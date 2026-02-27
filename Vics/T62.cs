@@ -19,9 +19,9 @@ namespace PactIncreasedLethality
     {
         static MelonPreferences_Entry<bool> t62_patch;
         static MelonPreferences_Entry<bool> better_stab;
-        static MelonPreferences_Entry<bool> has_lrf;
+        internal static MelonPreferences_Entry<bool> has_lrf;
         static MelonPreferences_Entry<bool> has_drozd;
-        static MelonPreferences_Entry<bool> use_9m117;
+        internal static MelonPreferences_Entry<bool> use_9m117;
         static MelonPreferences_Entry<bool> tpn3;
         static MelonPreferences_Entry<bool> applique;
         static MelonPreferences_Entry<bool> engine_upr;
@@ -130,9 +130,9 @@ namespace PactIncreasedLethality
                         reticle_cached.tree = reticleSO;
 
                         reticle_cached.tree.lights = new List<ReticleTree.Light>() {
-                        new ReticleTree.Light(),
-                        new ReticleTree.Light()
-                    };
+                            new ReticleTree.Light(),
+                            new ReticleTree.Light()
+                        };
 
                         reticle_cached.tree.lights[0] = ReticleMesh.cachedReticles["T62 Corrected"].tree.lights[0];
                         reticle_cached.tree.lights[1].type = ReticleTree.Light.Type.Powered;
@@ -218,48 +218,6 @@ namespace PactIncreasedLethality
                 weapon.Feed.AmmoTypeInBreech = null;
                 weapon.Feed.Start();
                 loadout_manager.RegisterAllBallistics();
-
-                //if (has_drozd.Value)
-                //{
-                //    List<DrozdLauncher> launchers = new List<DrozdLauncher>();
-                //    vic.transform.Find("---T62_rig---/HULL/TURRET/ammobox").gameObject.SetActive(false);
-
-                //    Vector3[] launcher_positions = new Vector3[] {
-                //        new Vector3(-1.2952f, -0.1383f, -0.2131f),
-                //        new Vector3(-1.2543f, 0.1291f, -0.2131f),
-                //        new Vector3(1.2952f, -0.1383f, -0.2131f),
-                //        new Vector3(1.2543f, 0.1291f, -0.2131f),
-                //    };
-
-                //    Vector3[] launcher_rots = new Vector3[] 
-                //    {
-                //        new Vector3(0f, 0f, 0f),
-                //        new Vector3(0f, 335.8091f, 0f),
-                //        new Vector3(0f, 0f, 0f),
-                //        new Vector3(0f, -335.8091f, 0f)
-                //    };
-
-                //    for (var i = 0; i < launcher_positions.Length; i++)
-                //    {
-                //        GameObject launcher = GameObject.Instantiate(DrozdLauncher.drozd_launcher_visual, vic.transform.Find("---T62_rig---/HULL/TURRET"));
-                //        launcher.transform.localPosition = launcher_positions[i];
-                //        launcher.transform.localEulerAngles = launcher_rots[i];
-
-                //        if (i > 1)
-                //        {
-                //            launcher.transform.localScale = Vector3.Scale(launcher.transform.localScale, new Vector3(-1f, 1f, 1f));
-                //        }
-
-                //        launchers.Add(launcher.GetComponent<DrozdLauncher>());
-                //    }
-
-                //    Drozd.AttachDrozd(
-                //        vic.transform.Find("---T62_rig---/HULL/TURRET"), vic, new Vector3(0f, 0f, 9.5f),
-                //        launchers.GetRange(0, 2).ToArray(), launchers.GetRange(2, 2).ToArray()
-                //    );
-
-                //    vic._friendlyName += "D";
-                //}
 
                 if (tpn3.Value)
                 {

@@ -14,6 +14,7 @@ using MelonLoader.Utils;
 using System.IO;
 using NWH.VehiclePhysics;
 using GHPC.Weaponry;
+using System.Linq;
 
 namespace PactIncreasedLethality
 {
@@ -41,6 +42,8 @@ namespace PactIncreasedLethality
         static AmmoType ammo_9m117;
         static GameObject ammo_9m117_vis = null;
 
+        static AmmoType ammo_9m111;
+
         static MelonPreferences_Entry<bool> t55_patch;
         static MelonPreferences_Entry<bool> use_3bk17m;
         static MelonPreferences_Entry<bool> use_3bm25;
@@ -60,6 +63,11 @@ namespace PactIncreasedLethality
         static GameObject t55am_skirts;
         static Mesh t55am_hull;
         static Texture2D cleaned_texture;
+
+        private static AmmoType ammo_3bk5m;
+        private static AmmoType ammo_3of412;
+        private static AmmoType ammo_3bm20;
+        private static AmmoClipCodexScriptable clip_codex_br412d;
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -222,13 +230,19 @@ namespace PactIncreasedLethality
                 }
 
                 if (use_3bm25.Value)
+                {
                     loadout_manager.LoadedAmmoList.AmmoClips[0] = clip_codex_3bm25;
+                }
 
-                if (use_br412d.Value) 
-                    loadout_manager.LoadedAmmoList.AmmoClips[2] = Assets.clip_codex_br412d;
+                if (use_br412d.Value)
+                {
+                    loadout_manager.LoadedAmmoList.AmmoClips[2] = clip_codex_br412d;
+                }
 
-                if (use_3bk17m.Value) 
+                if (use_3bk17m.Value)
+                {
                     loadout_manager.LoadedAmmoList.AmmoClips[1] = clip_codex_3bk17m;
+                }
 
                 for (int i = 0; i <= 4; i++)
                 {
@@ -256,11 +270,13 @@ namespace PactIncreasedLethality
                 weapon.Feed.Start();
                 loadout_manager.RegisterAllBallistics();
 
-                if (tpn3.Value) {
+                if (tpn3.Value) 
+                {
                     TPN3.Add(fcs, day_optic.slot.LinkedNightSight.PairedOptic, day_optic.slot.LinkedNightSight);
                 }
 
-                if (engine_upr.Value) {
+                if (engine_upr.Value) 
+                {
                     vic.transform.GetComponent<VehicleController>().engine.maxPower = 650f;
                 }
 
@@ -329,21 +345,145 @@ namespace PactIncreasedLethality
             yield break;
         }
 
+        public override void UnloadDynamicAssets()
+        {
+            GameObject.DestroyImmediate(ammo_9m117_vis);
+            GameObject.DestroyImmediate(ammo_3bm25_vis);
+            GameObject.DestroyImmediate(ammo_3bk17m_vis);
+            GameObject.DestroyImmediate(range_readout);
+        }
+
+        public override void LoadDynamicAssets()
+        {
+            AmmoClipCodexScriptable[] clip_codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoClipCodexScriptable>();
+            AmmoCodexScriptable[] codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoCodexScriptable>();
+
+            ammo_3bk5m = codex_scriptables.Where(o => o.name == "ammo_3BK5M").FirstOrDefault().AmmoType;
+            ammo_3of412 = codex_scriptables.Where(o => o.name == "ammo_3OF412").FirstOrDefault().AmmoType;
+            ammo_3bm20 = codex_scriptables.Where(o => o.name == "ammo_3BM20").FirstOrDefault().AmmoType;
+            clip_codex_br412d = clip_codex_scriptables.Where(o => o.name == "clip_BR-412D").FirstOrDefault();
+
+            ammo_3bm25 = new AmmoType();
+            Util.ShallowCopy(ammo_3bm25, ammo_3bm20);
+            ammo_3bm25.Name = "3BM25 APFSDS-T";
+            ammo_3bm25.RhaPenetration = 380f;
+
+            Util.Coalesce(ref ammo_codex_3bm25);
+            ammo_codex_3bm25.AmmoType = ammo_3bm25;
+            ammo_codex_3bm25.name = "ammo_3bm25";
+
+            clip_3bm25 = new AmmoType.AmmoClip();
+            clip_3bm25.Capacity = 1;
+            clip_3bm25.Name = "3BM25 APFSDS-T";
+            clip_3bm25.MinimalPattern = new AmmoCodexScriptable[1];
+            clip_3bm25.MinimalPattern[0] = ammo_codex_3bm25;
+
+            Util.Coalesce(ref clip_codex_3bm25);
+            clip_codex_3bm25.name = "clip_3bm25";
+            clip_codex_3bm25.ClipType = clip_3bm25;
+
+            ammo_3bm25_vis = GameObject.Instantiate(ammo_3bm20.VisualModel);
+            ammo_3bm25_vis.name = "3bm25 visual";
+            ammo_3bm25.VisualModel = ammo_3bm25_vis;
+            ammo_3bm25.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm25;
+            ammo_3bm25.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm25;
+
+            ammo_3bk17m = new AmmoType();
+            Util.ShallowCopy(ammo_3bk17m, ammo_3bk5m);
+            ammo_3bk17m.Name = "3BK17M HEAT-FS-T";
+            ammo_3bk17m.Mass = 10.0f;
+            ammo_3bk17m.Coeff = 0.25f;
+            ammo_3bk17m.MuzzleVelocity = 1085f;
+            ammo_3bk17m.RhaPenetration = 400f;
+            ammo_3bk17m.TntEquivalentKg = 0.25f;
+
+            Util.Coalesce(ref ammo_codex_3bk17m);
+            ammo_codex_3bk17m.AmmoType = ammo_3bk17m;
+            ammo_codex_3bk17m.name = "ammo_3bk17m";
+
+            clip_3bk17m = new AmmoType.AmmoClip();
+            clip_3bk17m.Capacity = 1;
+            clip_3bk17m.Name = "3BK17M HEAT-FS-T";
+            clip_3bk17m.MinimalPattern = new AmmoCodexScriptable[1];
+            clip_3bk17m.MinimalPattern[0] = ammo_codex_3bk17m;
+
+            Util.Coalesce(ref clip_codex_3bk17m);
+            clip_codex_3bk17m.name = "clip_3bk17m";
+            clip_codex_3bk17m.ClipType = clip_3bk17m;
+
+            ammo_3bk17m_vis = GameObject.Instantiate(ammo_3bk5m.VisualModel);
+            ammo_3bk17m_vis.name = "3bk17m visual";
+            ammo_3bk17m.VisualModel = ammo_3bk17m_vis;
+            ammo_3bk17m.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bk17m;
+            ammo_3bk17m.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bk17m;
+
+            if ((AssetUtil.VehicleInMission("T55A") && use_9m117.Value) || (AssetUtil.VehicleInMission("T62") && T62.use_9m117.Value))
+            {
+                AssetUtil.LoadVanillaVehicle("STATIC_9K111_SA");
+
+                codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoCodexScriptable>();
+                ammo_9m111 = codex_scriptables.Where(o => o.name == "ammo_9M111").FirstOrDefault().AmmoType;
+
+                ammo_9m117 = new AmmoType();
+                Util.ShallowCopy(ammo_9m117, ammo_9m111);
+                ammo_9m117.Name = "9M117 Bastion";
+                ammo_9m117.Mass = 18.8f;
+                ammo_9m117.Coeff = 0.25f;
+                ammo_9m117.Caliber = 100f;
+                ammo_9m117.MuzzleVelocity = 350f;
+                ammo_9m117.RhaPenetration = 550f;
+                ammo_9m117.TntEquivalentKg = 4.77f;
+                ammo_9m117.Guidance = AmmoType.GuidanceType.SACLOS;
+                ammo_9m117.TurnSpeed = 0.25f;
+                ammo_9m117.RangedFuseTime = 12.5f;
+                ammo_9m117.SpiralPower = 25f;
+                ammo_9m117.SpiralAngularRate = 1800f;
+                ammo_9m117.ArmingDistance = 45f;
+                ammo_9m117.ImpactAudio = GHPC.Audio.ImpactAudioType.Missile;
+                ammo_9m117.ShortName = AmmoType.AmmoShortName.Missile;
+                ammo_9m117.CachedIndex = -1;
+
+                Util.Coalesce(ref ammo_codex_9m117);
+                ammo_codex_9m117.AmmoType = ammo_9m117;
+                ammo_codex_9m117.name = "ammo_9m117";
+
+                clip_9m117 = new AmmoType.AmmoClip();
+                clip_9m117.Capacity = 1;
+                clip_9m117.Name = "9M117 Bastion";
+                clip_9m117.MinimalPattern = new AmmoCodexScriptable[1];
+                clip_9m117.MinimalPattern[0] = ammo_codex_9m117;
+
+                Util.Coalesce(ref clip_codex_9m117);
+                clip_codex_9m117 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+                clip_codex_9m117.name = "clip_9m117";
+                clip_codex_9m117.ClipType = clip_9m117;
+
+                ammo_9m117_vis = GameObject.Instantiate(ammo_3of412.VisualModel);
+                ammo_9m117_vis.name = "9M117 visual";
+                ammo_9m117.VisualModel = ammo_9m117_vis;
+                ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m117;
+                ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m117;
+            }
+
+            if ((AssetUtil.VehicleInMission("T55A") && has_lrf.Value) || (AssetUtil.VehicleInMission("T62") && T62.has_lrf.Value))
+            {
+                range_readout = GameObject.Instantiate(SharedAssets.m1ip_range_canvas);
+                GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
+                GameObject.Destroy(range_readout.transform.GetChild(0).gameObject);
+                range_readout.AddComponent<Reparent>();
+                range_readout.SetActive(false);
+                range_readout.hideFlags = HideFlags.DontUnloadUnusedAsset;
+                range_readout.name = "t55 range canvas";
+
+                TextMeshProUGUI text = range_readout.GetComponentInChildren<TextMeshProUGUI>();
+                text.color = new Color(255f, 0f, 0f);
+                text.faceColor = new Color(255f, 0f, 0f);
+                text.outlineColor = new Color(100f, 0f, 0f, 0.5f);
+            }
+        }
+
         public override void LoadStaticAssets() {
             if (!t55_patch.Value) return;
-
-            range_readout = GameObject.Instantiate(Assets.m1ip_range_canvas);
-            GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
-            GameObject.Destroy(range_readout.transform.GetChild(0).gameObject);
-            range_readout.AddComponent<Reparent>();
-            range_readout.SetActive(false);
-            range_readout.hideFlags = HideFlags.DontUnloadUnusedAsset;
-            range_readout.name = "t55 range canvas";
-
-            TextMeshProUGUI text = range_readout.GetComponentInChildren<TextMeshProUGUI>();
-            text.color = new Color(255f, 0f, 0f);
-            text.faceColor = new Color(255f, 0f, 0f);
-            text.outlineColor = new Color(100f, 0f, 0f, 0.5f);
 
             var t55am_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t55am"));
             t55am_turret_material = t55am_bundle.LoadAsset<Material>("CLEANED MATERIAL.mat");
@@ -439,99 +579,6 @@ namespace PactIncreasedLethality
             armor_casing.SetName("upper glacis applique armor");
             armor_casing._armorType = Armour.ru_welded_armor;
             armor_casing._spallForwardRatio = 0.01f;
-
-            ammo_3bm25 = new AmmoType();
-            Util.ShallowCopy(ammo_3bm25, Assets.ammo_3bm20);
-            ammo_3bm25.Name = "3BM25 APFSDS-T";
-            ammo_3bm25.RhaPenetration = 380f;
-
-            ammo_codex_3bm25 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-            ammo_codex_3bm25.AmmoType = ammo_3bm25;
-            ammo_codex_3bm25.name = "ammo_3bm25";
-
-            clip_3bm25 = new AmmoType.AmmoClip();
-            clip_3bm25.Capacity = 1;
-            clip_3bm25.Name = "3BM25 APFSDS-T";
-            clip_3bm25.MinimalPattern = new AmmoCodexScriptable[1];
-            clip_3bm25.MinimalPattern[0] = ammo_codex_3bm25;
-
-            clip_codex_3bm25 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-            clip_codex_3bm25.name = "clip_3bm25";
-            clip_codex_3bm25.ClipType = clip_3bm25;
-
-            ammo_3bm25_vis = GameObject.Instantiate(Assets.ammo_3bm20.VisualModel);
-            ammo_3bm25_vis.name = "3bm25 visual";
-            ammo_3bm25.VisualModel = ammo_3bm25_vis;
-            ammo_3bm25.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm25;
-            ammo_3bm25.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm25;
-
-            ammo_3bk17m = new AmmoType();
-            Util.ShallowCopy(ammo_3bk17m, Assets.ammo_3bk5m);
-            ammo_3bk17m.Name = "3BK17M HEAT-FS-T";
-            ammo_3bk17m.Mass = 10.0f;
-            ammo_3bk17m.Coeff = 0.25f;
-            ammo_3bk17m.MuzzleVelocity = 1085f;
-            ammo_3bk17m.RhaPenetration = 400f;
-            ammo_3bk17m.TntEquivalentKg = 0.25f;
-
-            ammo_codex_3bk17m = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-            ammo_codex_3bk17m.AmmoType = ammo_3bk17m;
-            ammo_codex_3bk17m.name = "ammo_3bk17m";
-
-            clip_3bk17m = new AmmoType.AmmoClip();
-            clip_3bk17m.Capacity = 1;
-            clip_3bk17m.Name = "3BK17M HEAT-FS-T";
-            clip_3bk17m.MinimalPattern = new AmmoCodexScriptable[1];
-            clip_3bk17m.MinimalPattern[0] = ammo_codex_3bk17m;
-
-            clip_codex_3bk17m = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-            clip_codex_3bk17m.name = "clip_3bk17m";
-            clip_codex_3bk17m.ClipType = clip_3bk17m;
-
-            ammo_3bk17m_vis = GameObject.Instantiate(Assets.ammo_3bk5m.VisualModel);
-            ammo_3bk17m_vis.name = "3bk17m visual";
-            ammo_3bk17m.VisualModel = ammo_3bk17m_vis;
-            ammo_3bk17m.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bk17m;
-            ammo_3bk17m.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bk17m;
-
-            ammo_9m117 = new AmmoType();
-            Util.ShallowCopy(ammo_9m117, Assets.ammo_9m111);
-            ammo_9m117.Name = "9M117 Bastion";
-            ammo_9m117.Mass = 18.8f;
-            ammo_9m117.Coeff = 0.25f;
-            ammo_9m117.Caliber = 100f;
-            ammo_9m117.MuzzleVelocity = 350f;
-            ammo_9m117.RhaPenetration = 550f;
-            ammo_9m117.TntEquivalentKg = 4.77f;
-            ammo_9m117.Guidance = AmmoType.GuidanceType.SACLOS;
-            ammo_9m117.TurnSpeed = 0.25f;
-            ammo_9m117.RangedFuseTime = 12.5f;
-            ammo_9m117.SpiralPower = 25f;
-            ammo_9m117.SpiralAngularRate = 1800f;
-            ammo_9m117.ArmingDistance = 45f;
-            ammo_9m117.ImpactAudio = GHPC.Audio.ImpactAudioType.Missile;
-            ammo_9m117.ShortName = AmmoType.AmmoShortName.Missile;
-            ammo_9m117.CachedIndex = -1;
-
-            ammo_codex_9m117 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-            ammo_codex_9m117.AmmoType = ammo_9m117;
-            ammo_codex_9m117.name = "ammo_9m117";
-
-            clip_9m117 = new AmmoType.AmmoClip();
-            clip_9m117.Capacity = 1;
-            clip_9m117.Name = "9M117 Bastion";
-            clip_9m117.MinimalPattern = new AmmoCodexScriptable[1];
-            clip_9m117.MinimalPattern[0] = ammo_codex_9m117;
-
-            clip_codex_9m117 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-            clip_codex_9m117.name = "clip_9m117";
-            clip_codex_9m117.ClipType = clip_9m117;
-
-            ammo_9m117_vis = GameObject.Instantiate(Assets.ammo_3of412.VisualModel);
-            ammo_9m117_vis.name = "9M117 visual";
-            ammo_9m117.VisualModel = ammo_9m117_vis;
-            ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m117;
-            ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m117;
         }
 
         public static void Init()

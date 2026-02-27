@@ -15,7 +15,7 @@ using UnityEngine.UI;
 
 namespace PactIncreasedLethality
 {
-    public class SuperFCS
+    public class SuperFCS : Module
     {
         static GameObject range_readout;
         static GameObject thermal_canvas;
@@ -345,7 +345,7 @@ namespace PactIncreasedLethality
             night_optic.OverridingObject = crosshair_elements.transform.Find("CMDR CONTROL").gameObject;
             night_optic.RangeText = crosshair_elements.transform.Find("RANGE").GetComponentInChildren<TMP_Text>();
 
-            GameObject post = GameObject.Instantiate(Assets.flir_post_green, night_optic.transform);
+            GameObject post = GameObject.Instantiate(SharedAssets.flir_post_green, night_optic.transform);
             post.SetActive(true);
             PostProcessProfile profile = post.transform.Find("FLIR Only Volume").GetComponent<PostProcessVolume>().profile;
             ColorGrading color_grading;
@@ -472,19 +472,16 @@ namespace PactIncreasedLethality
             reticleSO_sosna.planes[0].elements.Add(impact);         
         }
 
-        public static void LoadAssets() 
+        public override void UnloadDynamicAssets()
         {
-            if (assets_loaded) return;
+            GameObject.DestroyImmediate(range_readout);
+            GameObject.DestroyImmediate(thermal_canvas);
+            GameObject.DestroyImmediate(reticleSO_sosna);
+        }
 
-            AssetBundle sosna_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "sosna_monitor"));
-            sosna_monitor = sosna_bundle.LoadAsset<GameObject>("SOSNA MONITOR CANVAS.prefab");
-            sosna_monitor.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-            AssetBundle vesna_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "vesna_monitor"));
-            vesna_monitor = vesna_bundle.LoadAsset<GameObject>("VESNA K CANVAS.prefab");
-            vesna_monitor.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-            range_readout = GameObject.Instantiate(Assets.m1ip_range_canvas);
+        public override void LoadDynamicAssets()
+        {
+            range_readout = GameObject.Instantiate(SharedAssets.m1ip_range_canvas);
             GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
             range_readout.AddComponent<Reparent>();
             range_readout.SetActive(false);
@@ -496,7 +493,7 @@ namespace PactIncreasedLethality
             text.faceColor = new Color(255f, 0f, 0f);
             text.outlineColor = new Color(100f, 0f, 0f, 0.5f);
 
-            thermal_canvas = GameObject.Instantiate(Assets.m2_bradley_canvas);
+            thermal_canvas = GameObject.Instantiate(SharedAssets.m2_bradley_canvas);
             GameObject.Destroy(thermal_canvas.transform.GetChild(2).gameObject);
             thermal_canvas.AddComponent<Reparent>();
             thermal_canvas.SetActive(false);
@@ -504,8 +501,17 @@ namespace PactIncreasedLethality
             thermal_canvas.name = "t72 thermal canvas";
 
             Reticle();
+        }
 
-            assets_loaded = true;
+        public override void LoadStaticAssets()
+        {
+            AssetBundle sosna_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "sosna_monitor"));
+            sosna_monitor = sosna_bundle.LoadAsset<GameObject>("SOSNA MONITOR CANVAS.prefab");
+            sosna_monitor.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            AssetBundle vesna_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "vesna_monitor"));
+            vesna_monitor = vesna_bundle.LoadAsset<GameObject>("VESNA K CANVAS.prefab");
+            vesna_monitor.hideFlags = HideFlags.DontUnloadUnusedAsset;
         }
     }
 }

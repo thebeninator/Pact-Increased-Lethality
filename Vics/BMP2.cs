@@ -19,6 +19,7 @@ using GHPC.Effects;
 using GHPC.Camera;
 using GHPC.Crew;
 using GHPC.Weaponry;
+using System.Linq;
 
 namespace PactIncreasedLethality
 {
@@ -222,6 +223,8 @@ namespace PactIncreasedLethality
                 if (vic.FriendlyName != "BMP-2") continue;
                 if (vic.GetComponent<AlreadyConverted>() != null) continue;
 
+                LRFReticle();
+
                 LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
 
                 WeaponSystem main_gun = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
@@ -242,8 +245,8 @@ namespace PactIncreasedLethality
                 int rand = UnityEngine.Random.Range(1, 100);
                 bool is_zsu = zsu_conversion.Value && rand <= zsu_conversion_chance.Value;
 
-                AmmoClipCodexScriptable ap = use_3ubr8.Value ? Ammo_30mm.clip_codex_3ubr8 : Ammo_30mm.clip_codex_3ubr8; //FIXME
-                AmmoClipCodexScriptable he = use_3uof8.Value ? Ammo_30mm.clip_codex_3uof8 : Ammo_30mm.clip_codex_3ubr8; //FIXME
+                AmmoClipCodexScriptable ap = use_3ubr8.Value ? Ammo_30mm.clip_codex_3ubr8 : Ammo_30mm.clip_codex_3ubr6;
+                AmmoClipCodexScriptable he = use_3uof8.Value ? Ammo_30mm.clip_codex_3uof8 : Ammo_30mm.clip_codex_3uor6;
 
                 if (super_fcs.Value)
                 {
@@ -571,6 +574,8 @@ namespace PactIncreasedLethality
         }
 
         public static void LRFReticle() {
+            if (reticleSO_lrf != null) return;
+
             reticleSO_lrf = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["BMP-2_BPK-1-42"].tree);
             reticleSO_lrf.name = "bmp2_lrf_ac";
 
@@ -642,224 +647,239 @@ namespace PactIncreasedLethality
             }
         }
 
-
-        public override void LoadStaticAssets()
+        public override void UnloadDynamicAssets()
         {
-            //if (!bmp2_patch.Value) return;
+            Material.DestroyImmediate(brdm_nsv_barrel_mat);
+            Mesh.DestroyImmediate(brdm_nsv_barrel_mesh);
+            GameObject.DestroyImmediate(zsu_full);
+            GameObject.DestroyImmediate(zsu_barrel);
+        }
 
-            //AssetBundle bmp2m_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "bmp2m"));
-            //turret_no_smokes = bmp2m_bundle.LoadAsset<Mesh>("bmp2_no_smokes.asset");
-            //turret_no_smokes.hideFlags = HideFlags.DontUnloadUnusedAsset;
+        public override void LoadDynamicAssets()
+        {
+            string[] bmp2s = { "BMP2 Soviet", "BMP2" };
+            if (!AssetUtil.VehicleInMission(bmp2s)) return;
 
-            //bmp2m_turret = bmp2m_bundle.LoadAsset<Mesh>("bmp2m_turret.asset");
-            //bmp2m_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            AmmoClipCodexScriptable[] clip_codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoClipCodexScriptable>();
+            AmmoCodexScriptable[] codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoCodexScriptable>();
+            AmmoType ammo_9m113 = codex_scriptables.Where(o => o.name == "ammo_9M113").FirstOrDefault().AmmoType;
 
-            //turret_only_thermals = bmp2m_bundle.LoadAsset<Mesh>("turret_thermals_only.asset");
-            //turret_only_thermals.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            ammo_9m113_as = new AmmoType();
+            Util.ShallowCopy(ammo_9m113_as, ammo_9m113);
+            ammo_9m113_as.Name = "9M113AS Konkurs";
+            ammo_9m113_as.Category = AmmoType.AmmoCategory.Explosive;
+            ammo_9m113_as.RhaPenetration = 10f;
+            ammo_9m113_as.NoisePowerX = 0f;
+            ammo_9m113_as.NoisePowerY = 0f;
 
-            //bmp2m_kit = bmp2m_bundle.LoadAsset<GameObject>("BMP2M_KIT.prefab");
-            //bmp2m_kit.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            Util.Coalesce(ref ammo_codex_9m113_as);
+            ammo_codex_9m113_as.AmmoType = ammo_9m113_as;
+            ammo_codex_9m113_as.name = "ammo_9m113_as";
 
-            //Util.SetupFLIRShaders(bmp2m_kit);
+            clip_9m113_as = new AmmoType.AmmoClip();
+            clip_9m113_as.Capacity = 1;
+            clip_9m113_as.Name = "9M113AS Konkurs";
+            clip_9m113_as.MinimalPattern = new AmmoCodexScriptable[] { ammo_codex_9m113_as };
+            clip_9m113_as.MinimalPattern[0] = ammo_codex_9m113_as;
 
-            //ammo_9m113_as = new AmmoType();
-            //Util.ShallowCopy(ammo_9m113_as, Assets.ammo_9m113);
-            //ammo_9m113_as.Name = "9M113AS Konkurs";
-            //ammo_9m113_as.Category = AmmoType.AmmoCategory.Explosive;
-            //ammo_9m113_as.RhaPenetration = 10f;
-            //ammo_9m113_as.NoisePowerX = 0f;
-            //ammo_9m113_as.NoisePowerY = 0f;
+            Util.Coalesce(ref clip_codex_9m113_as);
+            clip_codex_9m113_as.name = "clip_9m113_as";
+            clip_codex_9m113_as.ClipType = clip_9m113_as;
 
-            //ammo_codex_9m113_as = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-            //ammo_codex_9m113_as.AmmoType = ammo_9m113_as;
-            //ammo_codex_9m113_as.name = "ammo_9m113_as";
+            AmmoType ammo_9m113_efp = new AmmoType();
+            ammo_9m113_efp.Name = "9M113AS Konkurs EFP";
+            ammo_9m113_efp.Category = AmmoType.AmmoCategory.Explosive;
+            ammo_9m113_efp.RhaPenetration = 300f;
+            ammo_9m113_efp.Normalize = true;
+            ammo_9m113_efp.Mass = 3f;
+            ammo_9m113_efp.TntEquivalentKg = 0.9f;
+            ammo_9m113_efp.ImpactFuseTime = 0.005f;
+            ammo_9m113_efp.SectionalArea = ammo_9m113_as.SectionalArea / 1.5f;
 
-            //clip_9m113_as = new AmmoType.AmmoClip();
-            //clip_9m113_as.Capacity = 1;
-            //clip_9m113_as.Name = "9M113AS Konkurs";
-            //clip_9m113_as.MinimalPattern = new AmmoCodexScriptable[] { ammo_codex_9m113_as };
-            //clip_9m113_as.MinimalPattern[0] = ammo_codex_9m113_as;
-
-            //clip_codex_9m113_as = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-            //clip_codex_9m113_as.name = "clip_9m113_as";
-            //clip_codex_9m113_as.ClipType = clip_9m113_as;
-
-            //AmmoType ammo_9m113_efp = new AmmoType();
-            //ammo_9m113_efp.Name = "9M113AS Konkurs EFP";
-            //ammo_9m113_efp.Category = AmmoType.AmmoCategory.Explosive;
-            //ammo_9m113_efp.RhaPenetration = 300f;
-            //ammo_9m113_efp.Normalize = true;
-            //ammo_9m113_efp.Mass = 3f;
-            //ammo_9m113_efp.TntEquivalentKg = 0.9f;
-            //ammo_9m113_efp.ImpactFuseTime = 0.005f;
-            //ammo_9m113_efp.SectionalArea = ammo_9m113_as.SectionalArea / 1.5f;
-
-            //EFP.AddEFP(ammo_9m113_as, ammo_9m113_efp, true);
-
-            ////////////////////////
-
-            //ammo_9m133 = new AmmoType();
-            //Util.ShallowCopy(ammo_9m133, Assets.ammo_9m113);
-            //ammo_9m133.Name = "9M133 Kornet";
-            //ammo_9m133.Category = AmmoType.AmmoCategory.ShapedCharge;
-            //ammo_9m133.RhaPenetration = 1200f;
-            //ammo_9m133.MuzzleVelocity = 300f;
-            //ammo_9m133.SpiralPower = 20f;
-            //ammo_9m133.TntEquivalentKg = 6.5f;
-            //ammo_9m133.SpallMultiplier = 2.3f;
-            //ammo_9m133._radius = 0.076f;
-            //ammo_9m133.TurnSpeed = 2f;
-            //ammo_9m133.SectionalArea = 0.018146f;
-            //ammo_9m133.Guidance = AmmoType.GuidanceType.Laser;
-
-            //ammo_codex_9m133 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-            //ammo_codex_9m133.AmmoType = ammo_9m133;
-            //ammo_codex_9m133.name = "ammo_9m133";
-
-            //clip_9m133 = new AmmoType.AmmoClip();
-            //clip_9m133.Capacity = 4;
-            //clip_9m133.Name = "9M133 Kornet";
-            //clip_9m133.MinimalPattern = new AmmoCodexScriptable[] { ammo_codex_9m133 };
-            //clip_9m133.MinimalPattern[0] = ammo_codex_9m133;
-
-            //clip_codex_9m133 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-            //clip_codex_9m133.name = "clip_9m133";
-            //clip_codex_9m133.ClipType = clip_9m133;
-
-            ///////////////////////
-
-            //ammo_apds = new AmmoType();
-            //Util.ShallowCopy(ammo_apds, Assets.ammo_3ubr6);
-            //ammo_apds.Name = "23mm APDS-T";
-            //ammo_apds.Mass = 0.190f;
-            //ammo_apds.MuzzleVelocity = 1120f;
-            //ammo_apds.RhaPenetration = 70f;
-            //ammo_apds.Caliber = 23f;
-            //ammo_apds.Coeff = 0.012f;
-            //ammo_apds.SectionalArea = 0.0005f;
-
-            //ammo_codex_apds = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-            //ammo_codex_apds.AmmoType = ammo_apds;
-            //ammo_codex_apds.name = "ammo_apds";
-
-            //ammo_bzt = new AmmoType();
-            //Util.ShallowCopy(ammo_bzt, Assets.ammo_3ubr6);
-            //ammo_bzt.Name = "23mm BZT";
-            //ammo_bzt.Mass = 0.190f;
-            //ammo_bzt.MuzzleVelocity = 970f;
-            //ammo_bzt.RhaPenetration = 40f;
-            //ammo_bzt.Caliber = 23f;
-            //ammo_bzt.Coeff = 0.012f;
-            //ammo_bzt.SectionalArea = 0.0005f;
-
-            //ammo_codex_bzt = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-            //ammo_codex_bzt.AmmoType = ammo_bzt;
-            //ammo_codex_bzt.name = "ammo_bzt";
-
-            //clip_bzt = new AmmoType.AmmoClip();
-            //clip_bzt.Capacity = 165;
-            //clip_bzt.Name = "23mm APDS-T";
-            //clip_bzt.MinimalPattern = new AmmoCodexScriptable[] {
-            //    ammo_codex_apds,
-            //};
-
-            //clip_codex_bzt = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-            //clip_codex_bzt.name = "clip_bzt";
-            //clip_codex_bzt.ClipType = clip_bzt;
+            EFP.AddEFP(ammo_9m113_as, ammo_9m113_efp, true);
 
             //////////////////////
 
-            //ammo_ofzt = new AmmoType();
-            //Util.ShallowCopy(ammo_ofzt, Assets.ammo_3uor6);
-            //ammo_ofzt.Name = "23mm OFZT";
-            //ammo_ofzt.UseTracer = true;
-            //ammo_ofzt.TntEquivalentKg = 0.020f;
-            //ammo_ofzt.MuzzleVelocity = 980f;
-            //ammo_ofzt.Caliber = 23f;
-            //ammo_ofzt.Coeff = 0.012f;
-            //ammo_ofzt.SectionalArea = 0.0005f;
+            ammo_9m133 = new AmmoType();
+            Util.ShallowCopy(ammo_9m133, ammo_9m113);
+            ammo_9m133.Name = "9M133 Kornet";
+            ammo_9m133.Category = AmmoType.AmmoCategory.ShapedCharge;
+            ammo_9m133.RhaPenetration = 1200f;
+            ammo_9m133.MuzzleVelocity = 300f;
+            ammo_9m133.SpiralPower = 20f;
+            ammo_9m133.TntEquivalentKg = 6.5f;
+            ammo_9m133.SpallMultiplier = 2.3f;
+            ammo_9m133._radius = 0.076f;
+            ammo_9m133.TurnSpeed = 2f;
+            ammo_9m133.SectionalArea = 0.018146f;
+            ammo_9m133.Guidance = AmmoType.GuidanceType.Laser;
 
-            //ammo_codex_ofzt = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-            //ammo_codex_ofzt.AmmoType = ammo_ofzt;
-            //ammo_codex_ofzt.name = "ammo_ofzt";
+            Util.Coalesce(ref ammo_codex_9m133);
+            ammo_codex_9m133.AmmoType = ammo_9m133;
+            ammo_codex_9m133.name = "ammo_9m133";
 
-            //ammo_ofz = new AmmoType();
-            //Util.ShallowCopy(ammo_ofz, Assets.ammo_3uor6);
-            //ammo_ofz.Name = "23mm OFZ";
-            //ammo_ofz.UseTracer = false;
-            //ammo_ofz.TntEquivalentKg = 0.025f;
-            //ammo_ofz.MuzzleVelocity = 980f;
-            //ammo_ofz.Caliber = 23f;
-            //ammo_ofz.Coeff = 0.012f;
-            //ammo_ofz.SectionalArea = 0.0005f;
+            clip_9m133 = new AmmoType.AmmoClip();
+            clip_9m133.Capacity = 4;
+            clip_9m133.Name = "9M133 Kornet";
+            clip_9m133.MinimalPattern = new AmmoCodexScriptable[] { ammo_codex_9m133 };
+            clip_9m133.MinimalPattern[0] = ammo_codex_9m133;
 
-            //ammo_codex_ofz = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
-            //ammo_codex_ofz.AmmoType = ammo_ofz;
-            //ammo_codex_ofz.name = "ammo_ofz";
+            Util.Coalesce(ref clip_codex_9m133);
+            clip_codex_9m133.name = "clip_9m133";
+            clip_codex_9m133.ClipType = clip_9m133;
 
-            //clip_ofz = new AmmoType.AmmoClip();
-            //clip_ofz.Capacity = 600;
-            //clip_ofz.Name = "23mm BZT/OFZ";
-            //clip_ofz.MinimalPattern = new AmmoCodexScriptable[] {
-            //    ammo_codex_ofz,
-            //    ammo_codex_bzt,
-            //    ammo_codex_ofz,
-            //    ammo_codex_bzt,
-            //    ammo_codex_ofz,
-            //};
+            /////////////////////
 
-            //clip_codex_ofz = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
-            //clip_codex_ofz.name = "clip_ofz";
-            //clip_codex_ofz.ClipType = clip_ofz;
+            ammo_apds = new AmmoType();
+            Util.ShallowCopy(ammo_apds, Ammo_30mm.ammo_3ubr6);
+            ammo_apds.Name = "23mm APDS-T";
+            ammo_apds.Mass = 0.190f;
+            ammo_apds.MuzzleVelocity = 1120f;
+            ammo_apds.RhaPenetration = 70f;
+            ammo_apds.Caliber = 23f;
+            ammo_apds.Coeff = 0.012f;
+            ammo_apds.SectionalArea = 0.0005f;
 
-            //SkinnedMeshRenderer rig_renderer = Assets.brdm2_hull.GetComponent<SkinnedMeshRenderer>();
+            Util.Coalesce(ref ammo_codex_apds);
+            ammo_codex_apds.AmmoType = ammo_apds;
+            ammo_codex_apds.name = "ammo_apds";
 
-            //brdm_nsv_barrel_mat = Material.Instantiate(rig_renderer.sharedMaterial);
-            //brdm_nsv_barrel_mesh = Mesh.Instantiate(rig_renderer.sharedMesh);
-           
-            //zsu_barrel = new GameObject("zsu");
-            //Transform barrel_transform = GameObject.Instantiate(new GameObject("barrel"), zsu_barrel.transform).transform;
-            //SkinnedMeshRenderer rend = zsu_barrel.AddComponent<SkinnedMeshRenderer>();
-            //rend.sharedMaterial = brdm_nsv_barrel_mat;
-            //rend.sharedMesh = brdm_nsv_barrel_mesh;
+            ammo_bzt = new AmmoType();
+            Util.ShallowCopy(ammo_bzt, Ammo_30mm.ammo_3ubr6);
+            ammo_bzt.Name = "23mm BZT";
+            ammo_bzt.Mass = 0.190f;
+            ammo_bzt.MuzzleVelocity = 970f;
+            ammo_bzt.RhaPenetration = 40f;
+            ammo_bzt.Caliber = 23f;
+            ammo_bzt.Coeff = 0.012f;
+            ammo_bzt.SectionalArea = 0.0005f;
 
-            //Transform[] bones = new Transform[25];
-            //for (int i = 0; i < 25; i++)
-            //    bones[i] = barrel_transform;
-            //rend.bones = bones;
+            Util.Coalesce(ref ammo_codex_bzt);
+            ammo_codex_bzt.AmmoType = ammo_bzt;
+            ammo_codex_bzt.name = "ammo_bzt";
 
-            //Matrix4x4[] binds = new Matrix4x4[25];
-            //for (int i = 0; i < 25; i++)
-            //    binds[i] = new Matrix4x4();
-            //binds[10] = new Matrix4x4(
-            //    new Vector4(0f, 0.00055f, 1.31486f, 0f),
-            //    new Vector4(1.31486f, 0.00021f, 0f, 0f),
-            //    new Vector4(-0.00021f, 1.31486f, -0.00055f, 0f),
-            //    new Vector4(0.00014f, -0.87824f, -1.38419f, 1f)
-            //);
+            clip_bzt = new AmmoType.AmmoClip();
+            clip_bzt.Capacity = 165;
+            clip_bzt.Name = "23mm APDS-T";
+            clip_bzt.MinimalPattern = new AmmoCodexScriptable[] {
+                ammo_codex_apds,
+            };
 
-            //rend.sharedMesh.bindposes = binds;
-            //rend.rootBone = barrel_transform;
+            Util.Coalesce(ref clip_codex_bzt);
+            clip_codex_bzt.name = "clip_bzt";
+            clip_codex_bzt.ClipType = clip_bzt;
 
-            //zsu_full = new GameObject("zsu full");
-            //zsu_full.transform.localScale = new Vector3(1.4f, 1.4f, 1.3f);
-            //Vector3[] rots = new Vector3[] { new Vector3(0f, 0f, 45f), new Vector3(0f, 0f, -45f), new Vector3(0f, 0f, -135f), new Vector3(0f, 0f, 135f) };
-            //Vector3[] pos = new Vector3[] { Vector3.zero, new Vector3(-0.1491f, 0f, 0f), new Vector3(-0.1551f, 0.0836f, 0f), new Vector3(-0.005f, 0.0836f, 0f) };
+            ////////////////////
 
-            //for (int i = 0; i < 4; i++)
-            //{
-            //    GameObject barrel = GameObject.Instantiate(zsu_barrel, zsu_full.transform);
-            //    barrel.transform.localEulerAngles = rots[i];
-            //    barrel.transform.localPosition = pos[i];
-            //}
+            ammo_ofzt = new AmmoType();
+            Util.ShallowCopy(ammo_ofzt, Ammo_30mm.ammo_3uor6);
+            ammo_ofzt.Name = "23mm OFZT";
+            ammo_ofzt.UseTracer = true;
+            ammo_ofzt.TntEquivalentKg = 0.020f;
+            ammo_ofzt.MuzzleVelocity = 980f;
+            ammo_ofzt.Caliber = 23f;
+            ammo_ofzt.Coeff = 0.012f;
+            ammo_ofzt.SectionalArea = 0.0005f;
 
-            //weapon_2a7m = ScriptableObject.CreateInstance<WeaponSystemCodexScriptable>();
-            //weapon_2a7m.name = "gun_2a7m";
-            //weapon_2a7m.CaliberMm = 23;
-            //weapon_2a7m.FriendlyName = "23mm guns 2A7M";
-            //weapon_2a7m.Type = WeaponSystemCodexScriptable.WeaponType.Autocannon;
+            Util.Coalesce(ref ammo_codex_ofzt);
+            ammo_codex_ofzt.AmmoType = ammo_ofzt;
+            ammo_codex_ofzt.name = "ammo_ofzt";
 
-            //LRFReticle();
+            ammo_ofz = new AmmoType();
+            Util.ShallowCopy(ammo_ofz, Ammo_30mm.ammo_3uor6);
+            ammo_ofz.Name = "23mm OFZ";
+            ammo_ofz.UseTracer = false;
+            ammo_ofz.TntEquivalentKg = 0.025f;
+            ammo_ofz.MuzzleVelocity = 980f;
+            ammo_ofz.Caliber = 23f;
+            ammo_ofz.Coeff = 0.012f;
+            ammo_ofz.SectionalArea = 0.0005f;
+
+            Util.Coalesce(ref ammo_codex_ofz);
+            ammo_codex_ofz.AmmoType = ammo_ofz;
+            ammo_codex_ofz.name = "ammo_ofz";
+
+            clip_ofz = new AmmoType.AmmoClip();
+            clip_ofz.Capacity = 600;
+            clip_ofz.Name = "23mm BZT/OFZ";
+            clip_ofz.MinimalPattern = new AmmoCodexScriptable[] {
+                ammo_codex_ofz,
+                ammo_codex_bzt,
+                ammo_codex_ofz,
+                ammo_codex_bzt,
+                ammo_codex_ofz,
+            };
+
+            Util.Coalesce(ref clip_codex_ofz);
+            clip_codex_ofz.name = "clip_ofz";
+            clip_codex_ofz.ClipType = clip_ofz;
+
+            SkinnedMeshRenderer rig_renderer = SharedAssets.brdm2_hull.GetComponent<SkinnedMeshRenderer>();
+
+            brdm_nsv_barrel_mat = Material.Instantiate(rig_renderer.sharedMaterial);
+            brdm_nsv_barrel_mesh = Mesh.Instantiate(rig_renderer.sharedMesh);
+
+            zsu_barrel = new GameObject("zsu");
+            Transform barrel_transform = GameObject.Instantiate(new GameObject("barrel"), zsu_barrel.transform).transform;
+            SkinnedMeshRenderer rend = zsu_barrel.AddComponent<SkinnedMeshRenderer>();
+            rend.sharedMaterial = brdm_nsv_barrel_mat;
+            rend.sharedMesh = brdm_nsv_barrel_mesh;
+
+            Transform[] bones = new Transform[25];
+            for (int i = 0; i < 25; i++)
+                bones[i] = barrel_transform;
+            rend.bones = bones;
+
+            Matrix4x4[] binds = new Matrix4x4[25];
+            for (int i = 0; i < 25; i++)
+                binds[i] = new Matrix4x4();
+            binds[10] = new Matrix4x4(
+                new Vector4(0f, 0.00055f, 1.31486f, 0f),
+                new Vector4(1.31486f, 0.00021f, 0f, 0f),
+                new Vector4(-0.00021f, 1.31486f, -0.00055f, 0f),
+                new Vector4(0.00014f, -0.87824f, -1.38419f, 1f)
+            );
+
+            rend.sharedMesh.bindposes = binds;
+            rend.rootBone = barrel_transform;
+
+            zsu_full = new GameObject("zsu full");
+            zsu_full.transform.localScale = new Vector3(1.4f, 1.4f, 1.3f);
+            Vector3[] rots = new Vector3[] { new Vector3(0f, 0f, 45f), new Vector3(0f, 0f, -45f), new Vector3(0f, 0f, -135f), new Vector3(0f, 0f, 135f) };
+            Vector3[] pos = new Vector3[] { Vector3.zero, new Vector3(-0.1491f, 0f, 0f), new Vector3(-0.1551f, 0.0836f, 0f), new Vector3(-0.005f, 0.0836f, 0f) };
+
+            for (int i = 0; i < 4; i++)
+            {
+                GameObject barrel = GameObject.Instantiate(zsu_barrel, zsu_full.transform);
+                barrel.transform.localEulerAngles = rots[i];
+                barrel.transform.localPosition = pos[i];
+            }
+        }
+
+        public override void LoadStaticAssets()
+        {
+            if (!bmp2_patch.Value) return;
+
+            AssetBundle bmp2m_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "bmp2m"));
+            turret_no_smokes = bmp2m_bundle.LoadAsset<Mesh>("bmp2_no_smokes.asset");
+            turret_no_smokes.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            bmp2m_turret = bmp2m_bundle.LoadAsset<Mesh>("bmp2m_turret.asset");
+            bmp2m_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            turret_only_thermals = bmp2m_bundle.LoadAsset<Mesh>("turret_thermals_only.asset");
+            turret_only_thermals.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            bmp2m_kit = bmp2m_bundle.LoadAsset<GameObject>("BMP2M_KIT.prefab");
+            bmp2m_kit.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            Util.SetupFLIRShaders(bmp2m_kit);
+
+            weapon_2a7m = ScriptableObject.CreateInstance<WeaponSystemCodexScriptable>();
+            weapon_2a7m.name = "gun_2a7m";
+            weapon_2a7m.CaliberMm = 23;
+            weapon_2a7m.FriendlyName = "23mm guns 2A7M";
+            weapon_2a7m.Type = WeaponSystemCodexScriptable.WeaponType.Autocannon;
         }
 
         public static void Init()

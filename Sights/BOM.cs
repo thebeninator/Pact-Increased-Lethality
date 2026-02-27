@@ -8,11 +8,10 @@ using MelonLoader;
 
 namespace PactIncreasedLethality
 {
-    public class BOM
+    public class BOM : Module
     {
         private static ReticleSO reticleSO_atgm;
         private static ReticleMesh.CachedReticle reticle_cached_atgm;
-        private static bool assets_loaded = false;
 
         public static void Add(Transform optic, Transform laser_canvas = null) 
         {
@@ -85,10 +84,13 @@ namespace PactIncreasedLethality
             }
         }
 
-        public static void LoadAssets()
+        public override void UnloadDynamicAssets()
         {
-            if (assets_loaded) return;
+            ScriptableObject.DestroyImmediate(reticleSO_atgm);
+        }
 
+        public override void LoadDynamicAssets()
+        {
             reticleSO_atgm = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T55"].tree);
             reticleSO_atgm.name = "T55_atgm";
 
@@ -164,8 +166,6 @@ namespace PactIncreasedLethality
             eeeee.elements.Add(middle_line3);
 
             reticleSO_atgm.planes[0].elements.Add(eeeee);
-
-            assets_loaded = true;
         }
     }
 }
