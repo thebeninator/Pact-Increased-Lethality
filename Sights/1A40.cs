@@ -125,10 +125,11 @@ namespace PactIncreasedLethality
         {
             bool lead_calc_t72m = AssetUtil.VehicleInMission("T72M") && T72.lead_calculator_t72m.Value;
             bool lead_calc_t72m1 = AssetUtil.VehicleInMission("T72M1") && T72.lead_calculator_t72m1.Value;
-            bool lead_calc_t64a = AssetUtil.VehicleInMission("T64A 1979") && T64A.lead_calculator_t64.Value;
+            bool lead_calc_t64a = AssetUtil.VehicleInMission("T64A 1983") && T64A.lead_calculator_t64.Value;
 
             if (!lead_calc_t64a && !lead_calc_t72m && !lead_calc_t72m1) return;
 
+            //FIXME this is unhinged
             lead_readout_canvas = GameObject.Instantiate(SharedAssets.t80b_canvas);
             GameObject.DestroyImmediate(lead_readout_canvas.transform.GetChild(3).gameObject);
             GameObject.DestroyImmediate(lead_readout_canvas.transform.GetChild(2).gameObject);
@@ -144,10 +145,6 @@ namespace PactIncreasedLethality
             t72m1.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
 
             Reticle();
-        }
-
-        public override void LoadStaticAssets()
-        {
         }
     }
 }

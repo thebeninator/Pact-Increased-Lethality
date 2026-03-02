@@ -223,8 +223,6 @@ namespace PactIncreasedLethality
                 if (vic.FriendlyName != "BMP-2") continue;
                 if (vic.GetComponent<AlreadyConverted>() != null) continue;
 
-                LRFReticle();
-
                 LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
 
                 WeaponSystem main_gun = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
@@ -343,20 +341,6 @@ namespace PactIncreasedLethality
                         main_gun.FCS.WeaponAuthoritative = false;
                         main_gun.FCS.InertialCompensation = false;
                         main_gun.FCS.LaserAim = LaserAimMode.ImpactPoint;
-
-                        if (!reticleSO)
-                        {
-                            reticleSO = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["BMP-2_BPK-1-42"].tree);
-                            reticleSO.name = "bmp2static";
-
-                            Util.ShallowCopy(reticle_cached, ReticleMesh.cachedReticles["BMP-2_BPK-1-42"]);
-                            reticle_cached.tree = reticleSO;
-
-                            ReticleTree.Angular angular = (reticle_cached.tree.planes[0].elements[1] as ReticleTree.Angular);
-                            angular.align = ReticleTree.GroupBase.Alignment.Impact;
-                            angular.elements.RemoveRange(0, 3);
-                            (angular.elements[1] as ReticleTree.Angular).align = ReticleTree.GroupBase.Alignment.Boresight;
-                        }
 
                         day_optic.reticleMesh.reticleSO = reticleSO;
                         day_optic.reticleMesh.reticle = reticle_cached;
@@ -573,9 +557,22 @@ namespace PactIncreasedLethality
             yield break;
         }
 
-        public static void LRFReticle() {
-            if (reticleSO_lrf != null) return;
+        public static void ZSUReticle() 
+        {
+            reticleSO = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["BMP-2_BPK-1-42"].tree);
+            reticleSO.name = "bmp2static";
 
+            Util.ShallowCopy(reticle_cached, ReticleMesh.cachedReticles["BMP-2_BPK-1-42"]);
+            reticle_cached.tree = reticleSO;
+
+            ReticleTree.Angular angular = (reticle_cached.tree.planes[0].elements[1] as ReticleTree.Angular);
+            angular.align = ReticleTree.GroupBase.Alignment.Impact;
+            angular.elements.RemoveRange(0, 3);
+            (angular.elements[1] as ReticleTree.Angular).align = ReticleTree.GroupBase.Alignment.Boresight;
+        }
+
+        public static void LRFReticle() 
+        {
             reticleSO_lrf = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["BMP-2_BPK-1-42"].tree);
             reticleSO_lrf.name = "bmp2_lrf_ac";
 
@@ -653,6 +650,8 @@ namespace PactIncreasedLethality
             Mesh.DestroyImmediate(brdm_nsv_barrel_mesh);
             GameObject.DestroyImmediate(zsu_full);
             GameObject.DestroyImmediate(zsu_barrel);
+            ScriptableObject.DestroyImmediate(reticleSO_lrf);
+            ScriptableObject.DestroyImmediate(reticleSO);
         }
 
         public override void LoadDynamicAssets()
@@ -663,6 +662,9 @@ namespace PactIncreasedLethality
             AmmoClipCodexScriptable[] clip_codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoClipCodexScriptable>();
             AmmoCodexScriptable[] codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoCodexScriptable>();
             AmmoType ammo_9m113 = codex_scriptables.Where(o => o.name == "ammo_9M113").FirstOrDefault().AmmoType;
+
+            LRFReticle();
+            ZSUReticle();
 
             ammo_9m113_as = new AmmoType();
             Util.ShallowCopy(ammo_9m113_as, ammo_9m113);

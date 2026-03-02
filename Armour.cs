@@ -9,7 +9,6 @@ namespace PactIncreasedLethality
         internal static bool done = false;
         public static ArmorCodexScriptable ru_welded_armor;
         public static ArmorCodexScriptable ru_cast_armor;
-        public static ArmorCodexScriptable bdd_cast_armor;
         public static ArmorCodexScriptable composite_armor;
         public static ArmorCodexScriptable hull_metal_polymer;
         public static ArmorCodexScriptable cheek_metal_polymer;
@@ -105,21 +104,6 @@ namespace PactIncreasedLethality
             t80u_composite.CrushThicknessModifier = 1f;
             t80u_composite_armor.ArmorType = t80u_composite;
 
-            bdd_cast_armor = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
-            bdd_cast_armor.name = "bdd cast armor";
-            ArmorType bdd_cast = new ArmorType();
-            bdd_cast.Name = "bdd cast steel";
-            bdd_cast.CanRicochet = true;
-            bdd_cast.CanShatterLongRods = true;
-            bdd_cast.NormalizesHits = true;
-            bdd_cast.ThicknessSource = ArmorType.RhaSource.Multipliers;
-            bdd_cast.SpallAngleMultiplier = 1f;
-            bdd_cast.SpallPowerMultiplier = 1f;
-            bdd_cast.RhaeMultiplierCe = 0.3f; // super low multipliers b/c i kinda fucked up on the scale of the outer shell 
-            bdd_cast.RhaeMultiplierKe = 0.3f;
-            bdd_cast.CrushThicknessModifier = 1f;
-            bdd_cast_armor.ArmorType = bdd_cast;
-
             cheek_metal_polymer = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
             cheek_metal_polymer.name = "ru metal polymer";
             ArmorType mpoly_cheek = new ArmorType();
@@ -130,8 +114,8 @@ namespace PactIncreasedLethality
             mpoly_cheek.ThicknessSource = ArmorType.RhaSource.Multipliers;
             mpoly_cheek.SpallAngleMultiplier = 1f;
             mpoly_cheek.SpallPowerMultiplier = 0.2f;
-            mpoly_cheek.RhaeMultiplierCe = super_mpoly.Value ? 1.8f : 1.45f;
-            mpoly_cheek.RhaeMultiplierKe = super_mpoly.Value ? 1.10f : 1.02f;
+            mpoly_cheek.RhaeMultiplierCe = super_mpoly.Value ? 1.45f : 1.20f;
+            mpoly_cheek.RhaeMultiplierKe = super_mpoly.Value ? 1.00f : 0.80f;
             mpoly_cheek.CrushThicknessModifier = 1f;
             cheek_metal_polymer.ArmorType = mpoly_cheek;
 
@@ -145,8 +129,8 @@ namespace PactIncreasedLethality
             mpoly_hull.ThicknessSource = ArmorType.RhaSource.Multipliers;
             mpoly_hull.SpallAngleMultiplier = 1f;
             mpoly_hull.SpallPowerMultiplier = 0.2f;
-            mpoly_hull.RhaeMultiplierCe = super_mpoly.Value ? 2.35f : 2.2f;
-            mpoly_hull.RhaeMultiplierKe = super_mpoly.Value ? 1.10f : 1.02f;
+            mpoly_hull.RhaeMultiplierCe = super_mpoly.Value ? 2.00f : 1.50f;
+            mpoly_hull.RhaeMultiplierKe = super_mpoly.Value ? 1.10f : 0.95f;
             mpoly_hull.CrushThicknessModifier = 1f;
             hull_metal_polymer.ArmorType = mpoly_hull;
 

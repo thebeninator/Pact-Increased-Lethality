@@ -26,9 +26,6 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> applique;
         static MelonPreferences_Entry<bool> engine_upr;
 
-        static ReticleSO reticleSO;
-        static ReticleMesh.CachedReticle reticle_cached;
-
         static Texture2D t62m_turret;
         static GameObject t62m_turret_parts;
         static GameObject t62m_lrf;
@@ -119,44 +116,8 @@ namespace PactIncreasedLethality
 
                     weapon.FCS.GetComponent<LimitedLRF>().canvas = t.transform;
 
-                    if (!reticleSO)
-                    {
-                        ReticleTree.Angular reticle = null;
-
-                        reticleSO = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["T62 Corrected"].tree);
-                        reticleSO.name = "T62withdalaser";
-
-                        Util.ShallowCopy(reticle_cached, ReticleMesh.cachedReticles["T62 Corrected"]);
-                        reticle_cached.tree = reticleSO;
-
-                        reticle_cached.tree.lights = new List<ReticleTree.Light>() {
-                            new ReticleTree.Light(),
-                            new ReticleTree.Light()
-                        };
-
-                        reticle_cached.tree.lights[0] = ReticleMesh.cachedReticles["T62 Corrected"].tree.lights[0];
-                        reticle_cached.tree.lights[1].type = ReticleTree.Light.Type.Powered;
-                        reticle_cached.tree.lights[1].color = new RGB(15f, 0f, 0f, true);
-
-                        reticleSO.planes[0].elements.Add(new ReticleTree.Angular(new Vector2(0, 0), null, ReticleTree.GroupBase.Alignment.LasePoint));
-                        reticle = reticleSO.planes[0].elements[2] as ReticleTree.Angular;
-                        reticle_cached.mesh = null;
-
-                        reticle.elements.Add(new ReticleTree.Circle());
-                        reticle.name = "LasePoint";
-                        reticle.position = new ReticleTree.Position(0, 0, AngularLength.AngularUnit.MIL_USSR, LinearLength.LinearUnit.M);
-                        ReticleTree.Circle circle = reticle.elements[0] as ReticleTree.Circle;
-                        circle.radius.mrad = 0.5236f;
-                        circle.thickness.mrad = 0.16f;
-                        circle.illumination = ReticleTree.Light.Type.Powered;
-                        circle.visualType = ReticleTree.VisualElement.Type.ReflectedAdditive;
-                        circle.position = new ReticleTree.Position(0, 0, AngularLength.AngularUnit.MIL_USSR, LinearLength.LinearUnit.M);
-                        circle.position.x = 0;
-                        circle.position.y = 0;
-                    }
-
-                    day_optic.reticleMesh.reticleSO = reticleSO;
-                    day_optic.reticleMesh.reticle = reticle_cached;
+                    day_optic.reticleMesh.reticleSO = T55.reticleSO;
+                    day_optic.reticleMesh.reticle = T55.reticle_cached;
                     day_optic.reticleMesh.SMR = null;
                     day_optic.reticleMesh.Load();
                 }
@@ -366,16 +327,18 @@ namespace PactIncreasedLethality
             aar_r_cheek.HideUntilAar = true;
 
             GameObject turret_left_applique = armour.transform.Find("L APPLIQUE CHEEK").gameObject;
-            VariableArmor armor_turret_l_applique = turret_left_applique.AddComponent<VariableArmor>();
+            UniformArmor armor_turret_l_applique = turret_left_applique.AddComponent<UniformArmor>();
             armor_turret_l_applique.SetName("applique cheek armor");
-            armor_turret_l_applique._armorType = Armour.bdd_cast_armor;
-            armor_turret_l_applique._spallForwardRatio = 0.5f;
+            armor_turret_l_applique._armorType = Armour.ru_cast_armor;
+            armor_turret_l_applique.PrimaryHeatRha = 30f;
+            armor_turret_l_applique.PrimarySabotRha = 30f;
 
             GameObject turret_right_applique = armour.transform.Find("R APPLIQUE CHEEK").gameObject;
-            VariableArmor armor_turret_r_applique = turret_right_applique.AddComponent<VariableArmor>();
+            UniformArmor armor_turret_r_applique = turret_right_applique.AddComponent<UniformArmor>();
             armor_turret_r_applique.SetName("applique cheek armor");
-            armor_turret_r_applique._armorType = Armour.bdd_cast_armor;
-            armor_turret_r_applique._spallForwardRatio = 0.5f;
+            armor_turret_r_applique._armorType = Armour.ru_cast_armor;
+            armor_turret_r_applique.PrimaryHeatRha = 30f;
+            armor_turret_r_applique.PrimarySabotRha = 30f;
 
             GameObject hull_mpoly_block = hull_armour.transform.Find("MPOLY BLOCK").gameObject;
             VariableArmor armor_mpoly_block = hull_mpoly_block.AddComponent<VariableArmor>();

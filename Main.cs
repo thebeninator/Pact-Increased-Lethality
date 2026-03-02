@@ -82,8 +82,8 @@ namespace PactIncreasedLethality
             modules.Add("AMMO_30MM", new Ammo_30mm());
             modules.Add("T72", new T72());
             modules.Add("T80", new T80());
-            //modules.Add("T55", new T55());
-            //modules.Add("T62", new T62());
+            modules.Add("T55", new T55());
+            modules.Add("T62", new T62());
             modules.Add("BMP2", new BMP2());
             modules.Add("BMP1", new BMP1());
             modules.Add("BTR60", new BTR60());
@@ -100,22 +100,27 @@ namespace PactIncreasedLethality
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
+            foreach (string id in modules.Keys)
+            {
+                Module module = modules[id];
+                bool dynamic_unloaded = module.TryUnloadDynamicAssets();
+
+                if (dynamic_unloaded)
+                {
+                    MelonLogger.Msg("PIL dynamic assets unloaded from module: " + id);
+                }
+            }
+
             if (sceneName == "MainMenu2_Scene" || sceneName == "MainMenu2-1_Scene" || sceneName == "t64_menu")
             {
                 foreach (string id in modules.Keys) 
                 {
                     Module module = modules[id];
-                    bool static_loaded = module.TryLoadStaticAssets();  
-                    bool dynamic_unloaded = module.TryUnloadDynamicAssets();
+                    bool static_loaded = module.TryLoadStaticAssets();               
                     
                     if (static_loaded) 
                     {
                         MelonLogger.Msg("PIL static assets loaded from module: " + id);
-                    }
-
-                    if (dynamic_unloaded)
-                    {
-                        MelonLogger.Msg("PIL dynamic assets unloaded from module: " + id);
                     }
                 }
 

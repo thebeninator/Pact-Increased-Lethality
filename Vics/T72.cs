@@ -669,6 +669,12 @@ namespace PactIncreasedLethality
                         if (has_k1 && has_sosna && has_reflective_plates) name = "T-72B1MS";
                         if (name == "T-72B3" && has_ubh) name = "T-72B3M";
 
+                        if (has_k5 || has_k1) 
+                        {
+                            vic.transform.Find("---MESH---/HULL/t72m hull net").gameObject.SetActive(false);
+                            vic.transform.Find("---MESH---/HULL/TURRET/t72m turret net").gameObject.SetActive(false);
+                        }
+
                         vic._friendlyName = name;
                     }
                 }

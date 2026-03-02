@@ -40,6 +40,9 @@ namespace PactIncreasedLethality
 
         internal static GameObject brdm2_hull;
 
+        internal static Material t80b_mat;
+        internal static TMP_FontAsset sov_7_segment_font;
+
         public override void LoadStaticAssets()
         {
             AmmoClipCodexScriptable[] clip_codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoClipCodexScriptable>();
@@ -75,7 +78,9 @@ namespace PactIncreasedLethality
 
             Vehicle t80b = AssetUtil.LoadVanillaVehicle("T80B");
             t80b_canvas = t80b.transform.Find("---MAIN GUN SCRIPTS---/2A46-2/1G42 gunner's sight/GPS/1G42 Canvas").gameObject;
+            t80b_mat = t80b.transform.Find("T80_mesh/body").GetComponent<MeshRenderer>().materials[0];
             t80b.transform.Find("---MAIN GUN SCRIPTS---/2A46-2/TPN‑3‑49 night sight/Reticle Mesh").GetComponent<ReticleMesh>().Load();
+            sov_7_segment_font = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().Where(o => o.name == "Soviet7SegmentFont SDF").FirstOrDefault();
 
             Vehicle brdm2 = AssetUtil.LoadVanillaVehicle("BRDM2");
             brdm2_hull = brdm2.transform.Find("BRDM2_1983 (1)/BRDM_hull_1983").gameObject;

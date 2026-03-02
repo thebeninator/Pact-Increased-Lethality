@@ -39,6 +39,10 @@
 
         public virtual void LoadStaticAssets() {}
         public virtual void LoadDynamicAssets() {}
+
+        // ASSETS THAT ARE INSTANTIATED DYNAMICALLY 
+        // I.E. USING Object.Instantiate
+        // MUST BE DESTROYED!
         public virtual void UnloadDynamicAssets() {}
     }
 }

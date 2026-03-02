@@ -21,6 +21,11 @@ namespace PactIncreasedLethality
                 return true;
             }
 
+            if (__instance._laserDestroyed)
+            {
+                return true;
+            }
+
             __instance._laseQueued = false;
 
             float num = -1f;

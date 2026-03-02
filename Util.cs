@@ -11,7 +11,8 @@ namespace PactIncreasedLethality
 {
     public class AlreadyConverted : MonoBehaviour
     {
-        void Awake() {
+        void Awake() 
+        {
             enabled = false;
         }
     }
@@ -45,7 +46,7 @@ namespace PactIncreasedLethality
             return values.ToArray();
         }
 
-        public static void SetupFLIRShaders(GameObject parent, float heat = 0.7f) {
+        public static void SetupFLIRShaders(GameObject parent, float heat = 0.55f) {
             foreach (MeshRenderer mrend in parent.GetComponentsInChildren<MeshRenderer>(includeInactive: false))
             {
                 foreach (Material mat in mrend.materials)
