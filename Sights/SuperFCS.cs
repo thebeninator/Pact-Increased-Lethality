@@ -255,7 +255,7 @@ namespace PactIncreasedLethality
             day_optic.slot.VibrationBlurScale = 0f;
             day_optic.slot.fovAspect = false;
             day_optic.RotateAzimuth = true;
-            day_optic.ForceHorizontalReticleAlign = false;
+            day_optic.ForceHorizontalReticleAlign = true;
             day_optic.ZeroOutInvalidRange = true;
             day_optic.reticleMesh.reticleSO = reticleSO_sosna;
             day_optic.reticleMesh.reticle = reticle_cached_sosna;
@@ -357,9 +357,9 @@ namespace PactIncreasedLethality
             s.guidance_computer = mgu;
             s.tracking_gates = crosshair_elements.transform.Find("TRACKING GATE HOLDER").GetComponent<RectTransform>();
 
-            fcs.RegisteredRangeLimits = new Vector2(0f, 4000f);
-            fcs._originalRangeLimits = new Vector2(0f, 4000f);
-            fcs._currentRange = 0f;
+            fcs.RegisteredRangeLimits = new Vector2(50f, 4000f);
+            fcs._originalRangeLimits = new Vector2(50f, 4000f);
+            fcs._currentRange = 50f;
             fcs.UpdateRange();
 
             night_optic.gameObject.SetActive(true);

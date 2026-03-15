@@ -1,18 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using FMOD;
+﻿using System.Linq;
 using GHPC.Camera;
-using GHPC.Effects.Voices;
-using GHPC.Mission;
 using GHPC.Vehicle;
 using GHPC.Weaponry;
-using MelonLoader;
 using NWH.VehiclePhysics;
 using Reticle;
 using TMPro;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 
 namespace PactIncreasedLethality
 {

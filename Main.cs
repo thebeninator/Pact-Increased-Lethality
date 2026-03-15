@@ -13,7 +13,7 @@ using GHPC.Vehicle;
 using PactIncreasedLethality;
 using System.Collections.Generic;
 
-[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.0.7", "ATLAS")]
+[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.0.7A", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -44,7 +44,8 @@ namespace PactIncreasedLethality
                 Module module = modules[id];
                 bool loaded = module.TryLoadDynamicAssets();
 
-                if (loaded) {
+                if (loaded)
+                {
                     MelonLogger.Msg("PIL dynamic assets loaded from module: " + id);
                 }
             }
@@ -129,10 +130,16 @@ namespace PactIncreasedLethality
                 AssetUtil.ReleaseVanillaAssets();
             }
 
+            //TODO why is this needed?        
+            if (sceneName == "GT01_Beginers_Luck") 
+            {
+                AssetUtil.LoadVanillaVehicle("T72M");
+            }
+
             if (Util.menu_screens.Contains(sceneName)) return;
 
             StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(OnGameReady), GameStatePriority.Medium);
-            
+
             PactEra.Init();
             Armour.Init();
             ProximityFuse.Init();

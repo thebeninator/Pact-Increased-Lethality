@@ -362,7 +362,6 @@ namespace PactIncreasedLethality
             }
         }
 
-
         public override void UnloadDynamicAssets()
         {
             GameObject.DestroyImmediate(m60a1_nvs);
@@ -399,6 +398,7 @@ namespace PactIncreasedLethality
             btr60a_turret_complete = bundle.LoadAsset<GameObject>("BTR80A_TURRET.prefab");
             btr60a_turret_complete.hideFlags = HideFlags.DontUnloadUnusedAsset;
             btr60a_turret_complete.transform.localScale = new Vector3(1.1f, 1.1f, 1.1f);
+            Util.SetupFLIRShaders(btr60a_turret_complete);
 
             Transform turret = btr60a_turret_complete.transform.Find("BTR_80_B");
             Transform gun = btr60a_turret_complete.transform.Find("BTR_80_C");
@@ -419,10 +419,6 @@ namespace PactIncreasedLethality
             gun_u_armour.PrimaryHeatRha = 10f;
             gun_u_armour.PrimarySabotRha = 10f;
             gun_u_armour.SetName("weapons assembly");
-
-            turret.GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-            gun.GetComponent<MeshRenderer>().material.shader = Shader.Find("Standard (FLIR)");
-            btr60a_turret_complete.gameObject.AddComponent<HeatSource>().heat = 5f;
         }
 
         public static void Init()

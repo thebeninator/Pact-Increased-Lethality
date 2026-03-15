@@ -123,7 +123,10 @@ namespace PactIncreasedLethality
 
         public override void LoadDynamicAssets()
         {
-            bool lead_calc_t72m = AssetUtil.VehicleInMission("T72M") && T72.lead_calculator_t72m.Value;
+            bool t72m_converted = T72.t72m_composite_cheeks.Value || T72.t72m_super_composite_cheeks.Value || T72.era_t72m.Value || T72.k5_t72m.Value;
+            bool t72m_present = (t72m_converted && AssetUtil.VehicleInMission("T72M1")) || AssetUtil.VehicleInMission("T72M");
+
+            bool lead_calc_t72m = t72m_present && T72.lead_calculator_t72m.Value;
             bool lead_calc_t72m1 = AssetUtil.VehicleInMission("T72M1") && T72.lead_calculator_t72m1.Value;
             bool lead_calc_t64a = AssetUtil.VehicleInMission("T64A 1983") && T64A.lead_calculator_t64.Value;
 

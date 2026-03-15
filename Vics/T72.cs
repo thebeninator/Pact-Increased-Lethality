@@ -19,6 +19,7 @@ using GHPC.Equipment;
 using GHPC.Mission;
 using GHPC.AI;
 using GHPC.Mission.Data;
+using GHPC.Player;
 
 namespace PactIncreasedLethality
 {
@@ -47,13 +48,13 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> only_carousel;
 
         static MelonPreferences_Entry<bool> k5_t72m1;
-        static MelonPreferences_Entry<bool> k5_t72m;
+        internal static MelonPreferences_Entry<bool> k5_t72m;
 
         static MelonPreferences_Entry<bool> ubh_t72m1;
         static MelonPreferences_Entry<bool> ubh_t72m;
 
         static MelonPreferences_Entry<bool> era_t72m1;
-        static MelonPreferences_Entry<bool> era_t72m;
+        internal static MelonPreferences_Entry<bool> era_t72m;
 
         static MelonPreferences_Entry<bool> soviet_t72m;
         static MelonPreferences_Entry<bool> soviet_t72m1;
@@ -67,8 +68,8 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> tpn3_t72m;
         static MelonPreferences_Entry<bool> tpn3_t72m1;
 
-        static MelonPreferences_Entry<bool> t72m_composite_cheeks;
-        static MelonPreferences_Entry<bool> t72m_super_composite_cheeks;
+        internal static MelonPreferences_Entry<bool> t72m_composite_cheeks;
+        internal static MelonPreferences_Entry<bool> t72m_super_composite_cheeks;
         static MelonPreferences_Entry<bool> t72m1_super_composite_cheeks;
 
         static MelonPreferences_Entry<List<string>> empty_ammo_t72m;
