@@ -3,14 +3,12 @@ using System.Linq;
 using GHPC.Weapons;
 using UnityEngine;
 using GHPC.Weaponry;
-using System;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {
-    public class Ammo_125mm
+    public class Ammo_125mm : Module
     {
-        private static bool assets_loaded = false;
-
         public static AmmoClipCodexScriptable clip_codex_3bm26;
         public static AmmoType.AmmoClip clip_3bm26;
         public static AmmoCodexScriptable ammo_codex_3bm26;
@@ -91,9 +89,18 @@ namespace PactIncreasedLethality
             ammo_3bm42.ArmorOptimizations = composite_optimizations_3bm42.ToArray<AmmoType.ArmorOptimization>();
         }
 
-        public static void LoadAssets() {
-            if (assets_loaded) return;
+        public override void UnloadDynamicAssets()
+        {
+            GameObject.DestroyImmediate(ammo_3bm26_vis);
+            GameObject.DestroyImmediate(ammo_3bm42_vis);
+            GameObject.DestroyImmediate(ammo_3bm60_vis);
+            GameObject.DestroyImmediate(ammo_3bm46_vis);
+            GameObject.DestroyImmediate(ammo_9m119_vis);
+            GameObject.DestroyImmediate(ammo_9m119m1_vis);
+        }
 
+        public override void LoadDynamicAssets()
+        {
             ammo_3bm26 = new AmmoType();
             Util.ShallowCopy(ammo_3bm26, SharedAssets.ammo_3bm32);
             ammo_3bm26.Name = "3BM26 APFSDS-T";
@@ -103,7 +110,7 @@ namespace PactIncreasedLethality
             ammo_3bm26.MuzzleVelocity = 1720f;
             ammo_3bm26.SpallMultiplier = 0.9f;
 
-            ammo_codex_3bm26 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+            Util.Coalesce(ref ammo_codex_3bm26);
             ammo_codex_3bm26.AmmoType = ammo_3bm26;
             ammo_codex_3bm26.name = "ammo_3bm26";
 
@@ -113,7 +120,7 @@ namespace PactIncreasedLethality
             clip_3bm26.MinimalPattern = new AmmoCodexScriptable[1];
             clip_3bm26.MinimalPattern[0] = ammo_codex_3bm26;
 
-            clip_codex_3bm26 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+            Util.Coalesce(ref clip_codex_3bm26);
             clip_codex_3bm26.name = "clip_3bm26";
             clip_codex_3bm26.ClipType = clip_3bm26;
 
@@ -122,6 +129,8 @@ namespace PactIncreasedLethality
             ammo_3bm26.VisualModel = ammo_3bm26_vis;
             ammo_3bm26.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm26;
             ammo_3bm26.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm26;
+
+            /*****************************************************************************************************/
 
             ammo_3bm42 = new AmmoType();
             Util.ShallowCopy(ammo_3bm42, SharedAssets.ammo_3bm32);
@@ -135,7 +144,7 @@ namespace PactIncreasedLethality
             ammo_3bm42.MinSpallRha = 6f;
             ammo_3bm26.SpallMultiplier = 0.9f;
 
-            ammo_codex_3bm42 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+            Util.Coalesce(ref ammo_codex_3bm42);
             ammo_codex_3bm42.AmmoType = ammo_3bm42;
             ammo_codex_3bm42.name = "ammo_3bm42";
 
@@ -145,7 +154,7 @@ namespace PactIncreasedLethality
             clip_3bm42.MinimalPattern = new AmmoCodexScriptable[1];
             clip_3bm42.MinimalPattern[0] = ammo_codex_3bm42;
 
-            clip_codex_3bm42 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+            Util.Coalesce(ref clip_codex_3bm42);
             clip_codex_3bm42.name = "clip_3bm42";
             clip_codex_3bm42.ClipType = clip_3bm42;
 
@@ -154,6 +163,8 @@ namespace PactIncreasedLethality
             ammo_3bm42.VisualModel = ammo_3bm42_vis;
             ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm42;
             ammo_3bm42.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm42;
+
+            /*****************************************************************************************************/
 
             ammo_3bm46 = new AmmoType();
             Util.ShallowCopy(ammo_3bm46, SharedAssets.ammo_3bm32);
@@ -165,8 +176,8 @@ namespace PactIncreasedLethality
             ammo_3bm46.SpallMultiplier = 1.25f;
             ammo_3bm46.MaxSpallRha = 24f;
             ammo_3bm46.MinSpallRha = 6f;
-          
-            ammo_codex_3bm46 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+
+            Util.Coalesce(ref ammo_codex_3bm46);
             ammo_codex_3bm46.AmmoType = ammo_3bm46;
             ammo_codex_3bm46.name = "ammo_3bm46";
 
@@ -176,7 +187,7 @@ namespace PactIncreasedLethality
             clip_3bm46.MinimalPattern = new AmmoCodexScriptable[1];
             clip_3bm46.MinimalPattern[0] = ammo_codex_3bm46;
 
-            clip_codex_3bm46 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+            Util.Coalesce(ref clip_codex_3bm46);
             clip_codex_3bm46.name = "clip_3bm46";
             clip_codex_3bm46.ClipType = clip_3bm46;
 
@@ -185,6 +196,8 @@ namespace PactIncreasedLethality
             ammo_3bm46.VisualModel = ammo_3bm46_vis;
             ammo_3bm46.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm46;
             ammo_3bm46.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm46;
+
+            /*****************************************************************************************************/
 
             ammo_3bm60 = new AmmoType();
             Util.ShallowCopy(ammo_3bm60, SharedAssets.ammo_3bm32);
@@ -197,7 +210,7 @@ namespace PactIncreasedLethality
             ammo_3bm60.MaxSpallRha = 24f;
             ammo_3bm60.MinSpallRha = 6f;
 
-            ammo_codex_3bm60 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+            Util.Coalesce(ref ammo_codex_3bm60);
             ammo_codex_3bm60.AmmoType = ammo_3bm60;
             ammo_codex_3bm60.name = "ammo_3bm60";
 
@@ -207,7 +220,7 @@ namespace PactIncreasedLethality
             clip_3bm60.MinimalPattern = new AmmoCodexScriptable[1];
             clip_3bm60.MinimalPattern[0] = ammo_codex_3bm60;
 
-            clip_codex_3bm60 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+            Util.Coalesce(ref clip_codex_3bm60);
             clip_codex_3bm60.name = "clip_3bm60";
             clip_codex_3bm60.ClipType = clip_3bm60;
 
@@ -216,6 +229,8 @@ namespace PactIncreasedLethality
             ammo_3bm60.VisualModel = ammo_3bm60_vis;
             ammo_3bm60.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bm60;
             ammo_3bm60.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bm60;
+
+            /*****************************************************************************************************/
 
             ammo_9m119m1 = new AmmoType();
             Util.ShallowCopy(ammo_9m119m1, SharedAssets.ammo_kobra);
@@ -230,7 +245,7 @@ namespace PactIncreasedLethality
             ammo_9m119m1.TurnSpeed = 2f;
             ammo_9m119m1.Guidance = AmmoType.GuidanceType.Laser;
 
-            ammo_codex_9m119m1 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+            Util.Coalesce(ref ammo_codex_9m119m1);
             ammo_codex_9m119m1.AmmoType = ammo_9m119m1;
             ammo_codex_9m119m1.name = "ammo_9m119m1_refleks";
 
@@ -240,7 +255,7 @@ namespace PactIncreasedLethality
             clip_9m119m1.MinimalPattern = new AmmoCodexScriptable[1];
             clip_9m119m1.MinimalPattern[0] = ammo_codex_9m119m1;
 
-            clip_codex_9m119m1 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+            Util.Coalesce(ref clip_codex_9m119m1);
             clip_codex_9m119m1.name = "clip_9m119m1_refleks";
             clip_codex_9m119m1.ClipType = clip_9m119m1;
 
@@ -249,6 +264,8 @@ namespace PactIncreasedLethality
             ammo_9m119m1.VisualModel = ammo_9m119m1_vis;
             ammo_9m119m1.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m119m1;
             ammo_9m119m1.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m119m1;
+
+            /*****************************************************************************************************/
 
             ammo_9m119 = new AmmoType();
             Util.ShallowCopy(ammo_9m119, SharedAssets.ammo_kobra);
@@ -263,7 +280,7 @@ namespace PactIncreasedLethality
             ammo_9m119.TurnSpeed = 2f;
             ammo_9m119.Guidance = AmmoType.GuidanceType.Laser;
 
-            ammo_codex_9m119 = ScriptableObject.CreateInstance<AmmoCodexScriptable>();
+            Util.Coalesce(ref ammo_codex_9m119);
             ammo_codex_9m119.AmmoType = ammo_9m119;
             ammo_codex_9m119.name = "ammo_9m119_refleks";
 
@@ -273,7 +290,7 @@ namespace PactIncreasedLethality
             clip_9m119.MinimalPattern = new AmmoCodexScriptable[1];
             clip_9m119.MinimalPattern[0] = ammo_codex_9m119;
 
-            clip_codex_9m119 = ScriptableObject.CreateInstance<AmmoClipCodexScriptable>();
+            Util.Coalesce(ref clip_codex_9m119);
             clip_codex_9m119.name = "clip_9m119_refleks";
             clip_codex_9m119.ClipType = clip_9m119;
 
@@ -298,8 +315,6 @@ namespace PactIncreasedLethality
                 ["9M119"] = clip_codex_9m119,
                 ["9M119M1"] = clip_codex_9m119m1,
             };
-
-            assets_loaded = true;
         }
     }
 }

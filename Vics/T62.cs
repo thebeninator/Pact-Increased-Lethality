@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using GHPC;
 using GHPC.Equipment.Optics;
@@ -10,8 +9,9 @@ using GHPC.Weapons;
 using MelonLoader;
 using MelonLoader.Utils;
 using NWH.VehiclePhysics;
-using Reticle;
 using UnityEngine;
+using ModUtil;
+using System.Collections.Generic;
 
 namespace PactIncreasedLethality
 {
@@ -26,22 +26,20 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> applique;
         static MelonPreferences_Entry<bool> engine_upr;
 
-        static Texture2D t62m_turret;
-        static GameObject t62m_turret_parts;
+        static GameObject t62m_kit;
         static GameObject t62m_lrf;
-        static GameObject t62m_hull_parts;
-        static GameObject t62m_skirts;
         static Mesh t62m_hull;
+        static Mesh t62m_turret;
 
-        private class HideLeftCheek : MonoBehaviour {
-            public Transform cheek;
+        private class HideCheeks : MonoBehaviour {
+            public MeshRenderer mesh_rend;
 
             void OnEnable() {
-                cheek.gameObject.SetActive(false);
+                mesh_rend.enabled = false;
             }
 
             void OnDisable() {
-                cheek.gameObject.SetActive(true);
+                mesh_rend.enabled = true;
             }
         }
 
@@ -90,20 +88,21 @@ namespace PactIncreasedLethality
 
                 if (has_lrf.Value)
                 {
-                    GameObject lrf = GameObject.Instantiate(t62m_lrf, vic.transform.Find("---T62_rig---/HULL/TURRET/turret"));
-                    lrf.transform.localEulerAngles = new Vector3(90f, 0f, 0f);
+                    GameObject lrf_holder = GameObject.Instantiate(t62m_lrf, vic.transform.Find("T62_base/hull"));
+                    Transform lrf = lrf_holder.transform.Find("LRF");
+                    Transform gun = vic.transform.Find("---T62_rig---/HULL/TURRET/GUN");
+                    lrf_holder.transform.SetParent(gun.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
 
-                    Transform laser = lrf.transform.Find("LRF");
-                    laser.gameObject.AddComponent<LateFollowTarget>();
+                    Transform laser_armour = lrf.transform.Find("ARMOUR");
+                    GHPC.Equipment.DestructibleComponent laser_destr = laser_armour.gameObject.AddComponent<GHPC.Equipment.DestructibleComponent>();
+                    laser_destr._health = 5f;
+                    laser_destr._fullHealth = 5f;
+                    laser_destr._pressureTolerance = 1f;
+                    laser_destr._shockResistance = 0.30f;
+                    laser_destr._name = "laser rangefinder";
 
-                    LateFollow laser_armor = laser.transform.Find("LRF").gameObject.AddComponent<LateFollow>();
-                    laser_armor.gameObject.SetActive(true);
-                    laser_armor.FollowTarget = laser;
-                    laser_armor.ForceToRoot = true;
-                    laser_armor.enabled = true;
-                    laser_armor.Awake();
-                    laser_armor.gameObject.AddComponent<Reparent>();
-                    laser.parent = vic.transform.Find("---T62_rig---/HULL/TURRET/GUN");
+                    fcs.LaserComponent = laser_destr;
+                    laser_destr.Destroyed += fcs.LaserDestroyed;
 
                     weapon.FCS.gameObject.AddComponent<LimitedLRF>();
                     fcs.MaxLaserRange = 4000f;
@@ -130,6 +129,11 @@ namespace PactIncreasedLethality
 
                 if (use_9m117.Value)
                 {
+                    foreach (Transform t in vic.transform.Find("---T62_rig---/HULL/TURRET"))
+                    {
+                        if (t.name == "night sight cover") t.gameObject.SetActive(false);
+                    }
+
                     weapon.Feed.ReloadDuringMissileTracking = false;
                     GameObject guidance_computer_obj = new GameObject("guidance computer");
                     guidance_computer_obj.transform.parent = vic.transform;
@@ -191,65 +195,34 @@ namespace PactIncreasedLethality
                 }
 
                 if (applique.Value)
-                {
-                    MeshRenderer turret_renderer = vic.transform.Find("---T62_rig---/HULL/TURRET/turret").GetComponent<MeshRenderer>();
-                    Material[] new_materials = turret_renderer.materials;
-                    Material mat = new_materials[0];
+                {   
 
-                    // https://github.com/Unity-Technologies/UnityCsReference/blob/1d7b2b49b93ea5773aa4e8dfa504e3c1533ce282/Editor/Mono/Inspector/StandardShaderGUI.cs#L369
-                    mat.SetTexture("_Albedo", t62m_turret);
-                    mat.SetOverrideTag("RenderType", "TransparentCutout");
-                    mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.One);
-                    mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.Zero);
-                    mat.SetFloat("_ZWrite", 0.0f);
-                    mat.EnableKeyword("_ALPHATEST_ON");
-                    mat.DisableKeyword("_ALPHABLEND_ON");
-                    mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                    mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
-                    //new_materials[1] = mat;
-                    //turret_skinned.materials = new_materials;
+                    vic.transform.Find("T62_base/hull").GetComponent<MeshFilter>().sharedMesh = t62m_hull;
+                    vic.transform.Find("---T62_rig---/HULL/TURRET/turret").GetComponent<MeshFilter>().sharedMesh = t62m_turret;
 
-                    Transform turret = vic.transform.Find("---T62_rig---/HULL/TURRET/turret");
-                    turret.gameObject.AddComponent<LateFollowTarget>();
+                    GameObject _t62m_kit = GameObject.Instantiate(t62m_kit, vic.transform.Find("T62_base/hull"));
+                    _t62m_kit.transform.Find("HULL/SKIRTS").GetComponent<MeshRenderer>().SetMaterials(new List<Material>() { SharedAssets.t80b_mat });
 
-                    foreach (Transform t in vic.transform.Find("---T62_rig---/HULL/TURRET"))
-                    {
-                        if (t.name == "night sight cover") t.gameObject.SetActive(false);
-                    }
+                    Transform hull_parts = _t62m_kit.transform.Find("HULL");
+                    hull_parts.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
 
-                    GameObject turret_parts = GameObject.Instantiate(t62m_turret_parts, turret);
-                    turret_parts.transform.localEulerAngles = new Vector3(90f, 0f, 0f);
+                    Transform turret_parts = _t62m_kit.transform.Find("TURRET");
+                    turret_parts.SetParent(vic.transform.Find("---T62_rig---/HULL/TURRET").GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
 
-                    LateFollow turret_armour = turret_parts.transform.Find("ARMOUR").gameObject.AddComponent<LateFollow>();
-                    turret_armour.gameObject.SetActive(true);
-                    turret_armour.FollowTarget = turret;
-                    turret_armour.ForceToRoot = true;
-                    turret_armour.enabled = true;
-                    turret_armour.Awake();
-                    turret_armour.gameObject.AddComponent<Reparent>();
+                    Transform gun_parts = _t62m_kit.transform.Find("GUN");
+                    Transform gun = vic.transform.Find("---T62_rig---/HULL/TURRET/GUN");
+                    gun_parts.transform.Find("SLEEVE").SetParent(gun.Find("muzzle"));
+                    gun_parts.SetParent(gun.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
 
-                    HideLeftCheek hlc = day_optic.gameObject.AddComponent<HideLeftCheek>();
-                    hlc.cheek = turret_parts.transform.Find("left");
+                    HideCheeks hc = day_optic.gameObject.AddComponent<HideCheeks>();
+                    hc.mesh_rend = turret_parts.Find("CHEEKS").GetComponent<MeshRenderer>();
 
-                    Transform hull = vic.transform.Find("T62_base/hull");
-                    hull.GetComponent<MeshFilter>().sharedMesh = t62m_hull;
-
-                    hull.gameObject.AddComponent<LateFollowTarget>();
-                    GameObject hull_parts = GameObject.Instantiate(t62m_hull_parts, hull);
-                    hull_parts.transform.localEulerAngles = new Vector3(90f, 0f, 0f);
-
-                    LateFollow hull_armour = hull_parts.transform.Find("ARMOUR").gameObject.AddComponent<LateFollow>();
-                    hull_armour.gameObject.SetActive(true);
-                    hull_armour.FollowTarget = hull;
-                    hull_armour.ForceToRoot = true;
-                    hull_armour.enabled = true;
-                    hull_armour.Awake();
-                    hull_armour.gameObject.AddComponent<Reparent>();
-
-                    GameObject skirts = GameObject.Instantiate(t62m_skirts, hull);
-                    skirts.transform.localEulerAngles = Vector3.zero;
+                    Transform laser_origin = turret_parts.Find("CHEEKS/LASER ORIGIN");
+                    laser_origin.SetParent(fcs.transform);
+                    fcs.LaserOrigin = laser_origin;
 
                     vic._friendlyName = "T-62M";
+
                     if (engine_upr.Value) vic._friendlyName += "-1";
                 }
             }
@@ -261,99 +234,77 @@ namespace PactIncreasedLethality
         {
             if (!t62_patch.Value) return;
 
-            var t62m_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t62m"));
-            t62m_turret = t62m_bundle.LoadAsset<Texture2D>("turret_cleaned.png");
-            t62m_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            var t62m_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "t62mv2"));
 
-            t62m_turret_parts = t62m_bundle.LoadAsset<GameObject>("T62M TURRET PARTS.prefab");
-            t62m_turret_parts.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            t62m_kit = t62m_bundle.LoadAsset<GameObject>("t62m1_full.prefab");
+            t62m_kit.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-            t62m_hull_parts = t62m_bundle.LoadAsset<GameObject>("T62M HULL PARTS.prefab");
-            t62m_hull_parts.hideFlags = HideFlags.DontUnloadUnusedAsset;
-
-            t62m_lrf = t62m_bundle.LoadAsset<GameObject>("T62M LRF.prefab");
+            t62m_lrf = t62m_bundle.LoadAsset<GameObject>("t62_lrf.prefab");
             t62m_lrf.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-            t62m_hull = t62m_bundle.LoadAsset<Mesh>("hull.asset");
+            t62m_hull = t62m_bundle.LoadAsset<Mesh>("t62m_hull.asset");
             t62m_hull.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-            t62m_skirts = t62m_bundle.LoadAsset<GameObject>("T62M SKIRTS.prefab");
-            t62m_skirts.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            t62m_turret = t62m_bundle.LoadAsset<Mesh>("t62m_turret.asset");
+            t62m_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-            Util.SetupFLIRShaders(t62m_turret_parts);
-            Util.SetupFLIRShaders(t62m_hull_parts);
+            Util.SetupFLIRShaders(t62m_kit);
             Util.SetupFLIRShaders(t62m_lrf);
-            Util.SetupFLIRShaders(t62m_skirts);
 
-            Transform armour = t62m_turret_parts.transform.Find("ARMOUR");
-            foreach (Transform t in armour.GetComponentsInChildren<Transform>())
+            Transform hull_armour = t62m_kit.transform.Find("HULL/HULL PLATE/ARMOUR");
+            Transform turret_armour = t62m_kit.transform.Find("TURRET/CHEEKS/ARMOUR");
+            Transform lrf = t62m_lrf.transform.Find("LRF");
+            Transform[] all_armour_transforms = new Transform[] { hull_armour, turret_armour };
+
+            foreach (Transform t in all_armour_transforms)
             {
-                t.gameObject.tag = "Penetrable";
-                t.gameObject.layer = 8;
+                foreach (Transform t_child in t.GetComponentsInChildren<Transform>())
+                {
+                    t_child.gameObject.tag = "Penetrable";
+                    t_child.gameObject.layer = 8;
+                }
             }
 
-            Transform hull_armour = t62m_hull_parts.transform.Find("ARMOUR");
-            foreach (Transform t in hull_armour.GetComponentsInChildren<Transform>())
-            {
-                t.gameObject.tag = "Penetrable";
-                t.gameObject.layer = 8;
-            }
-
-            GameObject lrf = t62m_lrf.transform.Find("LRF/LRF").gameObject;
-            lrf.gameObject.tag = "Penetrable";
-            lrf.gameObject.layer = 8;
-
-            UniformArmor armor_lrf = lrf.AddComponent<UniformArmor>();
-            armor_lrf.SetName("laser rangefinder");
+            lrf.Find("ARMOUR").gameObject.tag = "Penetrable";
+            lrf.Find("ARMOUR").gameObject.layer = 8;
+            UniformArmor armor_lrf = lrf.Find("ARMOUR").gameObject.AddComponent<UniformArmor>();
+            armor_lrf.SetName("laser rangefinder box");
             armor_lrf.PrimaryHeatRha = 15f;
             armor_lrf.PrimarySabotRha = 15f;
 
-            GameObject turret_left_cheek = armour.transform.Find("L COMP CHEEK").gameObject;
-            VariableArmor armor_turret_l_cheek = turret_left_cheek.AddComponent<VariableArmor>();
-            armor_turret_l_cheek.SetName("metal-polymer block");
-            armor_turret_l_cheek._armorType = Armour.cheek_metal_polymer;
-            armor_turret_l_cheek._spallForwardRatio = 0.2f;
-            AarVisual aar_l_cheek = turret_left_cheek.AddComponent<AarVisual>();
-            aar_l_cheek.SwitchMaterials = false;
-            aar_l_cheek.HideUntilAar = true;
+            GameObject turret_mpoly = turret_armour.transform.Find("MPOLY").gameObject;
+            VariableArmor armour_turret_mpoly = turret_mpoly.AddComponent<VariableArmor>();
+            armour_turret_mpoly.SetName("metal-polymer block");
+            armour_turret_mpoly._armorType = Armour.cheek_metal_polymer;
+            armour_turret_mpoly._spallForwardRatio = 0.2f;
+            armour_turret_mpoly._noImpactDecals = true;
+            AarVisual aar_cheek = turret_mpoly.AddComponent<AarVisual>();
+            aar_cheek.SwitchMaterials = false;
+            aar_cheek.HideUntilAar = true;
 
-            GameObject turret_right_cheek = armour.transform.Find("R COMP CHEEK").gameObject;
-            VariableArmor armor_turret_r_cheek = turret_right_cheek.AddComponent<VariableArmor>();
-            armor_turret_r_cheek.SetName("metal-polymer block");
-            armor_turret_r_cheek._armorType = Armour.cheek_metal_polymer;
-            armor_turret_r_cheek._spallForwardRatio = 0.2f;
-            AarVisual aar_r_cheek = turret_right_cheek.AddComponent<AarVisual>();
-            aar_r_cheek.SwitchMaterials = false;
-            aar_r_cheek.HideUntilAar = true;
-
-            GameObject turret_left_applique = armour.transform.Find("L APPLIQUE CHEEK").gameObject;
-            UniformArmor armor_turret_l_applique = turret_left_applique.AddComponent<UniformArmor>();
-            armor_turret_l_applique.SetName("applique cheek armor");
-            armor_turret_l_applique._armorType = Armour.ru_cast_armor;
-            armor_turret_l_applique.PrimaryHeatRha = 30f;
-            armor_turret_l_applique.PrimarySabotRha = 30f;
-
-            GameObject turret_right_applique = armour.transform.Find("R APPLIQUE CHEEK").gameObject;
-            UniformArmor armor_turret_r_applique = turret_right_applique.AddComponent<UniformArmor>();
-            armor_turret_r_applique.SetName("applique cheek armor");
-            armor_turret_r_applique._armorType = Armour.ru_cast_armor;
-            armor_turret_r_applique.PrimaryHeatRha = 30f;
-            armor_turret_r_applique.PrimarySabotRha = 30f;
+            GameObject turret_casing = turret_armour.transform.Find("CHEEKS").gameObject;
+            UniformArmor armour_turret_casing = turret_casing.AddComponent<UniformArmor>();
+            armour_turret_casing.SetName("applique cheek armor");
+            armour_turret_casing._armorType = Armour.ru_cast_armor;
+            armour_turret_casing.PrimaryHeatRha = 20f;
+            armour_turret_casing.PrimarySabotRha = 20f;
+            armour_turret_casing._normalizesHits = true;
 
             GameObject hull_mpoly_block = hull_armour.transform.Find("MPOLY BLOCK").gameObject;
             VariableArmor armor_mpoly_block = hull_mpoly_block.AddComponent<VariableArmor>();
             armor_mpoly_block.SetName("metal-polymer block");
             armor_mpoly_block._armorType = Armour.hull_metal_polymer;
-            armor_mpoly_block._spallForwardRatio = 0.2f;
+            armor_mpoly_block._spallForwardRatio = 0.01f;
             AarVisual aar_mpoly_block = hull_mpoly_block.AddComponent<AarVisual>();
             aar_mpoly_block.SwitchMaterials = false;
             aar_mpoly_block.HideUntilAar = true;
 
-            GameObject hull_casing = hull_armour.transform.Find("OUTER CASING ").gameObject;
+            GameObject hull_casing = hull_armour.transform.Find("OUTER CASING").gameObject;
             VariableArmor armor_casing = hull_casing.AddComponent<VariableArmor>();
             armor_casing.SetName("upper glacis applique armor");
             armor_casing._armorType = Armour.ru_welded_armor;
-            armor_casing._spallForwardRatio = 0.2f;
+            armor_casing._spallForwardRatio = 0.01f;
+            armor_casing._normalizesHits = true;
         }
 
         public static void Init()

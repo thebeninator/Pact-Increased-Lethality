@@ -19,7 +19,7 @@ using GHPC.Equipment;
 using GHPC.Mission;
 using GHPC.AI;
 using GHPC.Mission.Data;
-using GHPC.Player;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {

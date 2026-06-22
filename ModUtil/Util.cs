@@ -7,8 +7,6 @@ using GHPC.Weapons;
 using GHPC.Thermals;
 using UnityEngine;
 using GHPC.Effects;
-using M2BradleyExtended;
-using MelonLoader;
 
 namespace ModUtil
 {

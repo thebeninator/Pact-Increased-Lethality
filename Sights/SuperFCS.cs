@@ -12,6 +12,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {
@@ -25,8 +26,6 @@ namespace PactIncreasedLethality
 
         static ReticleSO reticleSO_sosna;
         static ReticleMesh.CachedReticle reticle_cached_sosna;
-
-        private static bool assets_loaded = false;
 
         public class ThermalMonitor : MonoBehaviour {
             private Transform wfov_ui;

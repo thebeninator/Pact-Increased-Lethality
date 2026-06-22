@@ -10,6 +10,7 @@ using GHPC;
 using MelonLoader;
 using UnityEngine;
 using NWH.VehiclePhysics;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {

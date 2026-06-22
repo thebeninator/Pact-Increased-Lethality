@@ -7,6 +7,7 @@ using UnityEngine;
 using Reticle;
 using static Reticle.ReticleTree;
 using GHPC.Vehicle;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {

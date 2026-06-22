@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using GHPC.Vehicle;
-using GHPC.Equipment.Optics;
+﻿using GHPC.Equipment.Optics;
 using GHPC.Camera;
 using Reticle;
 using GHPC.Weapons;

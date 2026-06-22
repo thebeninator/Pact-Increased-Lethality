@@ -15,6 +15,7 @@ using MelonLoader.Utils;
 using System.IO;
 using GHPC.Equipment;
 using Reticle;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {

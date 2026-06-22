@@ -11,17 +11,17 @@ using GHPC.Camera;
 using FMOD;
 using GHPC.Vehicle;
 using PactIncreasedLethality;
-using System.Collections.Generic;
+using ModUtil;
 
-[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.0.7A", "ATLAS")]
+[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.0.7B", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
 {
     public class Mod : MelonMod
     {
+        private static ModuleManager module_manager;
         public static Vehicle[] vics;
-        public static Dictionary<string, Module> modules = new Dictionary<string, Module>();
         public static MelonPreferences_Category cfg;
 
         private GameObject game_manager;
@@ -37,24 +37,15 @@ namespace PactIncreasedLethality
             camera_manager = game_manager.GetComponent<CameraManager>();
             vics = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
 
+            module_manager.LoadAllDynamicAssets();
             Ammo_125mm.CreateCompositeOptimizations();
-
-            foreach (string id in modules.Keys)
-            {
-                Module module = modules[id];
-                bool loaded = module.TryLoadDynamicAssets();
-
-                if (loaded)
-                {
-                    MelonLogger.Msg("PIL dynamic assets loaded from module: " + id);
-                }
-            }
 
             yield break;
         }
 
         public override void OnInitializeMelon()
         {
+            module_manager = new ModuleManager("PIL");
             cfg = MelonPreferences.CreateCategory("PactIncreasedLethality");
             T55.Config(cfg);
             T72.Config(cfg);
@@ -70,28 +61,29 @@ namespace PactIncreasedLethality
 
             var corSystem = FMODUnity.RuntimeManager.CoreSystem;
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot.wav"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound);
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot.wav"), MODE._3D_LINEARSQUAREROLLOFF, out BMP2.ReplaceSound.sound);
             BMP2.ReplaceSound.sound.set3DMinMaxDistance(30f, 1300f);
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound_exterior);
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_LINEARSQUAREROLLOFF, out BMP2.ReplaceSound.sound_exterior);
             BMP2.ReplaceSound.sound_exterior.set3DMinMaxDistance(30f, 1300f);
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.ogg"), MODE._3D_INVERSEROLLOFF, out BMP2.ReplaceSound.sound_alt);
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.ogg"), MODE._3D_LINEARSQUAREROLLOFF, out BMP2.ReplaceSound.sound_alt);
             BMP2.ReplaceSound.sound_alt.set3DMinMaxDistance(30f, 1300f);
 
-            modules.Add("SharedAssets", new SharedAssets());
-            modules.Add("AMMO_30MM", new Ammo_30mm());
-            modules.Add("T72", new T72());
-            modules.Add("T80", new T80());
-            modules.Add("T55", new T55());
-            modules.Add("T62", new T62());
-            modules.Add("BMP2", new BMP2());
-            modules.Add("BMP1", new BMP1());
-            modules.Add("BTR60", new BTR60());
-            modules.Add("SuperFCS", new SuperFCS());
-            modules.Add("PactThermal", new PactThermal());
-            modules.Add("1A40", new FireControlSystem1A40());
-            modules.Add("BOM", new BOM());
+            module_manager.Add("SharedAssets", new SharedAssets());
+            module_manager.Add("AMMO_30MM", new Ammo_30mm());
+            module_manager.Add("AMMO_125MM", new Ammo_125mm());
+            module_manager.Add("T72", new T72());
+            module_manager.Add("T80", new T80());
+            module_manager.Add("T55", new T55());
+            module_manager.Add("T62", new T62());
+            module_manager.Add("BMP2", new BMP2());
+            module_manager.Add("BMP1", new BMP1());
+            module_manager.Add("BTR60", new BTR60());
+            module_manager.Add("SuperFCS", new SuperFCS());
+            module_manager.Add("PactThermal", new PactThermal());
+            module_manager.Add("1A40", new FireControlSystem1A40());
+            module_manager.Add("BOM", new BOM());
         }
 
         public override void OnUpdate() 
@@ -101,32 +93,11 @@ namespace PactIncreasedLethality
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            foreach (string id in modules.Keys)
-            {
-                Module module = modules[id];
-                bool dynamic_unloaded = module.TryUnloadDynamicAssets();
-
-                if (dynamic_unloaded)
-                {
-                    MelonLogger.Msg("PIL dynamic assets unloaded from module: " + id);
-                }
-            }
+            module_manager.UnloadAllDynamicAssets();
 
             if (sceneName == "MainMenu2_Scene" || sceneName == "MainMenu2-1_Scene" || sceneName == "t64_menu")
             {
-                foreach (string id in modules.Keys) 
-                {
-                    Module module = modules[id];
-                    bool static_loaded = module.TryLoadStaticAssets();               
-                    
-                    if (static_loaded) 
-                    {
-                        MelonLogger.Msg("PIL static assets loaded from module: " + id);
-                    }
-                }
-
-                Ammo_125mm.LoadAssets();
-
+                module_manager.LoadAllStaticAssets();
                 AssetUtil.ReleaseVanillaAssets();
             }
 

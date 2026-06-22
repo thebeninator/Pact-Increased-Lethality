@@ -20,6 +20,7 @@ using GHPC.Camera;
 using GHPC.Crew;
 using GHPC.Weaponry;
 using System.Linq;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {

@@ -15,6 +15,7 @@ using System.IO;
 using NWH.VehiclePhysics;
 using GHPC.Weaponry;
 using System.Linq;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {
@@ -161,13 +162,16 @@ namespace PactIncreasedLethality
 
                 if (use_9m117.Value)
                 {
+                    Transform turret = vic.transform.Find("T55A_skeleton/HULL/Turret");
+                    turret.Find("Night sight cover").localScale = Vector3.zero;
+
                     GameObject guidance_computer_obj = new GameObject("guidance computer");
                     guidance_computer_obj.transform.parent = vic.transform;
                     guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
 
                     guidance_computer_obj.AddComponent<Reparent>();
                     Reparent reparent = guidance_computer_obj.GetComponent<Reparent>();
-                    reparent.NewParent = vic_go.transform.Find("T55A_skeleton/HULL/Turret").gameObject.transform;
+                    reparent.NewParent = turret.gameObject.transform;
                     reparent.Awake();
 
                     MissileGuidanceUnit computer = guidance_computer_obj.GetComponent<MissileGuidanceUnit>();
@@ -465,7 +469,12 @@ namespace PactIncreasedLethality
                 ammo_9m117.VisualModel = ammo_9m117_vis;
                 ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m117;
                 ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m117;
+
+                Util.CacheAmmo(ammo_9m117);
             }
+
+            Util.CacheAmmo(ammo_3bk17m);
+            Util.CacheAmmo(ammo_3bm25);
 
             if ((AssetUtil.VehicleInMission("T55A") && has_lrf.Value) || (AssetUtil.VehicleInMission("T62") && T62.has_lrf.Value))
             {
@@ -508,7 +517,7 @@ namespace PactIncreasedLethality
             cleaned_texture = t55am_bundle.LoadAsset<Texture2D>("CLEANED TEXTURE.png");
             cleaned_texture.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-            t55am_hull = t55am_bundle.LoadAsset<Mesh>("hull.asset");
+            t55am_hull = t55am_bundle.LoadAsset<Mesh>("t55am_hull.asset");
             t55am_hull.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
             Util.SetupFLIRShaders(t55am_lrf);
@@ -540,6 +549,7 @@ namespace PactIncreasedLethality
             armour_turret_mpoly.SetName("metal-polymer block");
             armour_turret_mpoly._armorType = Armour.cheek_metal_polymer;
             armour_turret_mpoly._spallForwardRatio = 0.2f;
+            armour_turret_mpoly._noImpactDecals = true;
             AarVisual aar_cheek = turret_mpoly.AddComponent<AarVisual>();
             aar_cheek.SwitchMaterials = false;
             aar_cheek.HideUntilAar = true;
@@ -548,8 +558,9 @@ namespace PactIncreasedLethality
             UniformArmor armour_turret_casing = turret_casing.AddComponent<UniformArmor>();
             armour_turret_casing.SetName("applique cheek armor");
             armour_turret_casing._armorType = Armour.ru_cast_armor;
-            armour_turret_casing.PrimaryHeatRha = 30f;
-            armour_turret_casing.PrimarySabotRha = 30f;
+            armour_turret_casing.PrimaryHeatRha = 20f;
+            armour_turret_casing.PrimarySabotRha = 20f;
+            armour_turret_casing._normalizesHits = true;
 
             GameObject hull_mpoly_block = hull_armour.transform.Find("MPOLY BLOCK").gameObject;
             VariableArmor armor_mpoly_block = hull_mpoly_block.AddComponent<VariableArmor>();
@@ -565,6 +576,7 @@ namespace PactIncreasedLethality
             armor_casing.SetName("upper glacis applique armor");
             armor_casing._armorType = Armour.ru_welded_armor;
             armor_casing._spallForwardRatio = 0.01f;
+            armor_casing._normalizesHits = true;
         }
 
         public static void Init()

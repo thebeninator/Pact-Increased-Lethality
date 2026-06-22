@@ -3,6 +3,7 @@ using GHPC;
 using TMPro;
 using UnityEngine;
 using HarmonyLib;
+using GHPC.PhysicsHelpers;
 
 namespace PactIncreasedLethality
 {
@@ -29,14 +30,15 @@ namespace PactIncreasedLethality
             __instance._laseQueued = false;
 
             float num = -1f;
-            int layerMask = 1 << CodeUtils.LAYER_INDEX_VISIBILITYONLY;
+            int layer_mask = 1 << CodeUtils.LAYER_INDEX_VISIBILITYONLY;
+            Ray ray = new Ray(__instance.LaserOrigin.position, __instance.LaserOrigin.forward);
 
             RaycastHit raycastHit;
-            if (Physics.Raycast(__instance.LaserOrigin.position, __instance.LaserOrigin.forward, out raycastHit, __instance.MaxLaserRange, layerMask) && raycastHit.collider.tag == "Smoke")
+            if (Physics.Raycast(ray, out raycastHit, __instance.MaxLaserRange, layer_mask) && raycastHit.collider.tag == "Smoke")
             {
                 num = raycastHit.distance;
             }
-            if (Physics.Raycast(__instance.LaserOrigin.position, __instance.LaserOrigin.forward, out raycastHit, __instance.MaxLaserRange, ConstantsAndInfoManager.Instance.LaserRangefinderLayerMask.value) && (raycastHit.distance < num || num == -1f))
+            if (RaycastColliderUtils.Raycast(ray, out raycastHit, __instance.MaxLaserRange, ConstantsAndInfoManager.Instance.LaserRangefinderLayerMask) && (raycastHit.distance < num || num == -1f))
             {
                 num = raycastHit.distance;
             }

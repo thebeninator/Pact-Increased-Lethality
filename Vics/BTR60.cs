@@ -12,11 +12,11 @@ using GHPC.Weapons;
 using Reticle;
 using GHPC.Equipment.Optics;
 using GHPC;
-using GHPC.Thermals;
 using GHPC.Camera;
 using UnityEngine.Rendering.PostProcessing;
 using GHPC.Effects;
 using GHPC.Weaponry;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {

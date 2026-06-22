@@ -6,6 +6,7 @@ using NWH.VehiclePhysics;
 using Reticle;
 using TMPro;
 using UnityEngine;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {

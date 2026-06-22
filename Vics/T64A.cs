@@ -11,6 +11,7 @@ using MelonLoader;
 using Reticle;
 using UnityEngine;
 using NWH.VehiclePhysics;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {

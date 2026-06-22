@@ -1,18 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using GHPC.Camera;
 using GHPC.Equipment.Optics;
-using GHPC.Vehicle;
-using GHPC.Weaponry;
 using GHPC.Weapons;
 using MelonLoader.Utils;
 using Reticle;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 using static Reticle.ReticleTree;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {

@@ -1,11 +1,9 @@
-﻿using System.Linq;
-using UnityEngine;
-using HarmonyLib;
-using System;
-using GHPC.Mission.Data;
-using GHPC.AI;
+﻿using System;
 using System.Collections.Generic;
-using GHPC.UI.Tips;
+using GHPC.AI;
+using GHPC.Mission.Data;
+using HarmonyLib;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {
@@ -46,7 +44,7 @@ namespace PactIncreasedLethality
             ["M151"]           = new Dim(new Vector3(0f, 0.77f, -0.25f), new Vector3(0.5f, 1.5f, 3f)),
             ["M923"]           = new Dim(new Vector3(0f, 1.37f, -0.78f), new Vector3(2.3f, 2.8f, 7.5f)),
             ["T72 T80 T64"]    = new Dim(new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f)),
-            ["T55A T62A T54A"] = new Dim(new Vector3(0f, 1.124f, 0.087f), new Vector3(3.25f, 2.35f, 6f)),
+            ["T55A T62 T54A"] = new Dim(new Vector3(0f, 1.124f, 0.087f), new Vector3(3.25f, 2.35f, 6f)),
             ["Ural"]           = new Dim(new Vector3(0f, 1.471f, -1.215f), new Vector3(2.65f, 3f, 7.3f)),
             ["BMP"]            = new Dim(new Vector3(0f, 1.002f, 0.12f), new Vector3(3f, 2f, 6.95f)),
             ["BTR"]            = new Dim(new Vector3(0f, 1.35f, 0f), new Vector3(3f, 2.6f, 7.5f)),

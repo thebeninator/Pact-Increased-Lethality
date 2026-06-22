@@ -3,8 +3,7 @@ using GHPC.Weapons;
 using GHPC.Equipment.Optics;
 using Reticle;
 using System.Collections.Generic;
-using GHPC.Vehicle;
-using MelonLoader;
+using ModUtil;
 
 namespace PactIncreasedLethality
 {

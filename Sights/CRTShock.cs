@@ -1,5 +1,4 @@
-﻿using GHPC.Vehicle;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace PactIncreasedLethality
 {
