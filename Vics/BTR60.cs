@@ -17,6 +17,9 @@ using UnityEngine.Rendering.PostProcessing;
 using GHPC.Effects;
 using GHPC.Weaponry;
 using ModUtil;
+using FMOD;
+using FMODUnity;
+using HarmonyLib;
 
 namespace PactIncreasedLethality
 {
@@ -35,6 +38,59 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> use_3ubr8;
         static MelonPreferences_Entry<bool> use_3uof8;
         static MelonPreferences_Entry<bool> stab;
+
+
+        [HarmonyPatch(typeof(WeaponAudio), "FinalStartLoop")]
+        public static class ReplaceSound
+        {
+            public static FMOD.Sound sound_exterior;
+            public static FMOD.Sound sound_interior;
+
+            public static bool Prefix(WeaponAudio __instance)
+            {
+                if (__instance.SingleShotMode && __instance.SingleShotEventPaths[0].Contains("actually_2a72"))
+                {
+                    var corSystem = RuntimeManager.CoreSystem;
+
+                    Vector3 vec = __instance.transform.position;
+
+                    VECTOR pos = new VECTOR();
+                    pos.x = vec.x;
+                    pos.y = vec.y;
+                    pos.z = vec.z;
+
+                    VECTOR vel = new VECTOR();
+                    vel.x = 0f;
+                    vel.y = 0f;
+                    vel.z = 0f;
+
+                    bool is_player_instance = __instance == Mod.player_manager.CurrentPlayerWeapon.Weapon.WeaponSound;
+                    bool interior = !CameraManager._instance.ExteriorMode && is_player_instance;
+
+                    FMOD.Channel new_channel;
+                    FMOD.Sound sound = interior ? sound_interior : sound_exterior;
+
+                    corSystem.playSound(sound, Mod.audio_channel_group, true, out new_channel);
+
+                    float game_vol = Mod.audio_settings_manager._previousVolume;
+                    float gun_vol = interior ? game_vol + 0.0185f * (game_vol * 10f) : Math.Max(game_vol - 0.10f, 0f);
+
+                    if (!is_player_instance && !CameraManager._instance.ExteriorMode)
+                    {
+                        gun_vol *= 0.5f;
+                    }
+
+                    new_channel.setVolume(gun_vol);
+                    new_channel.set3DAttributes(ref pos, ref vel);
+                    new_channel.setPaused(false);
+                    new_channel.clearHandle();
+
+                    return false;
+                }
+
+                return true;
+            }
+        }
 
         public static void Config(MelonPreferences_Category cfg)
         {
@@ -120,14 +176,15 @@ namespace PactIncreasedLethality
                     day_optic.slot.DefaultFov = 6f;
 
                     weapon_info.Name = "30mm gun 2A72";
-                    weapon.BaseDeviationAngle = 0.17f;
-                    weapon._cycleTimeSeconds = 0.13f;
-                    weapon.Feed._totalCycleTime = 0.13f;
+                    weapon.BaseDeviationAngle = 0.12f;
+                    weapon._cycleTimeSeconds = 0.16f;
+                    weapon.Feed._totalCycleTime = 0.16f;
                     weapon.WeaponSound.SingleShotByDefault = true;
                     weapon.WeaponSound.SingleShotMode = true;
-                    weapon.WeaponSound.SingleShotEventPaths = new string[] { "event:/Weapons/autocannon_2a42_single_actually_2a72" };
+                    weapon.WeaponSound.SingleShotEventPaths = new string[] { "actually_2a72" };
                     weapon._impulseLocation = btr_gun.Find("gun_recoil");
                     weapon.Impulse = 35f;
+                    weapon._maxBurstSeconds = 1.1f;
                     weapon.FCS.RegisteredRangeLimits = new Vector2(0f, 4000f);
                     weapon.FCS._originalRangeLimits = new Vector2(0f, 4000f);
 

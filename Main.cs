@@ -12,6 +12,7 @@ using FMOD;
 using GHPC.Vehicle;
 using PactIncreasedLethality;
 using ModUtil;
+using FMODUnity;
 
 [assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.0.7B", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
@@ -21,13 +22,15 @@ namespace PactIncreasedLethality
     public class Mod : MelonMod
     {
         private static ModuleManager module_manager;
-        public static Vehicle[] vics;
-        public static MelonPreferences_Category cfg;
+        internal static Vehicle[] vics;
+        internal static MelonPreferences_Category cfg;
 
         private GameObject game_manager;
-        public static AudioSettingsManager audio_settings_manager;
-        public static PlayerInput player_manager;
-        public static CameraManager camera_manager;
+        internal static AudioSettingsManager audio_settings_manager;
+        internal static PlayerInput player_manager;
+        internal static CameraManager camera_manager;
+
+        internal static FMOD.ChannelGroup audio_channel_group;
 
         public IEnumerator OnGameReady(GameState _) 
         {
@@ -61,14 +64,21 @@ namespace PactIncreasedLethality
 
             var corSystem = FMODUnity.RuntimeManager.CoreSystem;
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot.wav"), MODE._3D_LINEARSQUAREROLLOFF, out BMP2.ReplaceSound.sound);
-            BMP2.ReplaceSound.sound.set3DMinMaxDistance(30f, 1300f);
+            corSystem.createChannelGroup("master", out audio_channel_group);
+            audio_channel_group.setVolumeRamp(true);
+            audio_channel_group.setMode(MODE._3D_WORLDRELATIVE);
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_LINEARSQUAREROLLOFF, out BMP2.ReplaceSound.sound_exterior);
-            BMP2.ReplaceSound.sound_exterior.set3DMinMaxDistance(30f, 1300f);
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot.wav"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BMP2.ReplaceSound.sound);
+            BMP2.ReplaceSound.sound.set3DMinMaxDistance(50f, 1200f);
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.ogg"), MODE._3D_LINEARSQUAREROLLOFF, out BMP2.ReplaceSound.sound_alt);
-            BMP2.ReplaceSound.sound_alt.set3DMinMaxDistance(30f, 1300f);
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BMP2.ReplaceSound.sound_exterior);
+            BMP2.ReplaceSound.sound_exterior.set3DMinMaxDistance(30f, 600f);
+
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.ogg"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BTR60.ReplaceSound.sound_interior);
+            BTR60.ReplaceSound.sound_interior.set3DMinMaxDistance(3f, 600f);
+
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BTR60.ReplaceSound.sound_exterior);
+            BTR60.ReplaceSound.sound_exterior.set3DMinMaxDistance(20f, 550f);
 
             module_manager.Add("SharedAssets", new SharedAssets());
             module_manager.Add("AMMO_30MM", new Ammo_30mm());

@@ -21,6 +21,7 @@ using GHPC.Crew;
 using GHPC.Weaponry;
 using System.Linq;
 using ModUtil;
+using GHPC.Audio;
 
 namespace PactIncreasedLethality
 {
@@ -77,7 +78,7 @@ namespace PactIncreasedLethality
                     channelGroup.setMode(MODE._3D_WORLDRELATIVE);
 
                     FMOD.Channel channel;
-                    FMOD.Sound sound_interior = __instance.SingleShotEventPaths[0].Contains("actually_2a72") ? sound_alt : sound;
+                    FMOD.Sound sound_interior = sound;
                     FMOD.Sound s = interior ? sound_interior : sound_exterior;
 
                     Cleanup();
