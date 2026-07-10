@@ -550,6 +550,11 @@ namespace PactIncreasedLethality
             Util.SetupFLIRShaders(t80bv_full);
         }
 
+        public override void UnloadDynamicAssets()
+        {
+            reticleSO = null;
+        }
+
         public static void Init()
         {
             if (!t80_patch.Value) return;

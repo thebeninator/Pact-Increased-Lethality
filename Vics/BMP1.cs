@@ -24,13 +24,16 @@ namespace PactIncreasedLethality
     [HarmonyPatch(typeof(WeaponAudio), "FinalStartLoop")]
     public class AGS17_Sound
     {
-        public static FMOD.Sound[] sounds = new FMOD.Sound[6];
+        public static FMOD.Sound[] sounds_interior = new FMOD.Sound[6];
         public static FMOD.Sound[] sounds_exterior = new FMOD.Sound[7];
 
         public static bool Prefix(WeaponAudio __instance)
         {
             if (__instance.SingleShotMode && __instance.SingleShotEventPaths[0] == "blyat")
             {
+                FMOD.Sound sound_interior = sounds_interior[UnityEngine.Random.Range(0, sounds_interior.Length)];
+                FMOD.Sound sound_exterior = sounds_exterior[UnityEngine.Random.Range(0, sounds_exterior.Length)];
+
                 var corSystem = RuntimeManager.CoreSystem;
 
                 Vector3 vec = __instance.transform.position;
@@ -45,25 +48,26 @@ namespace PactIncreasedLethality
                 vel.y = 0f;
                 vel.z = 0f;
 
-                bool interior = !CameraManager._instance.ExteriorMode && __instance == Mod.player_manager.CurrentPlayerWeapon.Weapon.WeaponSound;
+                bool is_player_instance = __instance == Mod.player_manager.CurrentPlayerWeapon.Weapon.WeaponSound;
+                bool interior = !CameraManager._instance.ExteriorMode && is_player_instance;
 
-                ChannelGroup channelGroup;
-                corSystem.createChannelGroup("master", out channelGroup);
+                FMOD.Channel new_channel;
+                FMOD.Sound sound = interior ? sound_interior : sound_exterior;
 
-                channelGroup.setVolumeRamp(false);
-                channelGroup.setMode(MODE._3D_WORLDRELATIVE);
-
-                FMOD.Channel channel;
-                corSystem.playSound(interior ? sounds[UnityEngine.Random.Range(0, sounds.Length)] : sounds_exterior[UnityEngine.Random.Range(0, sounds_exterior.Length)], channelGroup, true, out channel);
+                corSystem.playSound(sound, Mod.audio_channel_group, true, out new_channel);
 
                 float game_vol = Mod.audio_settings_manager._previousVolume;
-                float gun_vol = (interior) ? (game_vol + 0.10f * (game_vol * 10)) : (game_vol + 0.07f * (game_vol * 10));
+                float gun_vol = interior ? game_vol * 1.1f : game_vol * 1.1f;
 
-                channel.setVolume(gun_vol);
-                channel.setVolumeRamp(false);
-                channel.set3DAttributes(ref pos, ref vel);
-                channelGroup.set3DAttributes(ref pos, ref vel);
-                channel.setPaused(false);
+                if (!is_player_instance && !CameraManager._instance.ExteriorMode)
+                {
+                    gun_vol *= 0.5f;
+                }
+
+                new_channel.setVolume(gun_vol);
+                new_channel.set3DAttributes(ref pos, ref vel);
+                new_channel.setPaused(false);
+                new_channel.clearHandle();
 
                 return false;
             }
@@ -355,22 +359,22 @@ namespace PactIncreasedLethality
                 if (!name.Contains("BMP-1")) continue;
                 LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
                 FireControlSystem fcs = loadout_manager._weaponsManager.Weapons[0].FCS;
-                fcs.SuperelevateWeapon = true;
-                fcs._originalRangeLimits = new Vector2(0f, 3000f);
-                fcs.RegisteredRangeLimits = new Vector2(0f, 3000f);
-                fcs.CurrentStabMode = StabilizationMode.Vector;
-                fcs.Mounts[0]._stabActive = true;
-                fcs.Mounts[0].Stabilized = true;
-                fcs.Mounts[0].StabilizerActive = true;
-                fcs.RangeStep = 10;
-                fcs._originalRangeStep = 10;
-                fcs.DisplayRangeIncrement = 10;
+                //fcs.SuperelevateWeapon = true;
+                //fcs._originalRangeLimits = new Vector2(0f, 3000f);
+                //fcs.RegisteredRangeLimits = new Vector2(0f, 3000f);
+                //fcs.CurrentStabMode = StabilizationMode.Vector;
+                //fcs.Mounts[0]._stabActive = true;
+                //fcs.Mounts[0].Stabilized = true;
+                //fcs.Mounts[0].StabilizerActive = true;
+                //fcs.RangeStep = 10;
+                //fcs._originalRangeStep = 10;
+                //fcs.DisplayRangeIncrement = 10;
 
-                fcs.Mounts[1]._stabActive = true;
-                fcs.Mounts[1].Stabilized = true;
-                fcs.Mounts[1].StabilizerActive = true;
-                fcs.Mounts[1].LocalEulerLimits = new Vector2(-4f, 50f);
-                fcs.StabsActive = true;
+                //fcs.Mounts[1]._stabActive = true;
+                //fcs.Mounts[1].Stabilized = true;
+                //fcs.Mounts[1].StabilizerActive = true;
+                //fcs.Mounts[1].LocalEulerLimits = new Vector2(-4f, 50f);
+                //fcs.StabsActive = true;
 
                 //Transform optic = vic.transform.Find("BMP1_rig/HULL/TURRET/GUN/Gun Scripts/gunner day sight/Optic");
                 //GameObject _arty_monitor = GameObject.Instantiate(arty_monitor, optic);
@@ -501,15 +505,15 @@ namespace PactIncreasedLethality
             for (int i = 0; i < 6; i++)
             {
                 corSystem.createSound(
-                    Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_1p_0" + (i + 1) + ".ogg"), MODE._3D_IGNOREGEOMETRY, out AGS17_Sound.sounds[i]);
-                AGS17_Sound.sounds[i].set3DMinMaxDistance(35f, 5000f);
+                    Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_1p_0" + (i + 1) + ".ogg"), MODE._3D_IGNOREGEOMETRY, out AGS17_Sound.sounds_interior[i]);
+                AGS17_Sound.sounds_interior[i].set3DMinMaxDistance(300f, 550f);
             }
 
             for (int i = 0; i < 7; i++)
             {
                 corSystem.createSound(
                     Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_close_3p_0" + (i + 1) + ".ogg"), MODE._3D_INVERSETAPEREDROLLOFF, out AGS17_Sound.sounds_exterior[i]);
-                AGS17_Sound.sounds_exterior[i].set3DMinMaxDistance(35f, 5000f);
+                AGS17_Sound.sounds_exterior[i].set3DMinMaxDistance(50f, 550f);
             }
 
             //var arty_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "bmp1_arty"));

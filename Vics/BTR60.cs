@@ -73,7 +73,7 @@ namespace PactIncreasedLethality
                     corSystem.playSound(sound, Mod.audio_channel_group, true, out new_channel);
 
                     float game_vol = Mod.audio_settings_manager._previousVolume;
-                    float gun_vol = interior ? game_vol + 0.0185f * (game_vol * 10f) : Math.Max(game_vol - 0.10f, 0f);
+                    float gun_vol = interior ? game_vol * 1.1f : game_vol * 0.80f;
 
                     if (!is_player_instance && !CameraManager._instance.ExteriorMode)
                     {
@@ -166,8 +166,13 @@ namespace PactIncreasedLethality
                     // pivot point gets all messed up 
                     btr_gun.localPosition = new Vector3(-0.0181f, 0.1099f, -0.6041f);
                     btr_gun.Find("Gun Aimable/gunner sight").transform.localPosition = new Vector3(-0.2186f, 2.3638f, 2.0156f);
-                    btr_gun.Find("gun_recoil/14.5mm Machine Gun KPVT").transform.localPosition = new Vector3(0.0151f, 0.2184f, 1.8515f);
-                    btr_gun.Find("gun_recoil/14.5mm Machine Gun KPVT/KPVT Muzzle Flash").Find("Gunsmoke Booster").gameObject.SetActive(false);
+
+                    Transform kpvt = btr_gun.Find("gun_recoil/14.5mm Machine Gun KPVT");
+                    Transform kpvt_mflash = kpvt.Find("KPVT Muzzle Flash");
+
+                    kpvt.localPosition = new Vector3(0.0151f, 0.2184f, 2.9388f);
+                    kpvt_mflash.localPosition = new Vector3(0f, 0f, -0.9782f);
+                    kpvt_mflash.Find("Gunsmoke Booster").gameObject.SetActive(false);
                     btr_gun.Find("pkt/7.62mm Machine Gun PKT").transform.localPosition = new Vector3(0.3045f, 0.3216f, 0.5704f);
                     btr_gun.Find("Gun Aimable/ejection").transform.localPosition = new Vector3(-0.1397f, 2.6567f, 1.3654f);
                     btr_gun.Find("Gun Aimable/ejection").transform.localEulerAngles = new Vector3(0f, 316.5237f, 0f);
@@ -176,7 +181,7 @@ namespace PactIncreasedLethality
                     day_optic.slot.DefaultFov = 6f;
 
                     weapon_info.Name = "30mm gun 2A72";
-                    weapon.BaseDeviationAngle = 0.12f;
+                    weapon.BaseDeviationAngle = 0.17f;
                     weapon._cycleTimeSeconds = 0.16f;
                     weapon.Feed._totalCycleTime = 0.16f;
                     weapon.WeaponSound.SingleShotByDefault = true;
