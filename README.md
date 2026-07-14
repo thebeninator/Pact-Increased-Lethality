@@ -56,14 +56,8 @@ T-80BV, T-80U
 - Composite armour that is effective against HEAT rounds and lesser AP rounds
 - Bonus rubber side skirts
 
-![Screenshot_12](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/588fea7f-9631-4a45-b9b5-42c8ba8722b8)
-
-# Drozd APS
-- Can be equipped on the T-55, T-62, and T-64A
-- Intercepts projectiles in an arc relative to where the turret is facing
-- By default only intercepts projectiles going between 70-700 m/s
-
-![DROZD](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/747c0b97-42a7-4aea-b5b5-fd0b329ce99c)
+<img width="1279" height="773" alt="image" src="https://github.com/user-attachments/assets/c5f7416c-5ea5-4e8f-9076-599305715e1c" />
+<img width="1162" height="682" alt="image" src="https://github.com/user-attachments/assets/d16318b6-c437-41d4-93c0-634e47adaeed" />
 
 # T-55
 - 3BK17M HEAT-FS-T
@@ -77,13 +71,8 @@ T-80BV, T-80U
  
 ![Screenshot_3](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/9c494b20-3291-40f4-9be5-f75ac587caa4)
 ![Screenshot_8](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/e1979d6a-327c-47e5-94a6-acf1d42c7d59)
-
-# BMP-1
-- AGS-17D Coaxial
-  - Replaces the standard PKT
-  - VOG-17M HE, VOG-17M1 HEDP
-
-[ags17d.webm](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/41b2dcf4-98b4-4a02-8487-d5516e5e70c2)
+<img width="2559" height="1439" alt="image" src="https://github.com/user-attachments/assets/81794233-d357-4375-84f8-f1df6719fcec" />
+<img width="2559" height="1439" alt="image" src="https://github.com/user-attachments/assets/9fdcaaa6-7096-4b09-8145-7c7e5cfc1549" />
 
 # BMP-2
 - 3UBR8 APDS-T
@@ -107,13 +96,4 @@ T-80BV, T-80U
 
 ![BTR60a](https://github.com/thebeninator/Pact-Increased-Lethality/assets/89621837/7eac03c8-98f1-4196-967a-825dd6ba6686)
 
-# T-64A
-- Super engine & transmission
-  - Equivalent to the M1 Abrams
-- TPD-K1 sight with laser rangefinder (as seen on vanilla T-72s)
-
-# T-62
-- Better Stabilizer
-  - Less reticle blur & shake while on the move 
-- Laser Rangefinder
-  - Only gives range (you will need to set the range manually)
+...and more
