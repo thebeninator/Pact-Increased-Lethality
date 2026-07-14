@@ -14,7 +14,7 @@ using PactIncreasedLethality;
 using ModUtil;
 using FMODUnity;
 
-[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.0.7C", "ATLAS")]
+[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -74,7 +74,7 @@ namespace PactIncreasedLethality
             corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BMP2.ReplaceSound.sound_exterior);
             BMP2.ReplaceSound.sound_exterior.set3DMinMaxDistance(30f, 600f);
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.ogg"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BTR60.ReplaceSound.sound_interior);
+            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.ogg"), MODE._2D, out BTR60.ReplaceSound.sound_interior);
             BTR60.ReplaceSound.sound_interior.set3DMinMaxDistance(500f, 600f);
 
             corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BTR60.ReplaceSound.sound_exterior);
@@ -109,6 +109,7 @@ namespace PactIncreasedLethality
             {
                 module_manager.LoadAllStaticAssets();
                 AssetUtil.ReleaseVanillaAssets();
+                APS.APSLauncher.Init();
             }
 
             //TODO why is this needed?        

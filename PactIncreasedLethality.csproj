@@ -113,7 +113,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="APS\APSCollider.cs" />
+    <Compile Include="APS\APSLauncher.cs" />
+    <Compile Include="APS\InterceptionHandler.cs" />
+    <Compile Include="APS\Schema.cs" />
     <Compile Include="CustomGuidanceComputer.cs" />
+    <Compile Include="APS\APS.cs" />
     <Compile Include="ERA\EraVisual.cs" />
     <Compile Include="ERA\PactEra.cs" />
     <Compile Include="ERA\Relikt.cs" />
@@ -135,7 +140,6 @@
     <Compile Include="Vics\BTR60.cs" />
     <Compile Include="Sights\CRTShock.cs" />
     <Compile Include="Sights\DigitalZoomSnapper.cs" />
-    <Compile Include="Drozd.cs" />
     <Compile Include="EFP.cs" />
     <Compile Include="FireForget.cs" />
     <Compile Include="ERA\Kontakt1.cs" />
@@ -158,5 +162,6 @@
     <Compile Include="Sights\UpdateVerticalRangeScale.cs" />
     <Compile Include="Sights\UVBU.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
