@@ -16,6 +16,7 @@ using NWH.VehiclePhysics;
 using GHPC.Weaponry;
 using System.Linq;
 using ModUtil;
+using ActiveProtectionSystem;
 
 namespace PactIncreasedLethality
 {
@@ -75,7 +76,7 @@ namespace PactIncreasedLethality
         private static AmmoType ammo_3of412;
         private static AmmoType ammo_3bm20;
         private static AmmoClipCodexScriptable clip_codex_br412d;
-        private static APS.Schema drozd_schema = new APS.Schema();
+        private static APSSchema drozd_schema = new APSSchema();
 
         private static Dictionary<int, int> DrozdPlatoonTracker = new Dictionary<int, int>();
 
@@ -201,7 +202,7 @@ namespace PactIncreasedLethality
                         new int[] { 3 },
                     };
 
-                    APS.APS.Add(launchers, colliders, assignments, drozd_schema);
+                    APS.Add(launchers, colliders, assignments, drozd_schema);
                     vic._friendlyName += "D";
                 }
 

@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 
-namespace PactIncreasedLethality.APS
+namespace ActiveProtectionSystem
 {
     internal class APS
     {
-        public static void Add(Transform[] launchers, Transform[] colliders, int[][] assignments, Schema schema)
+        public static void Add(Transform[] launchers, Transform[] colliders, int[][] assignments, APSSchema schema)
         {
             APSLauncher[] all_launchers = new APSLauncher[launchers.Length];
 

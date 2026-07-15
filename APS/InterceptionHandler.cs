@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using HarmonyLib;
 
-namespace PactIncreasedLethality.APS
+namespace ActiveProtectionSystem
 {
     [HarmonyPatch(typeof(GHPC.Weapons.LiveRound), "penCheck")]
     internal static class InterceptionHandler

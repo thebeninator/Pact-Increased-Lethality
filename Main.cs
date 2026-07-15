@@ -12,7 +12,7 @@ using FMOD;
 using GHPC.Vehicle;
 using PactIncreasedLethality;
 using ModUtil;
-using FMODUnity;
+using ActiveProtectionSystem;
 
 [assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
@@ -108,7 +108,7 @@ namespace PactIncreasedLethality
             {
                 module_manager.LoadAllStaticAssets();
                 AssetUtil.ReleaseVanillaAssets();
-                APS.APSLauncher.Init();
+                APSLauncher.Init();
             }
 
             //TODO why is this needed?        

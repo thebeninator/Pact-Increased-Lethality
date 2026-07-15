@@ -5,8 +5,9 @@ using GHPC.Audio;
 using GHPC.Effects;
 using GHPC;
 using UnityEngine;
+using PactIncreasedLethality;
 
-namespace PactIncreasedLethality.APS
+namespace ActiveProtectionSystem
 {
     internal class APSLauncher
     {

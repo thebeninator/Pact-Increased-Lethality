@@ -116,7 +116,7 @@
     <Compile Include="APS\APSCollider.cs" />
     <Compile Include="APS\APSLauncher.cs" />
     <Compile Include="APS\InterceptionHandler.cs" />
-    <Compile Include="APS\Schema.cs" />
+    <Compile Include="APS\APSSchema.cs" />
     <Compile Include="CustomGuidanceComputer.cs" />
     <Compile Include="APS\APS.cs" />
     <Compile Include="ERA\EraVisual.cs" />
@@ -126,6 +126,7 @@
     <Compile Include="ModUtil\Module.cs" />
     <Compile Include="ModUtil\ModuleManager.cs" />
     <Compile Include="ModUtil\Util.cs" />
+    <Compile Include="PDL\CommanderWeapon.cs" />
     <Compile Include="SharedAssets.cs" />
     <Compile Include="LaserPointCorrection.cs" />
     <Compile Include="Sights\1A40.cs" />

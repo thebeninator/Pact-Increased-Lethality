@@ -3,13 +3,13 @@ using GHPC;
 using System.Linq;
 using UnityEngine;
 
-namespace PactIncreasedLethality.APS
+namespace ActiveProtectionSystem
 {
     internal class APSCollider : MonoBehaviour
     {
         public IUnit parent_unit;
         private APSLauncher[] assigned_launchers;
-        public Schema schema;
+        public APSSchema schema;
 
         void Awake()
         {
