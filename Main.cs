@@ -59,25 +59,24 @@ namespace PactIncreasedLethality
             BMP1.Config(cfg);
             BMP2.Config(cfg);
             BTR60.Config(cfg);
-            //Drozd.Config(cfg);
             Armour.Config(cfg);
 
-            var corSystem = FMODUnity.RuntimeManager.CoreSystem;
+            var cor_system = FMODUnity.RuntimeManager.CoreSystem;
 
-            corSystem.createChannelGroup("master", out audio_channel_group);
+            cor_system.createChannelGroup("master", out audio_channel_group);
             audio_channel_group.setVolumeRamp(true);
             audio_channel_group.setMode(MODE._3D_WORLDRELATIVE);
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot.wav"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BMP2.ReplaceSound.sound);
+            cor_system.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot.wav"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BMP2.ReplaceSound.sound);
             BMP2.ReplaceSound.sound.set3DMinMaxDistance(50f, 1200f);
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BMP2.ReplaceSound.sound_exterior);
+            cor_system.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BMP2.ReplaceSound.sound_exterior);
             BMP2.ReplaceSound.sound_exterior.set3DMinMaxDistance(30f, 600f);
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.ogg"), MODE._2D, out BTR60.ReplaceSound.sound_interior);
+            cor_system.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/btr60a", "btr2a72_interior.ogg"), MODE._2D, out BTR60.ReplaceSound.sound_interior);
             BTR60.ReplaceSound.sound_interior.set3DMinMaxDistance(500f, 600f);
 
-            corSystem.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BTR60.ReplaceSound.sound_exterior);
+            cor_system.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BTR60.ReplaceSound.sound_exterior);
             BTR60.ReplaceSound.sound_exterior.set3DMinMaxDistance(20f, 550f);
 
             module_manager.Add("SharedAssets", new SharedAssets());

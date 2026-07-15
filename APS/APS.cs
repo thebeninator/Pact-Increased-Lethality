@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace PactIncreasedLethality.APS
 {
@@ -22,14 +19,15 @@ namespace PactIncreasedLethality.APS
                 APSCollider aps_collider = collider.gameObject.AddComponent<APSCollider>();
                 aps_collider.schema = schema;
 
-                List<APSLauncher> to_add = new List<APSLauncher>();
+                int assigned_launchers_count = assignments[i].Length;
+                APSLauncher[] to_add = new APSLauncher[assigned_launchers_count];
 
-                for (int j = 0; j < assignments[i].Length; j++)
+                for (int j = 0; j < assigned_launchers_count; j++)
                 {
-                    APSLauncher launcher = all_launchers[assignments[i][j]];
-                    to_add.Add(launcher);
+                    to_add[j] = all_launchers[assignments[i][j]];
                 }
-                aps_collider.Init(to_add.ToArray());
+
+                aps_collider.Init(to_add);
             }
         }
     }

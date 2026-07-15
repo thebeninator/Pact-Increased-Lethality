@@ -15,7 +15,7 @@ namespace PactIncreasedLethality.APS
         public IUnit parent_unit;
         private Transform[] projectiles;
         private int projectile_count = 0;
-        private int current_projectile = 0;
+        private int current_projectile_idx = 0;
         public bool IsEmpty => projectile_count <= 0;
 
         public static void Init()
@@ -51,21 +51,26 @@ namespace PactIncreasedLethality.APS
 
         public void FireProjectile(Vector3 pos)
         {
-            Transform projectile_to_fire = projectiles[current_projectile];
+            Transform current_projectile = projectiles[current_projectile_idx];
 
-            ParticleEffectsManager.Instance.CreateImpactEffectOfType(dummy_he, ParticleEffectsManager.FusedStatus.Fuzed, ParticleEffectsManager.SurfaceMaterial.None, false, pos);
+            ParticleEffectsManager.Instance.CreateImpactEffectOfType(dummy_he, 
+                ParticleEffectsManager.FusedStatus.Fuzed, ParticleEffectsManager.SurfaceMaterial.None, false, pos);
             ImpactSFXManager.Instance.PlaySimpleImpactAudio(ImpactAudioType.Missile, pos);
 
             FmodGenericAudioManager.PlayOneShot(
                 "event:/Weapons/launcher_9M14",
-                projectile_to_fire.transform.position,
-                new ValueTuple<PARAMETER_ID, float>(FmodInteriorTracker._instance._isInteriorParameterID, FmodInteriorTracker.IsInteriorView(parent_unit) ? 1f : 0f)
+                current_projectile.transform.position,
+                new ValueTuple<PARAMETER_ID, float>
+                (
+                    FmodInteriorTracker._instance._isInteriorParameterID, 
+                    FmodInteriorTracker.IsInteriorView(parent_unit) ? 1f : 0f
+                )
             );
 
-            projectile_to_fire.GetComponentInChildren<ParticleSystem>().Play();
-            projectile_to_fire.gameObject.GetComponent<MeshRenderer>().enabled = false;
+            current_projectile.GetComponentInChildren<ParticleSystem>().Play();
+            current_projectile.gameObject.GetComponent<MeshRenderer>().enabled = false;
             projectile_count--;
-            current_projectile++;
+            current_projectile_idx++;
         }
     }
 }

@@ -627,14 +627,36 @@ namespace PactIncreasedLethality
             t55_drozd = drozd_bundle.LoadAsset<GameObject>("drozd_t55.prefab");
             t55_drozd.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-
             Util.SetupFLIRShaders(t55_drozd);
 
-            Transform collider_holder = t55_drozd.transform.Find("COLLIDERS");
-            foreach (Transform collider in collider_holder.GetComponentInChildren<Transform>())
+            Transform[] radar_colliders = t55_drozd.transform.Find("COLLIDERS")
+                .GetComponentsInChildren<Transform>().Where(o => o.name != "COLLIDERS").ToArray();
+            foreach (Transform collider in radar_colliders)
             {
                 collider.gameObject.layer = 7;
                 collider.tag = "Untagged";
+            }
+
+            Transform[] drozd_armour = t55_drozd.transform.Find("ARMOUR")
+                .GetComponentsInChildren<Transform>().Where(o => o.name != "COLLIDERS").ToArray();
+            foreach (Transform t in drozd_armour)
+            {
+                t.gameObject.tag = "Penetrable";
+                t.gameObject.layer = 8;
+                UniformArmor armour = t.gameObject.AddComponent<UniformArmor>();
+
+                if (t.name != "radar")
+                {
+                    armour.SetName("APS launcher");
+                    armour.PrimaryHeatRha = 15f;
+                    armour.PrimarySabotRha = 15f;
+                }
+                else
+                {
+                    armour.SetName("APS radar");
+                    armour.PrimaryHeatRha = 20f;
+                    armour.PrimarySabotRha = 20f;
+                }
             }
 
             Util.SetupFLIRShaders(t55am_lrf);
