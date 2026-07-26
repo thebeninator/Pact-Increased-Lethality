@@ -509,6 +509,9 @@ namespace PactIncreasedLethality
                         Material t72_material = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret").GetComponent<MeshRenderer>().materials[0];
                         Transform smoke_launcher = kontakt.transform.Find("SMOKE LAUNCHER");
 
+                        Transform hull_follow = vic.transform.GetComponent<LateFollowTarget>()._lateFollowers[0].transform;
+                        Transform turret_follow = turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform;
+
                         for (int i = 1; i < smoke_launcher.childCount; i++)
                         {
                             Transform smoke = smoke_launcher.GetChild(i);
@@ -549,7 +552,7 @@ namespace PactIncreasedLethality
                             GameObject _sosna_u = GameObject.Instantiate(sosna_u, vic.transform.Find("T72M1_mesh (1)/T72M1_hull"));
                             _sosna_u.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
                             _sosna_u.transform.parent = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret");
-                            _sosna_u.transform.Find("SOSNA U").parent = turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform;
+                            _sosna_u.transform.Find("SOSNA U").parent = turret_follow.transform;
 
                             turret.Find("LUNA").localScale = new Vector3(0f, 0f, 0f);
                             turret.Find("night sight cover").localScale = new Vector3(0f, 0f, 0f);
@@ -561,12 +564,12 @@ namespace PactIncreasedLethality
                             Transform turret_kontakt = kontakt.transform.Find("TURRET ERA");
                             Transform mantlet_k1 = null;
 
-                            turret_kontakt.parent = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret");
-
                             if (has_k1)
                             {
+                                Transform mantlet_late_follow = vic.transform.Find("---MESH---/HULL/TURRET/GUN").GetComponent<LateFollowTarget>()._lateFollowers[0].transform;
+
                                 mantlet_k1 = kontakt.transform.Find("MANTLET MOUNT");
-                                mantlet_k1.parent = vic.transform.Find("---MESH---/HULL/TURRET/GUN");
+                                mantlet_k1.SetParent(mantlet_late_follow);
 
                                 if (!has_sosna && has_reflective_plates) {
                                     turret_kontakt.Find("Cube.052 (2)").gameObject.SetActive(false);
@@ -576,33 +579,20 @@ namespace PactIncreasedLethality
                                 }
                             }
 
-                            Transform hull_armour = hull_kontakt.Find("ARMOUR");
-                            LateFollow hull_follow = hull_kontakt.Find("ARMOUR").gameObject.AddComponent<LateFollow>();
-                            hull_follow.FollowTarget = vic.transform;
-                            hull_follow.enabled = true;
-                            hull_follow.Awake();
-                            hull_kontakt.Find("ARMOUR").parent = null;
-
-                            LateFollow turret_follow = turret_kontakt.Find("ARMOUR").gameObject.AddComponent<LateFollow>();
-                            turret_follow.FollowTarget = vic.transform.Find("---MESH---/HULL/TURRET");
-                            turret_follow.enabled = true;
-                            turret_follow.Awake();
-                            turret_kontakt.Find("ARMOUR").parent = null;
+                            hull_kontakt.SetParent(hull_follow);
+                            turret_kontakt.SetParent(turret_follow);
 
                             if (has_k5)
                             {
-                                kontakt.transform.Find("TURRET PLATE").parent = turret_follow.transform;
-                                kontakt.transform.Find("HULL ERA FRONT HULL/ARMOUR").parent = hull_follow.transform;
-                                kontakt.transform.Find("HULL PLATE").parent = hull_follow.transform;
+                                kontakt.transform.Find("TURRET PLATE").SetParent(turret_follow);
+                                kontakt.transform.Find("HULL ERA FRONT HULL").SetParent(hull_follow);
+                                kontakt.transform.Find("HULL PLATE").SetParent(hull_follow);
 
                                 if (has_sosna)
                                 {
                                     GameObject b3_k5 = GameObject.Instantiate(t72b_k5_b3_full, vic.transform.Find("T72M1_mesh (1)/T72M1_hull"));
                                     b3_k5.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-
-                                    Transform b3_k5_turret = b3_k5.transform.Find("TURRET ERA");
-                                    b3_k5_turret.parent = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret");
-                                    b3_k5_turret.transform.Find("ARMOUR").parent = turret_follow.transform;
+                                    b3_k5.transform.SetParent(turret_follow);
 
                                     if (has_ubh)
                                     {
@@ -612,39 +602,15 @@ namespace PactIncreasedLethality
                                         Transform ubh_turret = ubh_kit.transform.Find("TURRET STUFF");
                                         Transform ubh_hull = ubh_kit.transform.Find("HULL STUFF");
 
-                                        LateFollow hull_follow_relikt = ubh_hull.Find("RELIKT BAGS/ARMOUR").gameObject.AddComponent<LateFollow>();
-                                        hull_follow_relikt.FollowTarget = vic.transform;
-                                        hull_follow_relikt.enabled = true;
-                                        hull_follow_relikt.Awake();
-                                        ubh_hull.Find("RELIKT BAGS/ARMOUR").parent = null;
-                                        ubh_hull.Find("SIDE SLAT").parent = hull_follow_relikt.transform;
-
-                                        ubh_turret.parent = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret");
-                                        ubh_turret.Find("TURRET K5/ARMOUR").parent = turret_follow.transform;
-                                        ubh_turret.Find("TURRET RELIKT/ARMOUR").parent = turret_follow.transform;
-                                        ubh_turret.Find("TURRET SLAT").parent = turret_follow.transform;
+                                        ubh_turret.SetParent(turret_follow);
+                                        ubh_hull.SetParent(hull_follow);
 
                                         hull_kontakt.gameObject.SetActive(false);
-                                        for (int i = 0; i < 6; i++) {
-                                            hull_armour.transform.GetChild(i).gameObject.SetActive(false);
-                                        }
                                     }
                                 }
                             }
 
-                            if (has_k1)
-                            {
-                                LateFollow k1_mantlet_follow = mantlet_k1.Find("MANTLET K1 ARMOUR").gameObject.AddComponent<LateFollow>();
-                                k1_mantlet_follow.FollowTarget = vic.transform.Find("---MESH---/HULL/TURRET/GUN");
-                                k1_mantlet_follow.enabled = true;
-                                k1_mantlet_follow.Awake();
-                                mantlet_k1.Find("MANTLET K1 ARMOUR").parent = null;
-                            }
-
-                            Mesh hull_mesh = t72b_hull;
-                            if (has_k5) {
-                                hull_mesh = t72b_k5_hull_mesh;
-                            }
+                            Mesh hull_mesh = has_k5 ? t72b_k5_hull_mesh : t72b_hull;
 
                             Transform hull_rend = vic.transform.Find("T72M1_mesh (1)/T72M1_hull");
                             hull_rend.GetComponent<MeshFilter>().sharedMesh = hull_mesh;

@@ -21,7 +21,8 @@ namespace PactIncreasedLethality
             reticle_mesh_atgm.GetComponent<ReticleMesh>().SMR = null;
             reticle_mesh_atgm.GetComponent<ReticleMesh>().Load();
 
-            ATGMSight sight = optic.gameObject.AddComponent<ATGMSight>(); 
+            UsableOptic usable_optic = optic.GetComponent<UsableOptic>();
+            ATGMSight sight = usable_optic.FCS.gameObject.AddComponent<ATGMSight>(); 
             sight.original_reticle_mesh = optic.Find("Reticle Mesh").GetComponent<ReticleMesh>();
             sight.atgm_reticle_mesh = reticle_mesh_atgm.GetComponent<ReticleMesh>();
             if (laser_canvas)
@@ -31,19 +32,20 @@ namespace PactIncreasedLethality
 
         public class ATGMSight : MonoBehaviour 
         {
-            UsableOptic optic;
-            FireControlSystem fcs;
             public ReticleMesh original_reticle_mesh;
             public ReticleMesh atgm_reticle_mesh;
             public Transform laser_canvas;
+
+            private float original_default_fov;
+            private float[] original_other_fovs;
+            private UsableOptic optic;
+            private FireControlSystem fcs;
             private bool was_missile = false;
-            float original_default_fov;
-            float[] original_other_fovs; 
 
             void Awake()
-            { 
-                optic = GetComponent<UsableOptic>();
-                fcs = optic.FCS;
+            {
+                fcs = GetComponent<FireControlSystem>();
+                optic = Util.GetDayOptic(fcs);   
                 original_default_fov = optic.slot.DefaultFov;
                 original_other_fovs = (float[])optic.slot.OtherFovs.Clone();
                 fcs.AmmoTypeChanged += FCS_AmmoTypeChanged;

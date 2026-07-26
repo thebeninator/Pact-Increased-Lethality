@@ -52,6 +52,7 @@ namespace PactIncreasedLethality
                 era_armour.AngleMatters = true;
                 era_armour._isEra = true;
                 era_armour._armorType = schema.era_so;
+                era_armour._noImpactDecals = true;
 
                 era.gameObject.layer = 8;
                 era.gameObject.tag = "Penetrable";

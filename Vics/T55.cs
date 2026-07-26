@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using GHPC.Equipment.Optics;
+using GHPC.Equipment.Optics;    
 using GHPC.Utility;
 using GHPC.Vehicle;
 using GHPC.Weapons;
@@ -549,7 +549,6 @@ namespace PactIncreasedLethality
                 ammo_9m117.ArmingDistance = 45f;
                 ammo_9m117.ImpactAudio = GHPC.Audio.ImpactAudioType.Missile;
                 ammo_9m117.ShortName = AmmoType.AmmoShortName.Missile;
-                ammo_9m117.CachedIndex = -1;
 
                 Util.Coalesce(ref ammo_codex_9m117);
                 ammo_codex_9m117.AmmoType = ammo_9m117;
@@ -570,12 +569,7 @@ namespace PactIncreasedLethality
                 ammo_9m117.VisualModel = ammo_9m117_vis;
                 ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m117;
                 ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m117;
-
-                Util.CacheAmmo(ammo_9m117);
             }
-
-            Util.CacheAmmo(ammo_3bk17m);
-            Util.CacheAmmo(ammo_3bm25);
 
             if ((AssetUtil.VehicleInMission("T55A") && has_lrf.Value) || (AssetUtil.VehicleInMission("T62") && T62.has_lrf.Value))
             {

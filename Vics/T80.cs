@@ -303,39 +303,19 @@ namespace PactIncreasedLethality
 
                     GameObject k5_turret = GameObject.Instantiate(t80u_turret, turret_rend);
                     k5_turret.transform.localEulerAngles = new Vector3(90f, 0f, 180f);
-
-                    LateFollow k5_turret_follow = k5_turret.AddComponent<LateFollow>();
-                    k5_turret_follow.FollowTarget = turret;
-                    k5_turret_follow.enabled = true;
-                    k5_turret_follow.Awake();
-                    k5_turret.transform.parent = null;
+                    k5_turret.transform.SetParent(turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform, true);
 
                     GameObject k5_hull = GameObject.Instantiate(t80u_hull, hull_rend);
                     k5_hull.transform.localEulerAngles = new Vector3(0f, -180f, 0f);
-
-                    LateFollow k5_hull_follow = k5_hull.AddComponent<LateFollow>();
-                    k5_hull_follow.FollowTarget = vic.transform;
-                    k5_hull_follow.enabled = true;
-                    k5_hull_follow.Awake();
-                    k5_hull.transform.parent = null;
+                    k5_hull.transform.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform, true);
 
                     GameObject k5_sides = GameObject.Instantiate(t80u_hull_sides, skirts_rend);
                     k5_sides.transform.localEulerAngles = new Vector3(0f, -180f, 0f);
-
-                    LateFollow k5_sides_follow = k5_sides.AddComponent<LateFollow>();
-                    k5_sides_follow.FollowTarget = vic.transform;
-                    k5_sides_follow.enabled = true;
-                    k5_sides_follow.Awake();
-                    k5_sides.transform.parent = null;
+                    k5_sides.transform.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform, true);
 
                     GameObject front_flaps = GameObject.Instantiate(t80u_front_flaps, hull_rend);
                     front_flaps.transform.localEulerAngles = new Vector3(0f, 270f, 0f);
-
-                    LateFollow front_flaps_follow = front_flaps.AddComponent<LateFollow>();
-                    front_flaps_follow.FollowTarget = vic.transform;
-                    front_flaps_follow.enabled = true;
-                    front_flaps_follow.Awake();
-                    front_flaps.transform.parent = null;
+                    front_flaps.transform.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform, true);
 
                     Material[] front_flaps_mat = front_flaps.GetComponent<MeshRenderer>().materials;
                     front_flaps_mat[0] = skirts_rend.GetComponent<MeshRenderer>().materials[0];

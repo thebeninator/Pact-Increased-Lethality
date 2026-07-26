@@ -8,5 +8,10 @@ namespace PactIncreasedLethality
         public Material destroyed_mat;
         public bool hide_on_detonate = true;
         public string destroyed_target;
+
+        void Awake()
+        {
+            this.enabled = false;
+        }
     }
 }
