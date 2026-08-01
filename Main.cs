@@ -14,7 +14,7 @@ using PactIncreasedLethality;
 using ModUtil;
 using ActiveProtectionSystem;
 
-[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7", "ATLAS")]
+[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7A", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -30,7 +30,6 @@ namespace PactIncreasedLethality
         internal static PlayerInput player_manager;
         internal static CameraManager camera_manager;
         private int valid_scene_count = 0;
-
 
         internal static FMOD.ChannelGroup audio_channel_group;
 
