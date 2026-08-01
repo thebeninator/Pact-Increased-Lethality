@@ -77,106 +77,108 @@ namespace PactIncreasedLethality
             thermals_quality.Comment = "Low, High";
         }
 
+        private static void HandleConversion(Vehicle vic)
+        {
+            GameObject vic_go = vic.gameObject;
+
+            if (vic == null) return;
+            if (vic.UniqueName != "T64A") return;
+
+            WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
+            LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
+
+            int rand = UnityEngine.Random.Range(0, Ammo_125mm.ap.Count);
+            string ammo_str = t64_random_ammo.Value ? t64_random_ammo_pool.Value.ElementAt(rand) : t64_ammo_type.Value;
+
+            FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
+            UsableOptic day_optic = Util.GetDayOptic(fcs);
+
+            if (better_stab.Value)
+            {
+                day_optic.slot.VibrationBlurScale = 0.05f;
+                day_optic.slot.VibrationShakeMultiplier = 0.1f;
+            }
+
+            if (tpn3.Value)
+            {
+                TPN3.Add(fcs, day_optic.slot.LinkedNightSight.PairedOptic, day_optic.slot.LinkedNightSight);
+            }
+
+            if (has_lrf.Value)
+            {
+                GameObject lase = GameObject.Instantiate(new GameObject("lase"), fcs.transform);
+
+                fcs.LaserAim = LaserAimMode.Fixed;
+                fcs.LaserOrigin = lase.transform;
+                fcs.MaxLaserRange = 4000f;
+
+                day_optic.reticleMesh.reticleSO = ReticleMesh.cachedReticles["T72"].tree;
+                day_optic.reticleMesh.reticle = ReticleMesh.cachedReticles["T72"];
+                day_optic.reticleMesh.SMR = null;
+                day_optic.reticleMesh.Load();
+
+                if (lead_calculator_t64.Value)
+                    FireControlSystem1A40.Add(fcs, day_optic, new Vector3(-308.8629f, -6.6525f, 0f));
+
+                fcs.Start();
+
+                fcs.OpticalRangefinder = null;
+            }
+
+            try
+            {
+                if (ammo_str != "3BM15")
+                    loadout_manager.LoadedAmmoList.AmmoClips[0] = Ammo_125mm.ap[ammo_str];
+
+                for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
+                {
+                    GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
+                    Util.EmptyRack(rack);
+                }
+
+                loadout_manager.SpawnCurrentLoadout();
+                weapon.Feed.AmmoTypeInBreech = null;
+                weapon.Feed.Start();
+                loadout_manager.RegisterAllBallistics();
+            }
+            catch (Exception)
+            {
+                MelonLogger.Msg("Loading default ammo for " + vic.FriendlyName);
+            }
+
+            if (super_engine.Value)
+            {
+                VehicleController this_vic_controller = vic_go.GetComponent<VehicleController>();
+                NwhChassis chassis = vic_go.GetComponent<NwhChassis>();
+
+                Util.ShallowCopy(this_vic_controller.engine, SharedAssets.abrams_vic_controller.engine);
+                Util.ShallowCopy(this_vic_controller.transmission, SharedAssets.abrams_vic_controller.transmission);
+
+                this_vic_controller.engine.vc = vic_go.GetComponent<VehicleController>();
+                this_vic_controller.transmission.vc = vic_go.GetComponent<VehicleController>();
+                this_vic_controller.engine.Initialize(this_vic_controller);
+                this_vic_controller.engine.Start();
+                this_vic_controller.transmission.Initialize(this_vic_controller);
+
+                chassis._maxForwardSpeed = 22f;
+                chassis._maxReverseSpeed = 15.176f;
+                chassis._originalEnginePower = 1430.99f;
+            }
+
+            vic.AimablePlatforms[3].transform.Find("optic cover parent").gameObject.SetActive(false);
+
+            if (thermals.Value)
+            {
+                PactThermal.Add(day_optic.slot.LinkedNightSight.PairedOptic, thermals_quality.Value.ToLower());
+                vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
+            }
+        }
+
         public static IEnumerator Convert(GameState _)
         {
             foreach (Vehicle vic in Mod.vics)
             {
-                GameObject vic_go = vic.gameObject;
-
-                if (vic == null) continue;
-                if (vic.UniqueName != "T64A") continue;
-                if (vic_go.GetComponent<AlreadyConverted>() != null) continue;
-
-                vic_go.AddComponent<AlreadyConverted>();
-
-                WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
-                LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
-
-                int rand = UnityEngine.Random.Range(0, Ammo_125mm.ap.Count);
-                string ammo_str = t64_random_ammo.Value ? t64_random_ammo_pool.Value.ElementAt(rand) : t64_ammo_type.Value;
-
-                FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
-                UsableOptic day_optic = Util.GetDayOptic(fcs);
-
-                if (better_stab.Value)
-                {
-                    day_optic.slot.VibrationBlurScale = 0.05f;
-                    day_optic.slot.VibrationShakeMultiplier = 0.1f;
-                }
-
-                if (tpn3.Value)
-                {
-                    TPN3.Add(fcs, day_optic.slot.LinkedNightSight.PairedOptic, day_optic.slot.LinkedNightSight);
-                }
-
-                if (has_lrf.Value)
-                {
-                    GameObject lase = GameObject.Instantiate(new GameObject("lase"), fcs.transform);
-
-                    fcs.LaserAim = LaserAimMode.Fixed;
-                    fcs.LaserOrigin = lase.transform;
-                    fcs.MaxLaserRange = 4000f;
-
-                    day_optic.reticleMesh.reticleSO = ReticleMesh.cachedReticles["T72"].tree;
-                    day_optic.reticleMesh.reticle = ReticleMesh.cachedReticles["T72"];
-                    day_optic.reticleMesh.SMR = null;
-                    day_optic.reticleMesh.Load();
-
-                    if (lead_calculator_t64.Value) 
-                        FireControlSystem1A40.Add(fcs, day_optic, new Vector3(-308.8629f, -6.6525f, 0f));
-
-                    fcs.Start();
-
-                    fcs.OpticalRangefinder = null;
-                }
-
-                try
-                {
-                    if (ammo_str != "3BM15")
-                        loadout_manager.LoadedAmmoList.AmmoClips[0] = Ammo_125mm.ap[ammo_str];
-
-                    for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
-                    {
-                        GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
-                        Util.EmptyRack(rack);
-                    }
-
-                    loadout_manager.SpawnCurrentLoadout();
-                    weapon.Feed.AmmoTypeInBreech = null;
-                    weapon.Feed.Start();
-                    loadout_manager.RegisterAllBallistics();
-                }
-                catch (Exception)
-                {
-                    MelonLogger.Msg("Loading default ammo for " + vic.FriendlyName);
-                }
-
-                if (super_engine.Value)
-                {
-                    VehicleController this_vic_controller = vic_go.GetComponent<VehicleController>();
-                    NwhChassis chassis = vic_go.GetComponent<NwhChassis>();
-
-                    Util.ShallowCopy(this_vic_controller.engine, SharedAssets.abrams_vic_controller.engine);
-                    Util.ShallowCopy(this_vic_controller.transmission, SharedAssets.abrams_vic_controller.transmission);
-
-                    this_vic_controller.engine.vc = vic_go.GetComponent<VehicleController>();
-                    this_vic_controller.transmission.vc = vic_go.GetComponent<VehicleController>();
-                    this_vic_controller.engine.Initialize(this_vic_controller);
-                    this_vic_controller.engine.Start();
-                    this_vic_controller.transmission.Initialize(this_vic_controller);
-
-                    chassis._maxForwardSpeed = 22f;
-                    chassis._maxReverseSpeed = 15.176f;
-                    chassis._originalEnginePower = 1430.99f;
-                }
-
-                vic.AimablePlatforms[3].transform.Find("optic cover parent").gameObject.SetActive(false);
-
-                if (thermals.Value)
-                {
-                    PactThermal.Add(day_optic.slot.LinkedNightSight.PairedOptic, thermals_quality.Value.ToLower());
-                    vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
-                }
+                HandleConversion(vic);
             }
 
             yield break;
@@ -186,7 +188,7 @@ namespace PactIncreasedLethality
         {
             if (!t64_patch.Value) return;
 
-            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
+            StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }
     }
 }

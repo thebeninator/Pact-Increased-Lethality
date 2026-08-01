@@ -68,163 +68,165 @@ namespace PactIncreasedLethality
             engine_upr = cfg.CreateEntry<bool>("Engine Upgrade (T-62)", true);
         }
 
+        private static void HandleConversion(Vehicle vic)
+        {
+            GameObject vic_go = vic.gameObject;
+
+            if (vic == null) return;
+            if (vic.FriendlyName != "T-62") return;
+
+            LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
+            WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
+            FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
+            UsableOptic day_optic = Util.GetDayOptic(fcs);
+            Transform lrf_canvas = null;
+
+            if (has_lrf.Value)
+            {
+                GameObject lrf_holder = GameObject.Instantiate(t62m_lrf, vic.transform.Find("T62_base/hull"));
+                Transform lrf = lrf_holder.transform.Find("LRF");
+                Transform gun = vic.transform.Find("---T62_rig---/HULL/TURRET/GUN");
+                lrf_holder.transform.SetParent(gun.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
+
+                Transform laser_armour = lrf.transform.Find("ARMOUR");
+                GHPC.Equipment.DestructibleComponent laser_destr = laser_armour.gameObject.AddComponent<GHPC.Equipment.DestructibleComponent>();
+                laser_destr._health = 5f;
+                laser_destr._fullHealth = 5f;
+                laser_destr._pressureTolerance = 1f;
+                laser_destr._shockResistance = 0.30f;
+                laser_destr._name = "laser rangefinder";
+
+                fcs.LaserComponent = laser_destr;
+                laser_destr.Destroyed += fcs.LaserDestroyed;
+
+                weapon.FCS.gameObject.AddComponent<LimitedLRF>();
+                fcs.MaxLaserRange = 4000f;
+
+                GameObject t = GameObject.Instantiate(T55.range_readout);
+                lrf_canvas = t.transform;
+                t.GetComponent<Reparent>().NewParent = day_optic.transform;
+                t.transform.GetChild(0).transform.localPosition = new Vector3(-284.1897f, -5.5217f, 0.1f);
+                t.SetActive(true);
+
+                weapon.FCS.GetComponent<LimitedLRF>().canvas = t.transform;
+
+                day_optic.reticleMesh.reticleSO = T55.reticleSO;
+                day_optic.reticleMesh.reticle = T55.reticle_cached;
+                day_optic.reticleMesh.SMR = null;
+                day_optic.reticleMesh.Load();
+            }
+
+            if (better_stab.Value)
+            {
+                day_optic.slot.VibrationBlurScale = 0.1f;
+                day_optic.slot.VibrationShakeMultiplier = 0.2f;
+            }
+
+            if (use_9m117.Value)
+            {
+                foreach (Transform t in vic.transform.Find("---T62_rig---/HULL/TURRET"))
+                {
+                    if (t.name == "night sight cover") t.gameObject.SetActive(false);
+                }
+
+                weapon.Feed.ReloadDuringMissileTracking = false;
+                GameObject guidance_computer_obj = new GameObject("guidance computer");
+                guidance_computer_obj.transform.parent = vic.transform;
+                guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
+
+                guidance_computer_obj.AddComponent<Reparent>();
+                Reparent reparent = guidance_computer_obj.GetComponent<Reparent>();
+                reparent.NewParent = vic_go.transform.Find("---T62_rig---/HULL/TURRET").gameObject.transform;
+                reparent.Awake();
+
+                MissileGuidanceUnit computer = guidance_computer_obj.GetComponent<MissileGuidanceUnit>();
+                computer.AimElement = weapon.FCS.AimTransform;
+                weapon.GuidanceUnit = computer;
+
+                BOM.Add(day_optic.transform, lrf_canvas);
+
+                loadout_manager.LoadedAmmoList.AmmoClips = Util.AppendToArray(loadout_manager.LoadedAmmoList.AmmoClips, T55.clip_codex_9m117);
+                loadout_manager._totalAmmoTypes = 4;
+                loadout_manager.TotalAmmoCounts = new int[] { 20, 10, 6, 4 };
+            }
+
+            for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
+            {
+                GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
+
+                if (use_9m117.Value)
+                {
+                    if (i == 0 || i == 3)
+                    {
+                        loadout_manager.RackLoadouts[i].FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] {
+                            new LoadoutManager.RackLoadoutFixedChoice() {
+                                AmmoClipIndex = 3,
+                                RackSlotIndex = 0,
+                            },
+                            new LoadoutManager.RackLoadoutFixedChoice() {
+                                AmmoClipIndex = 3,
+                                RackSlotIndex = 1,
+                            }
+                        };
+                    }
+                }
+
+                Util.EmptyRack(rack);
+            }
+
+            loadout_manager.SpawnCurrentLoadout();
+            weapon.Feed.AmmoTypeInBreech = null;
+            weapon.Feed.Start();
+            loadout_manager.RegisterAllBallistics();
+
+            if (tpn3.Value)
+            {
+                TPN3.Add(fcs, day_optic.slot.LinkedNightSight.PairedOptic, day_optic.slot.LinkedNightSight);
+            }
+
+            if (engine_upr.Value)
+            {
+                vic.transform.GetComponent<VehicleController>().engine.maxPower = 650f;
+            }
+
+            if (applique.Value)
+            {
+
+                vic.transform.Find("T62_base/hull").GetComponent<MeshFilter>().sharedMesh = t62m_hull;
+                vic.transform.Find("---T62_rig---/HULL/TURRET/turret").GetComponent<MeshFilter>().sharedMesh = t62m_turret;
+
+                GameObject _t62m_kit = GameObject.Instantiate(t62m_kit, vic.transform.Find("T62_base/hull"));
+                _t62m_kit.transform.Find("HULL/SKIRTS").GetComponent<MeshRenderer>().SetMaterials(new List<Material>() { SharedAssets.t80b_mat });
+
+                Transform hull_parts = _t62m_kit.transform.Find("HULL");
+                hull_parts.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
+
+                Transform turret_parts = _t62m_kit.transform.Find("TURRET");
+                turret_parts.SetParent(vic.transform.Find("---T62_rig---/HULL/TURRET").GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
+
+                Transform gun_parts = _t62m_kit.transform.Find("GUN");
+                Transform gun = vic.transform.Find("---T62_rig---/HULL/TURRET/GUN");
+                gun_parts.transform.Find("SLEEVE").SetParent(gun.Find("muzzle"));
+                gun_parts.SetParent(gun.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
+
+                HideCheeks hc = day_optic.gameObject.AddComponent<HideCheeks>();
+                hc.mesh_rend = turret_parts.Find("CHEEKS").GetComponent<MeshRenderer>();
+
+                Transform laser_origin = turret_parts.Find("CHEEKS/LASER ORIGIN");
+                laser_origin.SetParent(fcs.transform);
+                fcs.LaserOrigin = laser_origin;
+
+                vic._friendlyName = "T-62M";
+
+                if (engine_upr.Value) vic._friendlyName += "-1";
+            }
+        }
+
         public static IEnumerator Convert(GameState _)
         {
             foreach (Vehicle vic in Mod.vics)
             {
-                GameObject vic_go = vic.gameObject;
-
-                if (vic == null) continue;
-                if (vic.FriendlyName != "T-62") continue;
-                if (vic_go.GetComponent<AlreadyConverted>() != null) continue;
-
-                vic_go.AddComponent<AlreadyConverted>();
-
-                LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
-                WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
-                FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
-                UsableOptic day_optic = Util.GetDayOptic(fcs);
-                Transform lrf_canvas = null;
-
-                if (has_lrf.Value)
-                {
-                    GameObject lrf_holder = GameObject.Instantiate(t62m_lrf, vic.transform.Find("T62_base/hull"));
-                    Transform lrf = lrf_holder.transform.Find("LRF");
-                    Transform gun = vic.transform.Find("---T62_rig---/HULL/TURRET/GUN");
-                    lrf_holder.transform.SetParent(gun.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
-
-                    Transform laser_armour = lrf.transform.Find("ARMOUR");
-                    GHPC.Equipment.DestructibleComponent laser_destr = laser_armour.gameObject.AddComponent<GHPC.Equipment.DestructibleComponent>();
-                    laser_destr._health = 5f;
-                    laser_destr._fullHealth = 5f;
-                    laser_destr._pressureTolerance = 1f;
-                    laser_destr._shockResistance = 0.30f;
-                    laser_destr._name = "laser rangefinder";
-
-                    fcs.LaserComponent = laser_destr;
-                    laser_destr.Destroyed += fcs.LaserDestroyed;
-
-                    weapon.FCS.gameObject.AddComponent<LimitedLRF>();
-                    fcs.MaxLaserRange = 4000f;
-
-                    GameObject t = GameObject.Instantiate(T55.range_readout);
-                    lrf_canvas = t.transform;
-                    t.GetComponent<Reparent>().NewParent = day_optic.transform;        
-                    t.transform.GetChild(0).transform.localPosition = new Vector3(-284.1897f, -5.5217f, 0.1f);
-                    t.SetActive(true);
-
-                    weapon.FCS.GetComponent<LimitedLRF>().canvas = t.transform;
-
-                    day_optic.reticleMesh.reticleSO = T55.reticleSO;
-                    day_optic.reticleMesh.reticle = T55.reticle_cached;
-                    day_optic.reticleMesh.SMR = null;
-                    day_optic.reticleMesh.Load();
-                }
-
-                if (better_stab.Value)
-                {
-                    day_optic.slot.VibrationBlurScale = 0.1f;
-                    day_optic.slot.VibrationShakeMultiplier = 0.2f;
-                }
-
-                if (use_9m117.Value)
-                {
-                    foreach (Transform t in vic.transform.Find("---T62_rig---/HULL/TURRET"))
-                    {
-                        if (t.name == "night sight cover") t.gameObject.SetActive(false);
-                    }
-
-                    weapon.Feed.ReloadDuringMissileTracking = false;
-                    GameObject guidance_computer_obj = new GameObject("guidance computer");
-                    guidance_computer_obj.transform.parent = vic.transform;
-                    guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
-
-                    guidance_computer_obj.AddComponent<Reparent>();
-                    Reparent reparent = guidance_computer_obj.GetComponent<Reparent>();
-                    reparent.NewParent = vic_go.transform.Find("---T62_rig---/HULL/TURRET").gameObject.transform;
-                    reparent.Awake();
-
-                    MissileGuidanceUnit computer = guidance_computer_obj.GetComponent<MissileGuidanceUnit>();
-                    computer.AimElement = weapon.FCS.AimTransform;
-                    weapon.GuidanceUnit = computer;
-
-                    BOM.Add(day_optic.transform, lrf_canvas);
-
-                    loadout_manager.LoadedAmmoList.AmmoClips = Util.AppendToArray(loadout_manager.LoadedAmmoList.AmmoClips, T55.clip_codex_9m117);
-                    loadout_manager._totalAmmoTypes = 4;
-                    loadout_manager.TotalAmmoCounts = new int[] { 20, 10, 6, 4 };
-                }
-
-                for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
-                {
-                    GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
-
-                    if (use_9m117.Value)
-                    {
-                        if (i == 0 || i == 3)
-                        {
-                            loadout_manager.RackLoadouts[i].FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] {
-                                new LoadoutManager.RackLoadoutFixedChoice() {
-                                    AmmoClipIndex = 3,
-                                    RackSlotIndex = 0,
-                                },
-                                new LoadoutManager.RackLoadoutFixedChoice() {
-                                    AmmoClipIndex = 3,
-                                    RackSlotIndex = 1,
-                                }
-                            };
-                        }
-                    }
-
-                    Util.EmptyRack(rack);
-                }
-
-                loadout_manager.SpawnCurrentLoadout();
-                weapon.Feed.AmmoTypeInBreech = null;
-                weapon.Feed.Start();
-                loadout_manager.RegisterAllBallistics();
-
-                if (tpn3.Value)
-                {
-                    TPN3.Add(fcs, day_optic.slot.LinkedNightSight.PairedOptic, day_optic.slot.LinkedNightSight);
-                }
-
-                if (engine_upr.Value)
-                {
-                    vic.transform.GetComponent<VehicleController>().engine.maxPower = 650f;
-                }
-
-                if (applique.Value)
-                {   
-
-                    vic.transform.Find("T62_base/hull").GetComponent<MeshFilter>().sharedMesh = t62m_hull;
-                    vic.transform.Find("---T62_rig---/HULL/TURRET/turret").GetComponent<MeshFilter>().sharedMesh = t62m_turret;
-
-                    GameObject _t62m_kit = GameObject.Instantiate(t62m_kit, vic.transform.Find("T62_base/hull"));
-                    _t62m_kit.transform.Find("HULL/SKIRTS").GetComponent<MeshRenderer>().SetMaterials(new List<Material>() { SharedAssets.t80b_mat });
-
-                    Transform hull_parts = _t62m_kit.transform.Find("HULL");
-                    hull_parts.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
-
-                    Transform turret_parts = _t62m_kit.transform.Find("TURRET");
-                    turret_parts.SetParent(vic.transform.Find("---T62_rig---/HULL/TURRET").GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
-
-                    Transform gun_parts = _t62m_kit.transform.Find("GUN");
-                    Transform gun = vic.transform.Find("---T62_rig---/HULL/TURRET/GUN");
-                    gun_parts.transform.Find("SLEEVE").SetParent(gun.Find("muzzle"));
-                    gun_parts.SetParent(gun.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
-
-                    HideCheeks hc = day_optic.gameObject.AddComponent<HideCheeks>();
-                    hc.mesh_rend = turret_parts.Find("CHEEKS").GetComponent<MeshRenderer>();
-
-                    Transform laser_origin = turret_parts.Find("CHEEKS/LASER ORIGIN");
-                    laser_origin.SetParent(fcs.transform);
-                    fcs.LaserOrigin = laser_origin;
-
-                    vic._friendlyName = "T-62M";
-
-                    if (engine_upr.Value) vic._friendlyName += "-1";
-                }
+                HandleConversion(vic);
             }
 
             yield break;
@@ -311,7 +313,7 @@ namespace PactIncreasedLethality
         {
             if (!t62_patch.Value) return;
 
-            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
+            StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }
     }
 }

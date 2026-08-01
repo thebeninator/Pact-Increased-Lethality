@@ -29,6 +29,8 @@ namespace PactIncreasedLethality
         internal static AudioSettingsManager audio_settings_manager;
         internal static PlayerInput player_manager;
         internal static CameraManager camera_manager;
+        private int valid_scene_count = 0;
+
 
         internal static FMOD.ChannelGroup audio_channel_group;
 
@@ -119,21 +121,27 @@ namespace PactIncreasedLethality
 
             if (Util.menu_screens.Contains(sceneName)) return;
 
-            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(OnGameReady), GameStatePriority.Medium);
+            valid_scene_count++;
+            if (valid_scene_count == 2)
+            {
+                StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnGameReady), GameStatePriority.Medium);
 
-            PactEra.Init();
-            Armour.Init();
-            ProximityFuse.Init();
-            EFP.Init();
-            T72.Init();
-            T80.Init();
-            T55.Init();
-            T62.Init();
-            T64A.Init();
-            T64B.Init();
-            BMP1.Init();
-            BMP2.Init();
-            BTR60.Init();
+                PactEra.Init();
+                Armour.Init();
+                ProximityFuse.Init();
+                EFP.Init();
+                T72.Init();
+                T80.Init();
+                T55.Init();
+                T62.Init();
+                T64A.Init();
+                T64B.Init();
+                BMP1.Init();
+                BMP2.Init();
+                BTR60.Init();
+
+                valid_scene_count = 0;
+            }
         }
     }
 }

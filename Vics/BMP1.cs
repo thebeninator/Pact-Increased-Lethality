@@ -336,6 +336,62 @@ namespace PactIncreasedLethality
             vog17m1_hedp.Comment = "Fictional grenade for the AGS-17D. Behaves like a HEAT round";
         }
 
+        private static void HandleConversion(Vehicle vic)
+        {
+            GameObject vic_go = vic.gameObject;
+
+            if (vic == null) return;
+
+            string name = vic.FriendlyName;
+
+            if (!name.Contains("BMP-1")) return;
+            LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
+            FireControlSystem fcs = loadout_manager._weaponsManager.Weapons[0].FCS;
+            //fcs.SuperelevateWeapon = true;
+            //fcs._originalRangeLimits = new Vector2(0f, 3000f);
+            //fcs.RegisteredRangeLimits = new Vector2(0f, 3000f);
+            //fcs.CurrentStabMode = StabilizationMode.Vector;
+            //fcs.Mounts[0]._stabActive = true;
+            //fcs.Mounts[0].Stabilized = true;
+            //fcs.Mounts[0].StabilizerActive = true;
+            //fcs.RangeStep = 10;
+            //fcs._originalRangeStep = 10;
+            //fcs.DisplayRangeIncrement = 10;
+
+            //fcs.Mounts[1]._stabActive = true;
+            //fcs.Mounts[1].Stabilized = true;
+            //fcs.Mounts[1].StabilizerActive = true;
+            //fcs.Mounts[1].LocalEulerLimits = new Vector2(-4f, 50f);
+            //fcs.StabsActive = true;
+
+            //Transform optic = vic.transform.Find("BMP1_rig/HULL/TURRET/GUN/Gun Scripts/gunner day sight/Optic");
+            //GameObject _arty_monitor = GameObject.Instantiate(arty_monitor, optic);
+            //_arty_monitor.SetActive(false);
+
+            //ArtilleryManager arty_man = optic.gameObject.AddComponent<ArtilleryManager>();
+            //arty_man.monitor = _arty_monitor;
+            //arty_man.self = vic;
+            //arty_man.fcs = fcs;
+            //arty_man.gun_platform = fcs.Mounts[1];
+            //arty_man.turret_platform = fcs.Mounts[0];
+
+            if (!name.Contains("G") && (ags_17_bmp1.Value && name == "BMP-1") || (ags_17_bmp1p.Value && name == "BMP-1P"))
+            {
+                WeaponSystem coax = vic.GetComponent<WeaponsManager>().Weapons[2].Weapon;
+                coax.WeaponSound.SingleShotMode = true;
+                coax.WeaponSound.SingleShotEventPaths = new string[] { "blyat" };
+                coax.BaseDeviationAngle *= 12f;
+                coax.SetCycleTime(0.19f);
+                coax.CodexEntry = gun_ags17;
+                coax.Feed.AmmoTypeInBreech = null;
+                coax.Feed.ReadyRack.ClipTypes[0] = vog17m1_hedp.Value ? clip_vog17m1 : clip_vog17;
+                coax.Feed.ReadyRack.Awake();
+                coax.Feed.Start();
+
+                vic._friendlyName += "G";
+            }
+        }
+
         public static IEnumerator Convert(GameState _)
         {
             //if (ArtilleryCamManager.Instance == null)
@@ -349,61 +405,7 @@ namespace PactIncreasedLethality
 
             foreach (Vehicle vic in Mod.vics)
             {
-                GameObject vic_go = vic.gameObject;
-
-                if (vic == null) continue;
-                if (vic.GetComponent<AlreadyConverted>()) continue;
-
-                string name = vic.FriendlyName;
-
-                if (!name.Contains("BMP-1")) continue;
-                LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
-                FireControlSystem fcs = loadout_manager._weaponsManager.Weapons[0].FCS;
-                //fcs.SuperelevateWeapon = true;
-                //fcs._originalRangeLimits = new Vector2(0f, 3000f);
-                //fcs.RegisteredRangeLimits = new Vector2(0f, 3000f);
-                //fcs.CurrentStabMode = StabilizationMode.Vector;
-                //fcs.Mounts[0]._stabActive = true;
-                //fcs.Mounts[0].Stabilized = true;
-                //fcs.Mounts[0].StabilizerActive = true;
-                //fcs.RangeStep = 10;
-                //fcs._originalRangeStep = 10;
-                //fcs.DisplayRangeIncrement = 10;
-
-                //fcs.Mounts[1]._stabActive = true;
-                //fcs.Mounts[1].Stabilized = true;
-                //fcs.Mounts[1].StabilizerActive = true;
-                //fcs.Mounts[1].LocalEulerLimits = new Vector2(-4f, 50f);
-                //fcs.StabsActive = true;
-
-                //Transform optic = vic.transform.Find("BMP1_rig/HULL/TURRET/GUN/Gun Scripts/gunner day sight/Optic");
-                //GameObject _arty_monitor = GameObject.Instantiate(arty_monitor, optic);
-                //_arty_monitor.SetActive(false);
-
-                //ArtilleryManager arty_man = optic.gameObject.AddComponent<ArtilleryManager>();
-                //arty_man.monitor = _arty_monitor;
-                //arty_man.self = vic;
-                //arty_man.fcs = fcs;
-                //arty_man.gun_platform = fcs.Mounts[1];
-                //arty_man.turret_platform = fcs.Mounts[0];
-
-                if (!name.Contains("G") && (ags_17_bmp1.Value && name == "BMP-1") || (ags_17_bmp1p.Value && name == "BMP-1P"))
-                {
-                    WeaponSystem coax = vic.GetComponent<WeaponsManager>().Weapons[2].Weapon;
-                    coax.WeaponSound.SingleShotMode = true;
-                    coax.WeaponSound.SingleShotEventPaths = new string[] { "blyat" };
-                    coax.BaseDeviationAngle *= 12f;
-                    coax.SetCycleTime(0.19f);
-                    coax.CodexEntry = gun_ags17;
-                    coax.Feed.AmmoTypeInBreech = null;
-                    coax.Feed.ReadyRack.ClipTypes[0] = vog17m1_hedp.Value ? clip_vog17m1 : clip_vog17;
-                    coax.Feed.ReadyRack.Awake();
-                    coax.Feed.Start();
-
-                    vic._friendlyName += "G";
-                }
-
-                vic.gameObject.AddComponent<AlreadyConverted>();
+                HandleConversion(vic);
             }
 
             yield break;
@@ -530,7 +532,7 @@ namespace PactIncreasedLethality
         {
             if (!bmp1_patch.Value) return;
 
-            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Lowest);
+            StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(Convert), GameStatePriority.Lowest);
         }
     }
 }

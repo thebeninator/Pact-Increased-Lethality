@@ -110,282 +110,281 @@ namespace PactIncreasedLethality
             super_comp_cheeks.Comment = "thicker, more effective turret composite array";
         }
 
+        private static void HandleConversion(Vehicle vic)
+        {
+            GameObject vic_go = vic.gameObject;
+
+            if (vic == null) return;
+            if (!vic.FriendlyName.Contains("T-80")) return;
+
+            WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
+            LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
+            UsableOptic day_optic = Util.GetDayOptic(weapon.FCS);
+            Transform turret = vic.transform.Find("T80B_rig/HULL/TURRET");
+
+            Transform turret_follow = turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform;
+            Transform hull_follow = vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform;
+
+            if (zoom_snapper.Value && !super_fcs_t80.Value)
+                day_optic.gameObject.AddComponent<DigitalZoomSnapper>();
+
+            int rand = UnityEngine.Random.Range(0, Ammo_125mm.ap.Count);
+            string ammo_str = t80_random_ammo.Value ? t80_random_ammo_pool.Value.ElementAt(rand) : t80_ammo_type.Value;
+
+            vic.AimablePlatforms[1].transform.Find("optic cover parent").gameObject.SetActive(false);
+
+            if (thermals.Value && !super_fcs_t80.Value)
+            {
+                PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower(), true);
+                vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
+
+                weapon.FCS.NightOptic.Alignment = OpticAlignment.BoresightStabilized;
+                weapon.FCS.NightOptic.RotateAzimuth = true;
+            }
+
+            try
+            {
+                if (ammo_str != "3BM15")
+                    loadout_manager.LoadedAmmoList.AmmoClips[0] = Ammo_125mm.ap[ammo_str];
+
+                if (t80_atgm_type.Value != "9M112M")
+                    loadout_manager.LoadedAmmoList.AmmoClips[3] = Ammo_125mm.atgm[t80_atgm_type.Value];
+
+                for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
+                {
+                    GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
+
+                    Util.EmptyRack(rack);
+                }
+
+                loadout_manager.SpawnCurrentLoadout();
+                weapon.Feed.AmmoTypeInBreech = null;
+                weapon.Feed.Start();
+                loadout_manager.RegisterAllBallistics();
+            }
+            catch (Exception)
+            {
+                MelonLogger.Msg("Loading default ammo for " + vic.FriendlyName);
+            }
+
+            Transform canvas = vic.transform.Find("T80B_rig/HULL/TURRET/gun/---MAIN GUN SCRIPTS---/2A46-2/1G42 gunner's sight/GPS/1G42 Canvas/GameObject");
+            canvas.Find("ammo text APFSDS (TMP)").gameObject.SetActive(true);
+
+            if (super_engine.Value)
+            {
+                VehicleController this_vic_controller = vic_go.GetComponent<VehicleController>();
+                NwhChassis chassis = vic_go.GetComponent<NwhChassis>();
+
+                Util.ShallowCopy(this_vic_controller.engine, SharedAssets.abrams_vic_controller.engine);
+                Util.ShallowCopy(this_vic_controller.transmission, SharedAssets.abrams_vic_controller.transmission);
+
+                this_vic_controller.engine.vc = vic_go.GetComponent<VehicleController>();
+                this_vic_controller.transmission.vc = vic_go.GetComponent<VehicleController>();
+                this_vic_controller.engine.Initialize(this_vic_controller);
+                this_vic_controller.engine.Start();
+                this_vic_controller.transmission.Initialize(this_vic_controller);
+
+                chassis._maxForwardSpeed = 25f;
+                chassis._maxReverseSpeed = 11.176f;
+                chassis._originalEnginePower = 1750.99f;
+            }
+
+            if (super_fcs_t80.Value)
+            {
+                weapon.FCS.transform.Find("GPS/1G42 Canvas").gameObject.SetActive(false);
+
+                CustomGuidanceComputer gc = weapon.FCS.gameObject.AddComponent<CustomGuidanceComputer>();
+                gc.fcs = weapon.FCS;
+                gc.mgu = weapon.FCS.GetComponent<MissileGuidanceUnit>();
+
+                SuperFCS.Add(day_optic, weapon.FCS.NightOptic, vic.WeaponsManager.Weapons[1], vic.WeaponsManager.Weapons[0], gc);
+
+                day_optic.transform.Find("Quad").gameObject.SetActive(false);
+                vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
+            }
+
+            if (super_comp_cheeks.Value)
+            {
+                Transform cheek_inserts = turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform.Find("T80_armour_turret/cheek inserts");
+                cheek_inserts.GetComponent<MeshFilter>().sharedMesh = t80u_turret_inserts;
+                cheek_inserts.GetComponent<MeshCollider>().sharedMesh = t80u_turret_inserts;
+                GameObject.DestroyImmediate(cheek_inserts.GetChild(0).gameObject);
+                cheek_inserts.GetComponent<VariableArmor>().cloneMesh();
+                cheek_inserts.GetComponent<VariableArmor>().invertMesh();
+                cheek_inserts.GetComponent<VariableArmor>().setupCollider();
+                cheek_inserts.GetComponent<VariableArmor>()._armorType = Armour.t80u_composite_armor;
+                cheek_inserts.GetComponent<AarVisual>().AarMaterial = t80u_turret_mat;
+            }
+
+            if (kontakt1.Value)
+            {
+                Transform turret_rend = turret.Find("turret");
+                turret_rend.GetComponent<MeshFilter>().sharedMesh = t80bv_turret;
+                turret_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0, 0, 0, 0);
+
+                turret.Find("turret numbers").gameObject.SetActive(false);
+                vic.transform.Find("T80B_stowage/towropes_front").gameObject.SetActive(false);
+
+                for (int i = 1; i <= 5; i++)
+                    turret.Find("smoke_l_" + i).localScale = Vector3.zero;
+                for (int i = 1; i <= 3; i++)
+                    turret.Find("smoke_r_" + i).localScale = Vector3.zero;
+
+                Transform hull_rend = vic.transform.Find("T80_mesh/body");
+                hull_rend.GetComponent<MeshFilter>().sharedMesh = t80bv_hull;
+
+                GameObject k1_full = GameObject.Instantiate(t80bv_full, turret.Find("turret"));
+                k1_full.transform.localEulerAngles = new Vector3(0f, 270f, 90f);
+                k1_full.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+
+                k1_full.transform.Find("TURRET K1").SetParent(turret_follow);
+                k1_full.transform.Find("HULL K1").SetParent(hull_follow);
+                k1_full.transform.Find("HULL MOUNTING FRAMES").SetParent(hull_follow);
+
+                Material[] smokes_mat = new Material[1];
+                smokes_mat[0] = vic.transform.Find("T80_mesh/skirts").GetComponent<MeshRenderer>().materials[0];
+                k1_full.transform.Find("SMOKE TUBES 1").GetComponent<MeshRenderer>().materials = smokes_mat;
+                k1_full.transform.Find("SMOKE TUBES 2").GetComponent<MeshRenderer>().materials = smokes_mat;
+
+                foreach (Transform smoke_cap in k1_full.transform.Find("SMOKES"))
+                {
+                    smoke_cap.GetComponent<MeshRenderer>().materials = smokes_mat;
+                }
+
+                VehicleSmokeManager smoke_manager = vic.transform.Find("T80 -Smoke Launcher System").GetComponent<VehicleSmokeManager>();
+                for (int i = 0; i < smoke_manager._smokeSlots.Length; i++)
+                {
+                    VehicleSmokeManager.SmokeSlot slot = smoke_manager._smokeSlots[i];
+                    Transform smoke_cap = k1_full.transform.Find("SMOKES").GetChild(i);
+                    slot.DisplayBone = smoke_cap;
+                    slot.SpawnLocation.transform.SetParent(smoke_cap);
+                    slot.SpawnLocation.transform.position = smoke_cap.GetComponent<Renderer>().bounds.center;
+                }
+
+                vic.transform.Find("T80_camonet").gameObject.SetActive(false);
+                vic.transform.Find("T80B_rig/HULL/TURRET/---TURRET SCRIPTS---/net_turret").gameObject.SetActive(false);
+                vic.transform.Find("T80B_rig/HULL/TURRET/gun/---MAIN GUN SCRIPTS---/net_barrel").gameObject.SetActive(false);
+
+                vic._friendlyName = "T-80BV";
+            }
+
+            if (kontakt5.Value)
+            {
+                weapon.CodexEntry = gun_2a46m4;
+                weapon.BaseDeviationAngle = 0.005f;
+
+                Transform turret_rend = turret.Find("turret");
+                turret_rend.GetComponent<MeshFilter>().sharedMesh = turret_cleaned_mesh;
+                turret_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0, 0, 0, 0);
+
+                turret.Find("turret numbers").gameObject.SetActive(false);
+                vic.transform.Find("T80B_stowage/towropes_front").gameObject.SetActive(false);
+
+                for (int i = 1; i <= 5; i++)
+                    turret.Find("smoke_l_" + i).localScale = Vector3.zero;
+                for (int i = 1; i <= 3; i++)
+                    turret.Find("smoke_r_" + i).localScale = Vector3.zero;
+
+                Transform hull_rend = vic.transform.Find("T80_mesh/body");
+                hull_rend.GetComponent<MeshFilter>().sharedMesh = hull_cleaned_mesh;
+
+                Transform skirts_rend = vic.transform.Find("T80_mesh/skirts");
+                skirts_rend.GetComponent<MeshFilter>().sharedMesh = skirts_cleaned_mesh;
+
+                GameObject k5_turret = GameObject.Instantiate(t80u_turret, turret_rend);
+                k5_turret.transform.localEulerAngles = new Vector3(90f, 0f, 180f);
+                k5_turret.transform.SetParent(turret_follow);
+
+                GameObject k5_hull = GameObject.Instantiate(t80u_hull, hull_rend);
+                k5_hull.transform.localEulerAngles = new Vector3(0f, -180f, 0f);
+                k5_hull.transform.SetParent(hull_follow);
+
+                GameObject k5_sides = GameObject.Instantiate(t80u_hull_sides, skirts_rend);
+                k5_sides.transform.localEulerAngles = new Vector3(0f, -180f, 0f);
+                k5_sides.transform.SetParent(hull_follow);
+
+                GameObject front_flaps = GameObject.Instantiate(t80u_front_flaps, hull_rend);
+                front_flaps.transform.localEulerAngles = new Vector3(0f, 270f, 0f);
+                front_flaps.transform.SetParent(hull_follow);
+
+                Material[] front_flaps_mat = front_flaps.GetComponent<MeshRenderer>().materials;
+                front_flaps_mat[0] = skirts_rend.GetComponent<MeshRenderer>().materials[0];
+                front_flaps.GetComponent<MeshRenderer>().materials = front_flaps_mat;
+
+                foreach (Transform t in k5_turret.transform.Find("t80u_smokes"))
+                {
+                    Material[] smokes_mat = t.GetComponent<MeshRenderer>().materials;
+                    smokes_mat[0] = skirts_rend.GetComponent<MeshRenderer>().materials[0];
+                    t.GetComponent<MeshRenderer>().materials = smokes_mat;
+                }
+
+                VehicleSmokeManager smoke_manager = vic.transform.Find("T80 -Smoke Launcher System").GetComponent<VehicleSmokeManager>();
+                for (int i = 0; i < smoke_manager._smokeSlots.Length; i++)
+                {
+                    VehicleSmokeManager.SmokeSlot slot = smoke_manager._smokeSlots[i];
+                    Transform smoke_cap = k5_turret.transform.Find("t80u_smokes").GetChild(i);
+                    slot.DisplayBone = smoke_cap;
+                    slot.SpawnLocation.transform.SetParent(smoke_cap);
+                    slot.SpawnLocation.transform.position = smoke_cap.GetComponent<Renderer>().bounds.center;
+                }
+
+                vic.transform.Find("T80_camonet").gameObject.SetActive(false);
+                vic.transform.Find("T80B_rig/HULL/TURRET/---TURRET SCRIPTS---/net_turret").gameObject.SetActive(false);
+                vic.transform.Find("T80B_rig/HULL/TURRET/gun/---MAIN GUN SCRIPTS---/net_barrel").gameObject.SetActive(false);
+                vic.transform.GetComponent<LateFollowTarget>()._lateFollowers[0].transform.Find("T80_armour_hull/16mm applique").gameObject.SetActive(false);
+
+                if (!reticleSO)
+                {
+                    reticleSO = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["1G42"].tree);
+                    reticleSO.name = "1G46";
+
+                    Util.ShallowCopy(reticle_cached, ReticleMesh.cachedReticles["1G42"]);
+                    reticle_cached.tree = reticleSO;
+
+                    ReticleTree.FocalPlane plane = reticle_cached.tree.planes[0];
+                    ReticleTree.Angular boresight = plane.elements[0] as ReticleTree.Angular;
+
+                    for (int i = -1; i <= 1; i += 2)
+                    {
+                        ReticleTree.Line line = new ReticleTree.Line(
+                            position: new Vector2(1.3f * i, 0f), degrees: 0f, length: 1.45f, thickness: 0.1571f);
+                        line.length.unit = AngularLength.AngularUnit.MIL_USSR;
+                        line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
+                        line.visualType = ReticleTree.VisualElement.Type.Painted;
+                        line.illumination = ReticleTree.Light.Type.NightIllumination;
+                        boresight.elements.Add(line);
+                    }
+
+                    ReticleTree.VerticalBallistic mg_ballistic = (boresight.elements[3] as ReticleTree.Angular).elements[0] as ReticleTree.VerticalBallistic;
+
+                    for (int i = 1; i < mg_ballistic.elements.Count; i++)
+                    {
+                        ReticleTree.Angular angular = mg_ballistic.elements[i] as ReticleTree.Angular;
+
+                        foreach (ReticleTree.TransformElement e in angular.elements)
+                        {
+                            e.position.x *= -1;
+                        }
+                    }
+                }
+
+                if (!super_fcs_t80.Value)
+                {
+                    day_optic.reticleMesh.reticleSO = reticleSO;
+                    day_optic.reticleMesh.reticle = reticle_cached;
+                    day_optic.reticleMesh.SMR = null;
+                    day_optic.reticleMesh.Load();
+                }
+
+                vic._friendlyName = "T-80U";
+            }
+        }
+
         public static IEnumerator Convert(GameState _)
         {
             foreach (Vehicle vic in Mod.vics)
             {
-                GameObject vic_go = vic.gameObject;
-
-                if (vic == null) continue;
-                if (!vic.FriendlyName.Contains("T-80")) continue;
-                if (vic_go.GetComponent<AlreadyConverted>() != null) continue;
-
-                vic_go.AddComponent<AlreadyConverted>();
-
-                WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
-                LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
-                UsableOptic day_optic = Util.GetDayOptic(weapon.FCS);
-                Transform turret = vic.transform.Find("T80B_rig/HULL/TURRET");
-
-                if (zoom_snapper.Value && !super_fcs_t80.Value)
-                    day_optic.gameObject.AddComponent<DigitalZoomSnapper>();
-
-                int rand = UnityEngine.Random.Range(0, Ammo_125mm.ap.Count);
-                string ammo_str = t80_random_ammo.Value ? t80_random_ammo_pool.Value.ElementAt(rand) : t80_ammo_type.Value;
-
-                vic.AimablePlatforms[1].transform.Find("optic cover parent").gameObject.SetActive(false);
-
-                if (thermals.Value && !super_fcs_t80.Value)
-                {
-                    PactThermal.Add(weapon.FCS.NightOptic, thermals_quality.Value.ToLower(), true);
-                    vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
-    
-                    weapon.FCS.NightOptic.Alignment = OpticAlignment.BoresightStabilized;
-                    weapon.FCS.NightOptic.RotateAzimuth = true;
-                }
-
-                try
-                {
-                    if (ammo_str != "3BM15")
-                        loadout_manager.LoadedAmmoList.AmmoClips[0] = Ammo_125mm.ap[ammo_str];
-
-                    if (t80_atgm_type.Value != "9M112M")
-                        loadout_manager.LoadedAmmoList.AmmoClips[3] = Ammo_125mm.atgm[t80_atgm_type.Value];
-
-                    for (int i = 0; i < loadout_manager.RackLoadouts.Length; i++)
-                    {
-                        GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
-
-                        Util.EmptyRack(rack);
-                    }
-
-                    loadout_manager.SpawnCurrentLoadout();
-                    weapon.Feed.AmmoTypeInBreech = null;
-                    weapon.Feed.Start();
-                    loadout_manager.RegisterAllBallistics();
-                }
-                catch (Exception)
-                {
-                    MelonLogger.Msg("Loading default ammo for " + vic.FriendlyName);
-                }
-
-                Transform canvas = vic.transform.Find("T80B_rig/HULL/TURRET/gun/---MAIN GUN SCRIPTS---/2A46-2/1G42 gunner's sight/GPS/1G42 Canvas/GameObject");
-                canvas.Find("ammo text APFSDS (TMP)").gameObject.SetActive(true);
-
-                if (super_engine.Value)
-                {
-                    VehicleController this_vic_controller = vic_go.GetComponent<VehicleController>();
-                    NwhChassis chassis = vic_go.GetComponent<NwhChassis>();
-
-                    Util.ShallowCopy(this_vic_controller.engine, SharedAssets.abrams_vic_controller.engine);
-                    Util.ShallowCopy(this_vic_controller.transmission, SharedAssets.abrams_vic_controller.transmission);
-
-                    this_vic_controller.engine.vc = vic_go.GetComponent<VehicleController>();
-                    this_vic_controller.transmission.vc = vic_go.GetComponent<VehicleController>();
-                    this_vic_controller.engine.Initialize(this_vic_controller);
-                    this_vic_controller.engine.Start();
-                    this_vic_controller.transmission.Initialize(this_vic_controller);
-
-                    chassis._maxForwardSpeed = 25f;
-                    chassis._maxReverseSpeed = 11.176f;
-                    chassis._originalEnginePower = 1750.99f;
-                }
-
-                if (super_fcs_t80.Value)
-                {
-                    weapon.FCS.transform.Find("GPS/1G42 Canvas").gameObject.SetActive(false);
-
-                    CustomGuidanceComputer gc = weapon.FCS.gameObject.AddComponent<CustomGuidanceComputer>();
-                    gc.fcs = weapon.FCS;
-                    gc.mgu = weapon.FCS.GetComponent<MissileGuidanceUnit>();
-
-                    SuperFCS.Add(day_optic, weapon.FCS.NightOptic, vic.WeaponsManager.Weapons[1], vic.WeaponsManager.Weapons[0], gc);
-
-                    day_optic.transform.Find("Quad").gameObject.SetActive(false);
-                    vic.InfraredSpotlights[0].GetComponent<Light>().gameObject.SetActive(false);
-                }
-
-                if (super_comp_cheeks.Value) {
-                    Transform cheek_inserts = turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform.Find("T80_armour_turret/cheek inserts");
-                    cheek_inserts.GetComponent<MeshFilter>().sharedMesh = t80u_turret_inserts;
-                    cheek_inserts.GetComponent<MeshCollider>().sharedMesh = t80u_turret_inserts;
-                    GameObject.DestroyImmediate(cheek_inserts.GetChild(0).gameObject);
-                    cheek_inserts.GetComponent<VariableArmor>().cloneMesh();
-                    cheek_inserts.GetComponent<VariableArmor>().invertMesh();
-                    cheek_inserts.GetComponent<VariableArmor>().setupCollider();
-                    cheek_inserts.GetComponent<VariableArmor>()._armorType = Armour.t80u_composite_armor;
-                    cheek_inserts.GetComponent<AarVisual>().AarMaterial = t80u_turret_mat;
-                }
-
-                if (kontakt1.Value) {
-                    Transform turret_rend = turret.Find("turret");
-                    turret_rend.GetComponent<MeshFilter>().sharedMesh = t80bv_turret;
-                    turret_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0, 0, 0, 0);
-
-                    turret.Find("turret numbers").gameObject.SetActive(false);
-                    vic.transform.Find("T80B_stowage/towropes_front").gameObject.SetActive(false);
-
-                    for (int i = 1; i <= 5; i++)
-                        turret.Find("smoke_l_" + i).localScale = Vector3.zero;
-                    for (int i = 1; i <= 3; i++)
-                        turret.Find("smoke_r_" + i).localScale = Vector3.zero;
-
-                    Transform hull_rend = vic.transform.Find("T80_mesh/body");
-                    hull_rend.GetComponent<MeshFilter>().sharedMesh = t80bv_hull;
-
-                    GameObject k1_full = GameObject.Instantiate(t80bv_full, turret.Find("turret"));
-                    k1_full.transform.localEulerAngles = new Vector3(0f, 270f, 90f);
-                    k1_full.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-
-                    LateFollow k1_turret_follow = k1_full.transform.Find("TURRET K1/TURRET K1 ARMOUR").gameObject.AddComponent<LateFollow>();
-                    k1_turret_follow.FollowTarget = turret;
-                    k1_turret_follow.enabled = true;
-                    k1_turret_follow.Awake();
-                    k1_full.transform.Find("TURRET K1/TURRET K1 ARMOUR").parent = null;
-
-                    LateFollow k1_hull_follow = k1_full.transform.Find("HULL K1/HULL K1 ARMOUR").gameObject.AddComponent<LateFollow>();
-                    k1_hull_follow.FollowTarget = turret.parent;
-                    k1_hull_follow.enabled = true;
-                    k1_hull_follow.Awake();
-                    k1_full.transform.Find("HULL K1/HULL K1 ARMOUR").parent = null;
-
-                    k1_full.transform.Find("HULL K1").parent = turret.parent;
-                    k1_full.transform.Find("HULL MOUNTING FRAMES").parent = turret.parent;
-
-                    Material[] smokes_mat = new Material[1];
-                    smokes_mat[0] = vic.transform.Find("T80_mesh/skirts").GetComponent<MeshRenderer>().materials[0];
-                    k1_full.transform.Find("SMOKE TUBES 1").GetComponent<MeshRenderer>().materials = smokes_mat;
-                    k1_full.transform.Find("SMOKE TUBES 2").GetComponent<MeshRenderer>().materials = smokes_mat;
-
-                    foreach (Transform smoke_cap in k1_full.transform.Find("SMOKES")) {
-                        smoke_cap.GetComponent<MeshRenderer>().materials = smokes_mat;
-                    }
-
-                    VehicleSmokeManager smoke_manager = vic.transform.Find("T80 -Smoke Launcher System").GetComponent<VehicleSmokeManager>();
-                    for (int i = 0; i < smoke_manager._smokeSlots.Length; i++)
-                    {
-                        VehicleSmokeManager.SmokeSlot slot = smoke_manager._smokeSlots[i];
-                        Transform smoke_cap = k1_full.transform.Find("SMOKES").GetChild(i);
-                        slot.DisplayBone = smoke_cap;
-                        slot.SpawnLocation.transform.SetParent(smoke_cap);
-                        slot.SpawnLocation.transform.position = smoke_cap.GetComponent<Renderer>().bounds.center;
-                    }
-
-                    vic.transform.Find("T80_camonet").gameObject.SetActive(false);
-                    vic.transform.Find("T80B_rig/HULL/TURRET/---TURRET SCRIPTS---/net_turret").gameObject.SetActive(false);
-                    vic.transform.Find("T80B_rig/HULL/TURRET/gun/---MAIN GUN SCRIPTS---/net_barrel").gameObject.SetActive(false);
-
-                    vic._friendlyName = "T-80BV";
-                }
-
-                if (kontakt5.Value)
-                {
-                    weapon.CodexEntry = gun_2a46m4;
-                    weapon.BaseDeviationAngle = 0.005f;
-
-                    Transform turret_rend = turret.Find("turret");
-                    turret_rend.GetComponent<MeshFilter>().sharedMesh = turret_cleaned_mesh;
-                    turret_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0, 0, 0, 0);
-
-                    turret.Find("turret numbers").gameObject.SetActive(false);
-                    vic.transform.Find("T80B_stowage/towropes_front").gameObject.SetActive(false);
-
-                    for (int i = 1; i <= 5; i++)
-                        turret.Find("smoke_l_" + i).localScale = Vector3.zero;
-                    for (int i = 1; i <= 3; i++)
-                        turret.Find("smoke_r_" + i).localScale = Vector3.zero;
-
-                    Transform hull_rend = vic.transform.Find("T80_mesh/body");
-                    hull_rend.GetComponent<MeshFilter>().sharedMesh = hull_cleaned_mesh;
-
-                    Transform skirts_rend = vic.transform.Find("T80_mesh/skirts");
-                    skirts_rend.GetComponent<MeshFilter>().sharedMesh = skirts_cleaned_mesh;
-
-                    GameObject k5_turret = GameObject.Instantiate(t80u_turret, turret_rend);
-                    k5_turret.transform.localEulerAngles = new Vector3(90f, 0f, 180f);
-                    k5_turret.transform.SetParent(turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform, true);
-
-                    GameObject k5_hull = GameObject.Instantiate(t80u_hull, hull_rend);
-                    k5_hull.transform.localEulerAngles = new Vector3(0f, -180f, 0f);
-                    k5_hull.transform.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform, true);
-
-                    GameObject k5_sides = GameObject.Instantiate(t80u_hull_sides, skirts_rend);
-                    k5_sides.transform.localEulerAngles = new Vector3(0f, -180f, 0f);
-                    k5_sides.transform.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform, true);
-
-                    GameObject front_flaps = GameObject.Instantiate(t80u_front_flaps, hull_rend);
-                    front_flaps.transform.localEulerAngles = new Vector3(0f, 270f, 0f);
-                    front_flaps.transform.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform, true);
-
-                    Material[] front_flaps_mat = front_flaps.GetComponent<MeshRenderer>().materials;
-                    front_flaps_mat[0] = skirts_rend.GetComponent<MeshRenderer>().materials[0];
-                    front_flaps.GetComponent<MeshRenderer>().materials = front_flaps_mat;
-
-                    foreach (Transform t in k5_turret.transform.Find("t80u_smokes"))
-                    {
-                        Material[] smokes_mat = t.GetComponent<MeshRenderer>().materials;
-                        smokes_mat[0] = skirts_rend.GetComponent<MeshRenderer>().materials[0];
-                        t.GetComponent<MeshRenderer>().materials = smokes_mat;
-                    }
-
-                    VehicleSmokeManager smoke_manager = vic.transform.Find("T80 -Smoke Launcher System").GetComponent<VehicleSmokeManager>();
-                    for (int i = 0; i < smoke_manager._smokeSlots.Length; i++) {
-                        VehicleSmokeManager.SmokeSlot slot = smoke_manager._smokeSlots[i];
-                        Transform smoke_cap = k5_turret.transform.Find("t80u_smokes").GetChild(i);
-                        slot.DisplayBone = smoke_cap;
-                        slot.SpawnLocation.transform.SetParent(smoke_cap);
-                        slot.SpawnLocation.transform.position = smoke_cap.GetComponent<Renderer>().bounds.center;
-                    }
-
-                    vic.transform.Find("T80_camonet").gameObject.SetActive(false);
-                    vic.transform.Find("T80B_rig/HULL/TURRET/---TURRET SCRIPTS---/net_turret").gameObject.SetActive(false);
-                    vic.transform.Find("T80B_rig/HULL/TURRET/gun/---MAIN GUN SCRIPTS---/net_barrel").gameObject.SetActive(false);
-                    vic.transform.GetComponent<LateFollowTarget>()._lateFollowers[0].transform.Find("T80_armour_hull/16mm applique").gameObject.SetActive(false);
-
-                    if (!reticleSO)
-                    {
-                        reticleSO = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["1G42"].tree);
-                        reticleSO.name = "1G46";
-
-                        Util.ShallowCopy(reticle_cached, ReticleMesh.cachedReticles["1G42"]);
-                        reticle_cached.tree = reticleSO;
-
-                        ReticleTree.FocalPlane plane = reticle_cached.tree.planes[0];
-                        ReticleTree.Angular boresight = plane.elements[0] as ReticleTree.Angular;
-
-                        for (int i = -1; i <= 1; i += 2) {
-                            ReticleTree.Line line = new ReticleTree.Line(
-                                position: new Vector2(1.3f * i, 0f), degrees: 0f, length: 1.45f, thickness: 0.1571f);
-                            line.length.unit = AngularLength.AngularUnit.MIL_USSR;
-                            line.thickness.unit = AngularLength.AngularUnit.MIL_USSR;
-                            line.visualType = ReticleTree.VisualElement.Type.Painted;
-                            line.illumination = ReticleTree.Light.Type.NightIllumination;
-                            boresight.elements.Add(line);
-                        }
-
-                        ReticleTree.VerticalBallistic mg_ballistic = (boresight.elements[3] as ReticleTree.Angular).elements[0] as ReticleTree.VerticalBallistic;
-
-                        for (int i = 1; i < mg_ballistic.elements.Count; i++)
-                        {
-                            ReticleTree.Angular angular = mg_ballistic.elements[i] as ReticleTree.Angular;
-
-                            foreach (ReticleTree.TransformElement e in angular.elements)
-                            {
-                                e.position.x *= -1;
-                            }
-                        }
-                    }
-
-                    if (!super_fcs_t80.Value)
-                    {
-                        day_optic.reticleMesh.reticleSO = reticleSO;
-                        day_optic.reticleMesh.reticle = reticle_cached;
-                        day_optic.reticleMesh.SMR = null;
-                        day_optic.reticleMesh.Load();
-                    }
-
-                    vic._friendlyName = "T-80U";
-                }
+                HandleConversion(vic);
             }
 
             yield break;
@@ -539,7 +538,7 @@ namespace PactIncreasedLethality
         {
             if (!t80_patch.Value) return;
 
-            StateController.WaitForComplete(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
+            StateController.WaitForComplete(GameState.PlayerReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }
     }
 }

@@ -129,261 +129,263 @@ namespace PactIncreasedLethality
             drozd_max_engage_velocity.Comment = "Maximum velocity a projectile can travel at for it to be engaged by Drozd";
         }
 
-        public static IEnumerator Convert(GameState _)
+        private static void HandleConversion(Vehicle vic)
         {
-            foreach (Vehicle vic in Mod.vics)
+            GameObject vic_go = vic.gameObject;
+
+            if (vic == null) return;
+            if (vic.FriendlyName != "T-55A") return;
+
+            bool can_have_drozd = true;
+
+            if (vic.Platoon != null && max_drozd.Value > -1 && has_drozd.Value)
             {
-                GameObject vic_go = vic.gameObject;
+                int platoon_id = vic.Platoon.GetInstanceID();
 
-                if (vic == null) continue;
-                if (vic.FriendlyName != "T-55A") continue;
-                if (vic_go.GetComponent<AlreadyConverted>() != null) continue;
-
-                bool can_have_drozd = true;
-
-                if (vic.Platoon != null && max_drozd.Value > -1 && has_drozd.Value)
+                if (!DrozdPlatoonTracker.ContainsKey(platoon_id))
                 {
-                    int platoon_id = vic.Platoon.GetInstanceID();
-
-                    if (!DrozdPlatoonTracker.ContainsKey(platoon_id))
-                    {
-                        DrozdPlatoonTracker.Add(platoon_id, 0);
-                    }
-
-                    if (DrozdPlatoonTracker[platoon_id] < max_drozd.Value)
-                    {
-                        DrozdPlatoonTracker[platoon_id]++;
-                    } 
-                    else
-                    {
-                        can_have_drozd = false;
-                    }
+                    DrozdPlatoonTracker.Add(platoon_id, 0);
                 }
 
-                vic_go.AddComponent<AlreadyConverted>();
-
-                LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
-                WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
-                FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
-                UsableOptic day_optic = Util.GetDayOptic(fcs);
-                Transform lrf_canvas = null;
-
-                Transform hull = vic.transform.Find("T55A_base (1)/hull");
-                Transform turret = vic.transform.Find("T55A_skeleton/HULL/Turret");
-
-                bool actually_has_drozd = has_drozd.Value && can_have_drozd;
-
-                if (actually_has_drozd)
+                if (DrozdPlatoonTracker[platoon_id] < max_drozd.Value)
                 {
-                    Transform turret_smr = vic.transform.Find("T55A_base (1)/LP_turret");
-                    turret_smr.GetComponent<SkinnedMeshRenderer>().sharedMesh = t55_drozd_turret;
+                    DrozdPlatoonTracker[platoon_id]++;
+                }
+                else
+                {
+                    can_have_drozd = false;
+                }
+            }
 
-                    GameObject drozd = GameObject.Instantiate(t55_drozd, turret_smr);
-                    drozd.transform.SetParent(turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
-                    turret.Find("lp_canvas_a").gameObject.SetActive(false);
-                    turret.Find("T55A_markings/storage_number_0").gameObject.SetActive(false);
+            LoadoutManager loadout_manager = vic.GetComponent<LoadoutManager>();
+            WeaponSystem weapon = vic.GetComponent<WeaponsManager>().Weapons[0].Weapon;
+            FireControlSystem fcs = vic.GetComponentInChildren<FireControlSystem>();
+            UsableOptic day_optic = Util.GetDayOptic(fcs);
+            Transform lrf_canvas = null;
 
-                    Transform[] launchers = new Transform[] 
-                    {
+            Transform hull = vic.transform.Find("T55A_base (1)/hull");
+            Transform turret = vic.transform.Find("T55A_skeleton/HULL/Turret");
+
+            bool actually_has_drozd = has_drozd.Value && can_have_drozd;
+
+            if (actually_has_drozd)
+            {
+                Transform turret_smr = vic.transform.Find("T55A_base (1)/LP_turret");
+                turret_smr.GetComponent<SkinnedMeshRenderer>().sharedMesh = t55_drozd_turret;
+
+                GameObject drozd = GameObject.Instantiate(t55_drozd, turret_smr);
+                drozd.transform.SetParent(turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
+                turret.Find("lp_canvas_a").gameObject.SetActive(false);
+                turret.Find("T55A_markings/storage_number_0").gameObject.SetActive(false);
+
+                Transform[] launchers = new Transform[]
+                {
                         drozd.transform.Find("L1"),
                         drozd.transform.Find("L2"),
                         drozd.transform.Find("R1"),
                         drozd.transform.Find("R2"),
+                };
+
+                Transform colliders_holder = drozd.transform.Find("COLLIDERS");
+                Transform[] colliders = colliders_holder.GetComponentsInChildren<Transform>().Where(t => t != colliders_holder).ToArray();
+                int[][] assignments = new int[][]
+                {
+                    new int[] { 0, 3 },
+                    new int[] { 0 },
+                    new int[] { 1 },
+                    new int[] { 2 },
+                    new int[] { 3 },
+                };
+
+                APS.Add(launchers, colliders, assignments, drozd_schema);
+                vic._friendlyName += "D";
+            }
+
+            if (has_lrf.Value)
+            {
+                GameObject lrf_holder = GameObject.Instantiate(t55am_lrf, vic.transform.Find("T55A_base (1)"));
+                Transform lrf = lrf_holder.transform.Find("LRF");
+                Transform gun = vic.transform.Find("T55A_skeleton/HULL/Turret/GUN");
+                lrf_holder.transform.SetParent(gun.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
+
+                Transform laser_armour = lrf.transform.Find("ARMOUR");
+                GHPC.Equipment.DestructibleComponent laser_destr = laser_armour.gameObject.AddComponent<GHPC.Equipment.DestructibleComponent>();
+                laser_destr._health = 5f;
+                laser_destr._fullHealth = 5f;
+                laser_destr._pressureTolerance = 1f;
+                laser_destr._shockResistance = 0.30f;
+                laser_destr._name = "laser rangefinder";
+
+                fcs.LaserComponent = laser_destr;
+                laser_destr.Destroyed += fcs.LaserDestroyed;
+
+                weapon.FCS.gameObject.AddComponent<LimitedLRF>();
+                fcs.MaxLaserRange = 4000f;
+
+                GameObject t = GameObject.Instantiate(range_readout);
+                lrf_canvas = t.transform;
+                t.GetComponent<Reparent>().NewParent = Util.GetDayOptic(fcs).transform;
+                t.transform.GetChild(0).transform.localPosition = new Vector3(-284.1897f, -5.5217f, 0.1f);
+                t.SetActive(true);
+
+                weapon.FCS.GetComponent<LimitedLRF>().canvas = t.transform;
+
+                day_optic.reticleMesh.reticleSO = reticleSO;
+                day_optic.reticleMesh.reticle = reticle_cached;
+                day_optic.reticleMesh.SMR = null;
+                day_optic.reticleMesh.Load();
+            }
+
+            if (better_stab.Value)
+            {
+                day_optic.slot.VibrationBlurScale = 0.1f;
+                day_optic.slot.VibrationShakeMultiplier = 0.2f;
+            }
+
+            if (use_9m117.Value)
+            {
+                turret.Find("Night sight cover").localScale = Vector3.zero;
+
+                GameObject guidance_computer_obj = new GameObject("guidance computer");
+                guidance_computer_obj.transform.parent = vic.transform;
+                guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
+
+                guidance_computer_obj.AddComponent<Reparent>();
+                Reparent reparent = guidance_computer_obj.GetComponent<Reparent>();
+                reparent.NewParent = turret.gameObject.transform;
+                reparent.Awake();
+
+                MissileGuidanceUnit computer = guidance_computer_obj.GetComponent<MissileGuidanceUnit>();
+                computer.AimElement = weapon.FCS.AimTransform;
+                weapon.GuidanceUnit = computer;
+
+                weapon.Feed.ReloadDuringMissileTracking = false;
+                weapon.Feed._missileGuidance = computer;
+
+                BOM.Add(day_optic.transform, lrf_canvas);
+
+                loadout_manager.LoadedAmmoList.AmmoClips = Util.AppendToArray(loadout_manager.LoadedAmmoList.AmmoClips, clip_codex_9m117);
+                loadout_manager._totalAmmoTypes = 4;
+                loadout_manager.TotalAmmoCounts = new int[] { 16, 18, 6, 3 };
+            }
+
+            if (use_3bm25.Value)
+            {
+                loadout_manager.LoadedAmmoList.AmmoClips[0] = clip_codex_3bm25;
+            }
+
+            if (use_br412d.Value)
+            {
+                loadout_manager.LoadedAmmoList.AmmoClips[2] = clip_codex_br412d;
+            }
+
+            if (use_3bk17m.Value)
+            {
+                loadout_manager.LoadedAmmoList.AmmoClips[1] = clip_codex_3bk17m;
+            }
+
+            for (int i = 0; i <= 4; i++)
+            {
+                GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
+
+                if (use_9m117.Value && (i == 0 || i == 3))
+                {
+                    loadout_manager.RackLoadouts[i].FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] {
+                        new LoadoutManager.RackLoadoutFixedChoice() {
+                            AmmoClipIndex = 3,
+                            RackSlotIndex = 0,
+                        },
+                        new LoadoutManager.RackLoadoutFixedChoice() {
+                            AmmoClipIndex = 3,
+                            RackSlotIndex = 1,
+                        }
                     };
-
-                    Transform colliders_holder = drozd.transform.Find("COLLIDERS");
-                    Transform[] colliders = colliders_holder.GetComponentsInChildren<Transform>().Where(t => t != colliders_holder).ToArray();
-                    int[][] assignments = new int[][] 
-                    {
-                        new int[] { 0, 3 },
-                        new int[] { 0 },
-                        new int[] { 1 },
-                        new int[] { 2 },
-                        new int[] { 3 },
-                    };
-
-                    APS.Add(launchers, colliders, assignments, drozd_schema);
-                    vic._friendlyName += "D";
                 }
 
-                if (has_lrf.Value)
+                Util.EmptyRack(rack);
+            }
+
+            loadout_manager.SpawnCurrentLoadout();
+            weapon.Feed.AmmoTypeInBreech = null;
+            weapon.Feed.Start();
+            loadout_manager.RegisterAllBallistics();
+
+            if (tpn3.Value)
+            {
+                TPN3.Add(fcs, day_optic.slot.LinkedNightSight.PairedOptic, day_optic.slot.LinkedNightSight);
+            }
+
+            if (engine_upr.Value)
+            {
+                vic.transform.GetComponent<VehicleController>().engine.power += 100f;
+                vic.transform.GetComponent<VehicleController>().engine.maxRPM += 150f;
+            }
+
+            if (applique.Value)
+            {
+                SkinnedMeshRenderer turret_skinned = vic.transform.Find("T55A_base (1)/LP_turret").GetComponent<SkinnedMeshRenderer>();
+                Material[] new_materials = turret_skinned.materials;
+                Material mat = new_materials[0];
+
+                // https://github.com/Unity-Technologies/UnityCsReference/blob/1d7b2b49b93ea5773aa4e8dfa504e3c1533ce282/Editor/Mono/Inspector/StandardShaderGUI.cs#L369
+                mat.SetTexture("_Albedo", cleaned_texture);
+                mat.SetOverrideTag("RenderType", "TransparentCutout");
+                mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.One);
+                mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.Zero);
+                mat.SetFloat("_ZWrite", 1.0f);
+                mat.EnableKeyword("_ALPHATEST_ON");
+                mat.DisableKeyword("_ALPHABLEND_ON");
+                mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
+                new_materials[1] = mat;
+                turret_skinned.materials = new_materials;
+
+                hull.GetComponent<MeshFilter>().sharedMesh = t55am_hull;
+
+                turret.Find("Night sight cover").localScale = Vector3.zero;
+                turret.Find("T55A_markings").gameObject.SetActive(false);
+                turret.Find("cunt cover").gameObject.SetActive(true); // yes, this is what the glass protecting the gunner's sight is called 
+
+                Transform fenders_parent = vic.transform.Find("T55A_variant");
+                fenders_parent.Find("cut fender").gameObject.SetActive(false);
+                fenders_parent.Find("rubber fender").gameObject.SetActive(false);
+                fenders_parent.Find("steel fender").gameObject.SetActive(true);
+
+                GameObject t55am1_kit = GameObject.Instantiate(t55am_kit, vic.transform.Find("T55A_base (1)"));
+                t55am1_kit.transform.Find("HULL/SKIRTS").GetComponent<MeshRenderer>().SetMaterials(new List<Material>() { SharedAssets.t80b_mat });
+
+                Transform hull_parts = t55am1_kit.transform.Find("HULL");
+                hull_parts.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
+
+                Transform turret_parts = t55am1_kit.transform.Find("TURRET");
+                turret_parts.SetParent(turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
+
+                if (actually_has_drozd)
                 {
-                    GameObject lrf_holder = GameObject.Instantiate(t55am_lrf, vic.transform.Find("T55A_base (1)"));
-                    Transform lrf = lrf_holder.transform.Find("LRF");
-                    Transform gun = vic.transform.Find("T55A_skeleton/HULL/Turret/GUN");
-                    lrf_holder.transform.SetParent(gun.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
-
-                    Transform laser_armour = lrf.transform.Find("ARMOUR");
-                    GHPC.Equipment.DestructibleComponent laser_destr = laser_armour.gameObject.AddComponent<GHPC.Equipment.DestructibleComponent>();
-                    laser_destr._health = 5f;
-                    laser_destr._fullHealth = 5f;
-                    laser_destr._pressureTolerance = 1f;
-                    laser_destr._shockResistance = 0.30f;
-                    laser_destr._name = "laser rangefinder";
-
-                    fcs.LaserComponent = laser_destr;
-                    laser_destr.Destroyed += fcs.LaserDestroyed;
-
-                    weapon.FCS.gameObject.AddComponent<LimitedLRF>();
-                    fcs.MaxLaserRange = 4000f;
-
-                    GameObject t = GameObject.Instantiate(range_readout);
-                    lrf_canvas = t.transform;
-                    t.GetComponent<Reparent>().NewParent = Util.GetDayOptic(fcs).transform;
-                    t.transform.GetChild(0).transform.localPosition = new Vector3(-284.1897f, -5.5217f, 0.1f);
-                    t.SetActive(true);
-
-                    weapon.FCS.GetComponent<LimitedLRF>().canvas = t.transform;
-
-                    day_optic.reticleMesh.reticleSO = reticleSO;
-                    day_optic.reticleMesh.reticle = reticle_cached;
-                    day_optic.reticleMesh.SMR = null;
-                    day_optic.reticleMesh.Load();
+                    turret_parts.gameObject.SetActive(false);
                 }
 
-                if (better_stab.Value)
+                Transform gun_parts = t55am1_kit.transform.Find("GUN");
+                Transform gun = turret.Find("GUN");
+                gun_parts.transform.Find("SLEEVE").SetParent(gun.Find("gun_recoil"));
+                gun_parts.SetParent(gun.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
+
+                vic._friendlyName = "T-55AM2";
+                if (use_9m117.Value) vic._friendlyName += "B";
+                if (actually_has_drozd)
                 {
-                    day_optic.slot.VibrationBlurScale = 0.1f;
-                    day_optic.slot.VibrationShakeMultiplier = 0.2f;
+                    vic._friendlyName = "T-55AMD";
+
+                    if (engine_upr.Value) vic._friendlyName += "-1";
                 }
+            }
+        }
 
-                if (use_9m117.Value)
-                {
-                    turret.Find("Night sight cover").localScale = Vector3.zero;
-
-                    GameObject guidance_computer_obj = new GameObject("guidance computer");
-                    guidance_computer_obj.transform.parent = vic.transform;
-                    guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
-
-                    guidance_computer_obj.AddComponent<Reparent>();
-                    Reparent reparent = guidance_computer_obj.GetComponent<Reparent>();
-                    reparent.NewParent = turret.gameObject.transform;
-                    reparent.Awake();
-
-                    MissileGuidanceUnit computer = guidance_computer_obj.GetComponent<MissileGuidanceUnit>();
-                    computer.AimElement = weapon.FCS.AimTransform;
-                    weapon.GuidanceUnit = computer;
-
-                    weapon.Feed.ReloadDuringMissileTracking = false;
-                    weapon.Feed._missileGuidance = computer;
-
-                    BOM.Add(day_optic.transform, lrf_canvas);
-
-                    loadout_manager.LoadedAmmoList.AmmoClips = Util.AppendToArray(loadout_manager.LoadedAmmoList.AmmoClips, clip_codex_9m117);
-                    loadout_manager._totalAmmoTypes = 4;
-                    loadout_manager.TotalAmmoCounts = new int[] { 16, 18, 6, 3 };
-                }
-
-                if (use_3bm25.Value)
-                {
-                    loadout_manager.LoadedAmmoList.AmmoClips[0] = clip_codex_3bm25;
-                }
-
-                if (use_br412d.Value)
-                {
-                    loadout_manager.LoadedAmmoList.AmmoClips[2] = clip_codex_br412d;
-                }
-
-                if (use_3bk17m.Value)
-                {
-                    loadout_manager.LoadedAmmoList.AmmoClips[1] = clip_codex_3bk17m;
-                }
-
-                for (int i = 0; i <= 4; i++)
-                {
-                    GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
-
-                    if (use_9m117.Value && (i == 0 || i == 3))
-                    {
-                        loadout_manager.RackLoadouts[i].FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] {
-                            new LoadoutManager.RackLoadoutFixedChoice() {
-                                AmmoClipIndex = 3,
-                                RackSlotIndex = 0,
-                            },
-                            new LoadoutManager.RackLoadoutFixedChoice() {
-                                AmmoClipIndex = 3,
-                                RackSlotIndex = 1,
-                            }
-                        };
-                    }
-
-                    Util.EmptyRack(rack);
-                }
-
-                loadout_manager.SpawnCurrentLoadout();
-                weapon.Feed.AmmoTypeInBreech = null;
-                weapon.Feed.Start();
-                loadout_manager.RegisterAllBallistics();
-
-                if (tpn3.Value)
-                {
-                    TPN3.Add(fcs, day_optic.slot.LinkedNightSight.PairedOptic, day_optic.slot.LinkedNightSight);
-                }
-
-                if (engine_upr.Value)
-                {
-                    vic.transform.GetComponent<VehicleController>().engine.power += 100f;
-                    vic.transform.GetComponent<VehicleController>().engine.maxRPM += 150f;
-                }
-
-                if (applique.Value)
-                {
-                    SkinnedMeshRenderer turret_skinned = vic.transform.Find("T55A_base (1)/LP_turret").GetComponent<SkinnedMeshRenderer>();
-                    Material[] new_materials = turret_skinned.materials;
-                    Material mat = new_materials[0];
-
-                    // https://github.com/Unity-Technologies/UnityCsReference/blob/1d7b2b49b93ea5773aa4e8dfa504e3c1533ce282/Editor/Mono/Inspector/StandardShaderGUI.cs#L369
-                    mat.SetTexture("_Albedo", cleaned_texture);
-                    mat.SetOverrideTag("RenderType", "TransparentCutout");
-                    mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.One);
-                    mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.Zero);
-                    mat.SetFloat("_ZWrite", 1.0f);
-                    mat.EnableKeyword("_ALPHATEST_ON");
-                    mat.DisableKeyword("_ALPHABLEND_ON");
-                    mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                    mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
-                    new_materials[1] = mat;
-                    turret_skinned.materials = new_materials;
-
-                    hull.GetComponent<MeshFilter>().sharedMesh = t55am_hull;
-
-                    turret.Find("Night sight cover").localScale = Vector3.zero;
-                    turret.Find("T55A_markings").gameObject.SetActive(false);
-                    turret.Find("cunt cover").gameObject.SetActive(true); // yes, this is what the glass protecting the gunner's sight is called 
-
-                    Transform fenders_parent = vic.transform.Find("T55A_variant");
-                    fenders_parent.Find("cut fender").gameObject.SetActive(false);
-                    fenders_parent.Find("rubber fender").gameObject.SetActive(false);
-                    fenders_parent.Find("steel fender").gameObject.SetActive(true);
-
-                    GameObject t55am1_kit = GameObject.Instantiate(t55am_kit, vic.transform.Find("T55A_base (1)"));
-                    t55am1_kit.transform.Find("HULL/SKIRTS").GetComponent<MeshRenderer>().SetMaterials(new List<Material>() { SharedAssets.t80b_mat });
-
-                    Transform hull_parts = t55am1_kit.transform.Find("HULL");
-                    hull_parts.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
-
-                    Transform turret_parts = t55am1_kit.transform.Find("TURRET");
-                    turret_parts.SetParent(turret.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
-
-                    if (actually_has_drozd)
-                    {
-                        turret_parts.gameObject.SetActive(false);
-                    }
-
-                    Transform gun_parts = t55am1_kit.transform.Find("GUN");
-                    Transform gun = turret.Find("GUN");
-                    gun_parts.transform.Find("SLEEVE").SetParent(gun.Find("gun_recoil"));
-                    gun_parts.SetParent(gun.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
-
-                    vic._friendlyName = "T-55AM2";
-                    if (use_9m117.Value) vic._friendlyName += "B";
-                    if (actually_has_drozd) 
-                    {
-                        vic._friendlyName = "T-55AMD";
-
-                        if (engine_upr.Value) vic._friendlyName += "-1";
-                    }
-                }
+        public static IEnumerator Convert(GameState _)
+        {
+            foreach (Vehicle vic in Mod.vics)
+            {
+                HandleConversion(vic);
             }
 
             DrozdPlatoonTracker.Clear();
@@ -717,7 +719,7 @@ namespace PactIncreasedLethality
         {
             if (!t55_patch.Value) return;
 
-            StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
+            StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }
     }
 }
