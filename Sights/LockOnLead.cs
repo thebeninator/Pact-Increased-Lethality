@@ -146,8 +146,6 @@ namespace PactIncreasedLethality
     [HarmonyPatch(typeof(GHPC.Equipment.Optics.UsableOptic), "LateUpdate")]
     public static class LockOnLeadPatch
     {
-        private static float cd = 0.0f;
-
         private static bool Prefix(GHPC.Equipment.Optics.UsableOptic __instance)
         {
             if (__instance.FCS == null) return true;
@@ -182,15 +180,7 @@ namespace PactIncreasedLethality
 
             if (tracking_object == null) return;
 
-            if (cd > 0f)
-            {
-                cd -= Time.deltaTime;
-                return;
-            }
-
-            Camera camera = FLIRCamera.Instance._thermalCamera;
-            Vector2 monitor_dims = new Vector2(camera.pixelWidth, camera.pixelHeight);
-            Vector2 screen_dims = new Vector2(Screen.width, Screen.height);
+            Camera camera = Camera.main;
             Bounds bounds = tracking_object.GetComponent<MeshRenderer>().bounds;
 
             Vector3[] ss_corners = new Vector3[] {
@@ -217,10 +207,8 @@ namespace PactIncreasedLethality
                 max_y = Mathf.Max(max_y, ss_corners[i].y);
             }
 
-            lead.tracking_gates.position = new Vector2(min_x, min_y) / monitor_dims * screen_dims;
+            lead.tracking_gates.position = new Vector2(min_x, min_y);
             lead.tracking_gates.sizeDelta = new Vector2(max_x - min_x, max_y - min_y);
-
-            cd = Time.deltaTime * 2f;
         }
     }
 }

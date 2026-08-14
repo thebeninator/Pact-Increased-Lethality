@@ -93,7 +93,6 @@ namespace PactIncreasedLethality
                 laser_destr._health = 5f;
                 laser_destr._fullHealth = 5f;
                 laser_destr._pressureTolerance = 1f;
-                laser_destr._shockResistance = 0.30f;
                 laser_destr._name = "laser rangefinder";
 
                 fcs.LaserComponent = laser_destr;

@@ -14,7 +14,7 @@ using PactIncreasedLethality;
 using ModUtil;
 using ActiveProtectionSystem;
 
-[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7A", "ATLAS")]
+[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7B", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -33,7 +33,7 @@ namespace PactIncreasedLethality
 
         internal static FMOD.ChannelGroup audio_channel_group;
 
-        public IEnumerator OnGameReady(GameState _) 
+        public IEnumerator OnPlayerReady(GameState _) 
         {
             game_manager = GameObject.Find("_APP_GHPC_");
             audio_settings_manager = game_manager.GetComponent<AudioSettingsManager>();
@@ -123,7 +123,7 @@ namespace PactIncreasedLethality
             valid_scene_count++;
             if (valid_scene_count == 2)
             {
-                StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnGameReady), GameStatePriority.Medium);
+                StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnPlayerReady), GameStatePriority.Medium);
 
                 PactEra.Init();
                 Armour.Init();
@@ -138,6 +138,7 @@ namespace PactIncreasedLethality
                 BMP1.Init();
                 BMP2.Init();
                 BTR60.Init();
+                //BMP3.Init();
 
                 valid_scene_count = 0;
             }
