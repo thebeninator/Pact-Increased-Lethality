@@ -18,7 +18,7 @@ namespace PactIncreasedLethality
 {
     public class SuperFCS : Module
     {
-        static GameObject range_readout;
+        static GameObject range_canvas_prefab;
         static GameObject thermal_canvas;
 
         static GameObject sosna_monitor;
@@ -262,32 +262,28 @@ namespace PactIncreasedLethality
             day_optic.reticleMesh.Load();
 
             GameObject rangebox = GameObject.Instantiate(thermal_canvas);
-            rangebox.GetComponent<Reparent>().NewParent = day_optic.transform;
-            rangebox.GetComponent<Reparent>().Awake();
+            rangebox.transform.SetParent(day_optic.transform);
             rangebox.SetActive(true);
-            rangebox.transform.localPosition = new Vector3(0f, 0f, 0f);
-            rangebox.transform.GetChild(0).transform.localPosition = new Vector3(-2.1709f, -350.7738f, 0f);
 
-            GameObject range = GameObject.Instantiate(range_readout);
-            range.GetComponent<Reparent>().NewParent = rangebox.transform;
-            range.GetComponent<Reparent>().Awake();
-            range.SetActive(true);
-            range.transform.localPosition = new Vector3(0f, 0f, 0f);
-            range.transform.GetChild(1).transform.localPosition = new Vector3(-10f, -285.2727f, 0f);
-            day_optic.RangeText = range.GetComponentInChildren<TMP_Text>();
-            range.GetComponentInChildren<TMP_Text>().outlineWidth = 1f;
+            GameObject range_canvas = GameObject.Instantiate(range_canvas_prefab);
+            range_canvas.transform.SetParent(rangebox.transform);
+            range_canvas.SetActive(true);
+            range_canvas.transform.localPosition = new Vector3(0f, 0f, 0f);
+            range_canvas.transform.Find("range text (TMP)").localPosition = new Vector3(-10f, -285.2727f, 0f);
+            day_optic.RangeText = range_canvas.GetComponentInChildren<TMP_Text>();
+            range_canvas.GetComponentInChildren<TMP_Text>().outlineWidth = 1f;
             day_optic.RangeTextPrefix = "<mspace=0.5em>";
             day_optic.RangeTextDivideBy = 1;
             day_optic.RangeTextQuantize = 1;
 
-            Transform ready_backing = range.transform.GetChild(0);
+            Transform ready_backing = range_canvas.transform.GetChild(0);
             Component.DestroyImmediate(ready_backing.gameObject.GetComponent<Image>());
             Image image = ready_backing.gameObject.AddComponent<Image>();
             image.color = new Color(0.15f, 0f, 0f);
             ready_backing.localScale = new Vector3(5f, 0.3f, 1f);
             ready_backing.localPosition = new Vector3(-2.1511f, -256.7888f, -0.0001f);
 
-            GameObject ready = GameObject.Instantiate(ready_backing.gameObject, range.transform);
+            GameObject ready = GameObject.Instantiate(ready_backing.gameObject, range_canvas.transform);
             Image image2 = ready.gameObject.GetComponent<Image>();
             image2.color = new Color(1f, 0f, 0f);
 
@@ -475,28 +471,26 @@ namespace PactIncreasedLethality
 
         public override void UnloadDynamicAssets()
         {
-            GameObject.DestroyImmediate(range_readout);
+            GameObject.DestroyImmediate(range_canvas_prefab);
             GameObject.DestroyImmediate(thermal_canvas);
             GameObject.DestroyImmediate(reticleSO_sosna);
         }
 
         public override void LoadDynamicAssets()
         {
-            range_readout = GameObject.Instantiate(SharedAssets.m1ip_range_canvas);
-            GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
-            range_readout.AddComponent<Reparent>();
-            range_readout.SetActive(false);
-            range_readout.hideFlags = HideFlags.DontUnloadUnusedAsset;
-            range_readout.name = "t72 range canvas";
+            range_canvas_prefab = GameObject.Instantiate(SharedAssets.m1ip_range_canvas);
+            GameObject.Destroy(range_canvas_prefab.transform.GetChild(2).gameObject);
+            range_canvas_prefab.SetActive(false);
+            range_canvas_prefab.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            range_canvas_prefab.name = "t72 range canvas";
 
-            TextMeshProUGUI text = range_readout.GetComponentInChildren<TextMeshProUGUI>();
+            TextMeshProUGUI text = range_canvas_prefab.GetComponentInChildren<TextMeshProUGUI>();
             text.color = new Color(255f, 0f, 0f);
             text.faceColor = new Color(255f, 0f, 0f);
             text.outlineColor = new Color(100f, 0f, 0f, 0.5f);
 
             thermal_canvas = GameObject.Instantiate(SharedAssets.m2_bradley_canvas);
-            GameObject.Destroy(thermal_canvas.transform.GetChild(2).gameObject);
-            thermal_canvas.AddComponent<Reparent>();
+            GameObject.DestroyImmediate(thermal_canvas.transform.Find("HUD elements").gameObject);
             thermal_canvas.SetActive(false);
             thermal_canvas.hideFlags = HideFlags.DontUnloadUnusedAsset;
             thermal_canvas.name = "t72 thermal canvas";

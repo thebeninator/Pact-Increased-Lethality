@@ -578,8 +578,8 @@ namespace PactIncreasedLethality
                 t72m1.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
 
                 range_readout = GameObject.Instantiate(SharedAssets.m1ip_range_canvas);
-                GameObject.Destroy(range_readout.transform.GetChild(2).gameObject);
-                GameObject.Destroy(range_readout.transform.GetChild(0).gameObject);
+                GameObject.DestroyImmediate(range_readout.transform.GetChild(2).gameObject);
+                GameObject.DestroyImmediate(range_readout.transform.GetChild(0).gameObject);
                 range_readout.AddComponent<Reparent>();
                 range_readout.SetActive(false);
                 range_readout.hideFlags = HideFlags.DontUnloadUnusedAsset;
