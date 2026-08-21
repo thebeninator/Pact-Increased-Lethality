@@ -81,25 +81,25 @@ namespace PactIncreasedLethality
             BTR60.ReplaceSound.sound_exterior.set3DMinMaxDistance(20f, 550f);
 
             module_manager.Add("SharedAssets", new SharedAssets());
-            module_manager.Add("AMMO_30MM", new Ammo_30mm());
-            module_manager.Add("AMMO_125MM", new Ammo_125mm());
-            module_manager.Add("T72", new T72());
-            module_manager.Add("T80", new T80());
-            module_manager.Add("T55", new T55());
-            module_manager.Add("T62", new T62());
-            module_manager.Add("BMP2", new BMP2());
-            module_manager.Add("BMP1", new BMP1());
-            module_manager.Add("BTR60", new BTR60());
-            module_manager.Add("SuperFCS", new SuperFCS());
-            module_manager.Add("PactThermal", new PactThermal());
-            module_manager.Add("1A40", new FireControlSystem1A40());
-            module_manager.Add("BOM", new BOM());
-            //module_manager.Add("BMP3", new BMP3());
+            //module_manager.Add("AMMO_30MM", new Ammo_30mm());
+            //module_manager.Add("AMMO_125MM", new Ammo_125mm());
+            //module_manager.Add("T72", new T72());
+            //module_manager.Add("T80", new T80());
+            //module_manager.Add("T55", new T55());
+            //module_manager.Add("T62", new T62());
+            //module_manager.Add("BMP2", new BMP2());
+            //module_manager.Add("BMP1", new BMP1());
+            //module_manager.Add("BTR60", new BTR60());
+            //module_manager.Add("SuperFCS", new SuperFCS());
+            //module_manager.Add("PactThermal", new PactThermal());
+            //module_manager.Add("1A40", new FireControlSystem1A40());
+            //module_manager.Add("BOM", new BOM());
+            module_manager.Add("BMP3", new BMP3());
         }
 
         public override void OnUpdate() 
         {
-            BMP2.Update();
+            //BMP2.Update();
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -110,7 +110,7 @@ namespace PactIncreasedLethality
             {
                 module_manager.LoadAllStaticAssets();
                 AssetUtil.ReleaseVanillaAssets();
-                APSLauncher.Init();
+                //APSLauncher.Init();
             }
 
             //TODO why is this needed?        
@@ -126,20 +126,20 @@ namespace PactIncreasedLethality
             {
                 StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnPlayerReady), GameStatePriority.Medium);
 
-                PactEra.Init();
-                Armour.Init();
-                ProximityFuse.Init();
+                //PactEra.Init();
+                //Armour.Init();
+                //ProximityFuse.Init();
                 EFP.Init();
-                T72.Init();
-                T80.Init();
-                T55.Init();
-                T62.Init();
-                T64A.Init();
-                T64B.Init();
-                BMP1.Init();
-                BMP2.Init();
-                BTR60.Init();
-                //BMP3.Init();
+                //T72.Init();
+                //T80.Init();
+                //T55.Init();
+                //T62.Init();
+                //T64A.Init();
+                //T64B.Init();
+                //BMP1.Init();
+                //BMP2.Init();
+                //BTR60.Init();
+                BMP3.Init();
 
                 valid_scene_count = 0;
             }
