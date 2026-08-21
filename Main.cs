@@ -94,6 +94,7 @@ namespace PactIncreasedLethality
             module_manager.Add("PactThermal", new PactThermal());
             module_manager.Add("1A40", new FireControlSystem1A40());
             module_manager.Add("BOM", new BOM());
+            //module_manager.Add("BMP3", new BMP3());
         }
 
         public override void OnUpdate() 
