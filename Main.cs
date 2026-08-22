@@ -83,6 +83,7 @@ namespace PactIncreasedLethality
             module_manager.Add("SharedAssets", new SharedAssets());
             //module_manager.Add("AMMO_30MM", new Ammo_30mm());
             //module_manager.Add("AMMO_125MM", new Ammo_125mm());
+            module_manager.Add("AMMO_100MM", new Ammo_100mm());
             //module_manager.Add("T72", new T72());
             //module_manager.Add("T80", new T80());
             //module_manager.Add("T55", new T55());

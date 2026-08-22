@@ -58,8 +58,6 @@ namespace PactIncreasedLethality
 
         public override void LoadDynamicAssets()
         {
-            AmmoCodexScriptable[] codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoCodexScriptable>();
-
             Vehicle m1ip = AssetUtil.LoadVanillaVehicle("M1IP");
             Transform m1ip_flir = m1ip.transform.Find("Turret Scripts/GPS/FLIR");
             abrams_vic_controller = m1ip.GetComponent<VehicleController>();
@@ -72,7 +70,7 @@ namespace PactIncreasedLethality
             Vehicle t55a = AssetUtil.LoadVanillaVehicle("T55A");
             t55a.transform.Find("Gun Scripts/Sights (and FCS)/NVS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
             t55a.WeaponsManager.Weapons[0].FCS.AuthoritativeOptic.reticleMesh.Load();
-            ammo_3of412 = codex_scriptables.Where(o => o.name == "ammo_3OF412").FirstOrDefault().AmmoType;
+            ammo_3of412 = Resources.FindObjectsOfTypeAll<AmmoCodexScriptable>().Where(o => o.name == "ammo_3OF412").FirstOrDefault().AmmoType;
 
             Vehicle m2_bradley = AssetUtil.LoadVanillaVehicle("M2BRADLEY");
             m2_bradley_canvas = m2_bradley.transform.Find("FCS and sights/GPS Optic/M2 Bradley GPS canvas").gameObject;

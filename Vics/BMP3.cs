@@ -23,12 +23,79 @@ namespace PactIncreasedLethality
         private static Material bmp3_material;
         private static GameObject bmp3_prefab;
         private static string current_spawn_id = "";
+        private static AmmoFeed.ReloadStage[] bmp3_reload_sequence = new AmmoFeed.ReloadStage[]
+        {
+            new AmmoFeed.ReloadStage()
+            {
+                Duration = 0.4f,
+                StageClips = new AudioClip[] { },
+                AnimatedParts = new AnimatedPart[] { },
+                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+            },
+            new AmmoFeed.ReloadStage()
+            {
+                Duration = 0.4f,
+                WaitForCarousel = true,
+                LessWaitSeconds = 0.2f,
+                StageClips = new AudioClip[] { },
+                AnimatedParts = new AnimatedPart[] { },
+                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+            },
+            new AmmoFeed.ReloadStage()
+            {
+                Duration = 0.2f,
+                StageClips = new AudioClip[] { },
+                AnimatedParts = new AnimatedPart[] { },
+                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[]
+                {
+                    new AmmoFeed.ReloadStage.FMODParameter()
+                    {
+                        Name = "WaitForCarousel",
+                        Value = 0
+                    }
+                }
+            },
+            new AmmoFeed.ReloadStage()
+            {
+                Duration = 2.7f,
+                StageClips = new AudioClip[] { },
+                AnimatedParts = new AnimatedPart[] { },
+                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+            },
+            new AmmoFeed.ReloadStage()
+            {
+                Duration = 2f,
+                StageClips = new AudioClip[] { },
+                AnimatedParts = new AnimatedPart[] { },
+                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+            },
+            //new AmmoFeed.ReloadStage()
+            //{
+            //    Duration = 0.5f,
+            //    StageClips = new AudioClip[] { },
+            //    AnimatedParts = new AnimatedPart[] { },
+            //    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+            //},
+        };
 
         private static void Reposition(Transform target, Transform to, bool delete = false)
         {
             target.SetParent(to);
             target.localPosition = Vector3.zero;
             target.SetParent(to.parent);
+            if (delete)
+            {
+                GameObject.Destroy(to.gameObject);
+            }
+        }
+
+        private static void Reposition(Transform[] targets, Transform to, bool delete = false)
+        {
+            foreach (Transform target in targets)
+            {
+                Reposition(target, to);
+            }
+
             if (delete)
             {
                 GameObject.Destroy(to.gameObject);
@@ -127,28 +194,22 @@ namespace PactIncreasedLethality
 
             Reposition
             (
-                target: bmp2_turret.Find("gunner day sight 1P3-3"),
-                to: bmp3_turret.transform.Find("gps"),
-                delete: false
-            );
-
-            Reposition
-            (
-                target: bmp2_turret.Find("gunner night sight 1P3-3"),
+                targets: new Transform[] 
+                { 
+                    bmp2_turret.Find("gunner day sight 1P3-3"), 
+                    bmp2_turret.Find("gunner night sight 1P3-3") 
+                },
                 to: bmp3_turret.transform.Find("gps"),
                 delete: true
             );
 
             Reposition
             (
-                target: bmp3_turret.Find("MANTLET/mantlet scripts/30mm Gun 2A42"),
-                to: bmp3_turret.transform.Find("MANTLET/2a72 muzzle identity"),
-                delete: false
-            );
-
-            Reposition
-            (
-                target: bmp2_turret.Find("Main gun/Muzzle identity"),
+                targets: new Transform[] 
+                { 
+                    bmp3_turret.Find("MANTLET/mantlet scripts/30mm Gun 2A42"), 
+                    bmp2_turret.Find("Main gun/Muzzle identity") 
+                },
                 to: bmp3_turret.transform.Find("MANTLET/2a72 muzzle identity"),
                 delete: true
             );
@@ -182,6 +243,29 @@ namespace PactIncreasedLethality
             temp_linked.Add(wpn_gun_2a70);
             fcs.LinkedWeaponSystems = temp_linked.ToArray();
 
+            Transform autoloader_carousel = bmp3_turret.Find("autoloader/carousel");
+
+            GHPC.Weapons.AmmoRack gun_2a70_rack = wpn_gun_2a70.Feed.ReadyRack;
+            gun_2a70_rack.ClipTypes[0] = Ammo_100mm.clip_3of70;
+            gun_2a70_rack.ClipCapacity = 22;
+            gun_2a70_rack.UseVisibleRounds = true;
+
+            for (int i = 0; i < 22; i++)
+            {
+                gun_2a70_rack.VisualSlots.Add(autoloader_carousel.GetChild(i));
+                gun_2a70_rack.AddVisibleClip(i, Ammo_100mm.clip_3of70, false);
+            }
+
+            AmmoCarousel ammo_carousel = bmp3_turret.Find("autoloader").gameObject.AddComponent<AmmoCarousel>();
+            ammo_carousel.RotationTransform = autoloader_carousel;
+            ammo_carousel.Mode = AmmoCarousel.RotationMode.Bidirectional;
+            ammo_carousel.Acceleration = 50f;
+            ammo_carousel.RotationSpeedDegreesPerSecond = 70f;
+            ammo_carousel.Rack = wpn_gun_2a70.Feed.ReadyRack;
+            ammo_carousel.Feed = wpn_gun_2a70.Feed;
+            ammo_carousel.Capacity = 22;
+            ammo_carousel.enabled = true;
+
             ws_gun_2a70.Name = "100mm cannon 2A70";
             ws_gun_2a70.FCS = fcs;
             wpn_gun_2a70._muzzleIdentity = wpn_gun_2a70.transform;
@@ -189,7 +273,13 @@ namespace PactIncreasedLethality
             wpn_gun_2a70.TriggerAudioController = null;
             wpn_gun_2a70.WireGuided = false;
             wpn_gun_2a70.TriggerHoldTime = 0f;
-            //wpn_gun_2a70.WeaponSound.SingleShotEventPaths[0] = "event:/Weapons/canon_105mm-L7";
+            wpn_gun_2a70.WeaponSound.SingleShotEventPaths[0] = "event:/Weapons/canon_105mm-L7";
+            wpn_gun_2a70.Feed._clipReloadFMODEvent = "event:/Effects/Reload/MZ_Autoloader";
+            wpn_gun_2a70.Feed.Carousel = ammo_carousel;
+            wpn_gun_2a70.Feed.ClipReloadStages = bmp3_reload_sequence;
+            wpn_gun_2a70.Feed.HumanLoaded = false;
+            wpn_gun_2a70.Feed.AmmoTypeInBreech = null;
+            wpn_gun_2a70.Feed.Start();
 
             ws_gun_30_2a72.Name = "30mm gun 2A72";
             wpn_gun_30_2a72.CodexEntry = null;
@@ -229,6 +319,13 @@ namespace PactIncreasedLethality
 
             bmp3_prefab = bmp3_bundle.LoadAsset<GameObject>("bempeh3.prefab");
             bmp3_prefab.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            Transform autoloader_carousel = bmp3_prefab.transform.Find("RIG/HULL/TURRET/autoloader/carousel");
+            for (int i = 0; i < 22; i++)
+            {
+                AmmoVisualPlaceholder placeholder = autoloader_carousel.GetChild(i).gameObject.AddComponent<AmmoVisualPlaceholder>();
+                placeholder.RackIndex = i;
+            }
 
             Transform wheel_arms = bmp3_prefab.transform.Find("RIG/HULL/wheel arms");
 
