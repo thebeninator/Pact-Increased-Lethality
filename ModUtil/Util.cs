@@ -30,6 +30,30 @@ namespace ModUtil
             "t64_menu"
         };
 
+        public static void Reposition(Transform target, Transform to, bool delete = false)
+        {
+            target.SetParent(to);
+            target.localPosition = Vector3.zero;
+            target.SetParent(to.parent);
+            if (delete)
+            {
+                GameObject.Destroy(to.gameObject);
+            }
+        }
+
+        public static void Reposition(Transform[] targets, Transform to, bool delete = false)
+        {
+            foreach (Transform target in targets)
+            {
+                Reposition(target, to);
+            }
+
+            if (delete)
+            {
+                GameObject.Destroy(to.gameObject);
+            }
+        }
+
         public static void CacheAmmo(AmmoType ammo)
         {
             if (impact_fx_db == null)

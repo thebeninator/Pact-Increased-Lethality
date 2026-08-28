@@ -6,23 +6,19 @@ using UnityEngine;
 using MelonLoader.Utils;
 using System.IO;
 using System.Linq;
-using HarmonyLib;
 using GHPC;
 using GHPC.Weapons;
 using GHPC.Equipment.Optics;
 using System.Collections.Generic;
 using GHPC.Mission;
-using GHPC.AI;
-using GHPC.Mission.Data;
+using CustomVicUtil;
 using System;
 
 namespace PactIncreasedLethality
 {
     public class BMP3 : Module
     {
-        private static Material bmp3_material;
         private static GameObject bmp3_prefab;
-        private static string current_spawn_id = "";
         private static AmmoFeed.ReloadStage[] bmp3_reload_sequence = new AmmoFeed.ReloadStage[]
         {
             new AmmoFeed.ReloadStage()
@@ -69,93 +65,41 @@ namespace PactIncreasedLethality
                 AnimatedParts = new AnimatedPart[] { },
                 ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
             },
-            //new AmmoFeed.ReloadStage()
-            //{
-            //    Duration = 0.5f,
-            //    StageClips = new AudioClip[] { },
-            //    AnimatedParts = new AnimatedPart[] { },
-            //    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
-            //},
         };
 
-        private static void Reposition(Transform target, Transform to, bool delete = false)
+        private static readonly Action<GameObject, Vehicle> on_spawned = (GameObject instance, Vehicle original_vic) =>
         {
-            target.SetParent(to);
-            target.localPosition = Vector3.zero;
-            target.SetParent(to.parent);
-            if (delete)
+            TrackedWheelNodeConfig wheel_node_cfg = original_vic.transform.Find("WheelControllers").GetComponent<TrackedWheelNodeConfig>();
+            Transform wheel_arms = instance.transform.Find("RIG/HULL/wheel arms");
+            Transform track_nodes = instance.transform.Find("RIG/HULL/tracks");
+
+            float[] wheel_z = new float[]
             {
-                GameObject.Destroy(to.gameObject);
-            }
-        }
+                1.019085f,
+                0.2451292f,
+                -0.6806521f,
+                -1.473438f,
+                -2.177661f,
+                -3.055225f
+            };
 
-        private static void Reposition(Transform[] targets, Transform to, bool delete = false)
-        {
-            foreach (Transform target in targets)
+            for (int i = 0; i < 12; i++)
             {
-                Reposition(target, to);
+                Transform arm = wheel_arms.GetChild(i);
+                wheel_node_cfg.SwingArms[i] = arm.gameObject;
+                wheel_node_cfg.VisualNodes[i] = arm.GetChild(0).GetChild(0).gameObject;
+                wheel_node_cfg.TrackNodes[i] = track_nodes.GetChild(i).gameObject;
+
+                int right_side = -1 * (i >= 6 ? 1 : -1);
+                wheel_node_cfg.transform.GetChild(i).transform.localPosition = new Vector3(-1.208f * right_side, 0.771f, wheel_z[i % 6]);
             }
-
-            if (delete)
-            {
-                GameObject.Destroy(to.gameObject);
-            }
-        }
-
-        [HarmonyPatch(typeof(UnitSpawner), "SpawnUnit", new Type[] { typeof(string), typeof(UnitMetaData), typeof(WaypointHolder), typeof(Transform) })]
-        public static class BMP3Marker
-        {
-            private static void Prefix(UnitSpawner __instance, UnitMetaData metaData)
-            {
-                current_spawn_id = metaData.Name;
-            }
-        }
-
-        [HarmonyPatch(typeof(TrackedWheelNodeConfig), "Awake")]
-        public static class BMP3SpawnHandler
-        {
-            private static void Prefix(TrackedWheelNodeConfig __instance)
-            {
-                Vehicle vic = __instance.GetComponentInParent<Vehicle>();
-
-                if (bmp3_prefab != null && vic._uniqueName == "BMP2_SA" /*&& current_spawn_id.Contains("BMP3")*/)
-                {
-                    GameObject bmp3 = GameObject.Instantiate(bmp3_prefab, vic.transform);
-                    bmp3.transform.localPosition = Vector3.zero;
-
-                    TrackedWheelNodeConfig wheel_node_cfg = vic.transform.Find("WheelControllers").GetComponent<TrackedWheelNodeConfig>();
-                    Transform wheel_arms = bmp3.transform.Find("RIG/HULL/wheel arms");
-                    Transform track_nodes = bmp3.transform.Find("RIG/HULL/tracks");
-
-                    float[] wheel_z = new float[] 
-                    { 
-                        1.019085f,
-                        0.2451292f,
-                        -0.6806521f,
-                        -1.473438f,
-                        -2.177661f,
-                        -3.055225f
-                    };
-
-                    for (int i = 0; i < 12; i++)
-                    {
-                        Transform arm = wheel_arms.GetChild(i);
-                        wheel_node_cfg.SwingArms[i] = arm.gameObject;
-                        wheel_node_cfg.VisualNodes[i] = arm.GetChild(0).GetChild(0).gameObject;
-                        wheel_node_cfg.TrackNodes[i] = track_nodes.GetChild(i).gameObject;
-
-                        int right_side = -1 * (i >= 6 ? 1 : -1);
-                        wheel_node_cfg.transform.GetChild(i).transform.localPosition = new Vector3(-1.208f * right_side, 0.771f, wheel_z[i % 6]);
-                    }
-                }
-            }
-        }
+        };  
 
         private static void HandleConversion(Vehicle vic)
         {
             if (vic == null) return;
             if (vic.UniqueName != "BMP2_SA") return;
-            //if (!vic.gameObject.name.Contains("BMP3")) return;
+            if (!vic.gameObject.name.Contains("BMP3")) return;
 
             vic._friendlyName = "BMP-3";
 
@@ -185,14 +129,14 @@ namespace PactIncreasedLethality
             AimablePlatform mantlet_platform = bmp3_turret.Find("MANTLET/mantlet scripts").GetComponent<AimablePlatform>();
             mantlet_platform.Transform = bmp3_turret.Find("MANTLET");
 
-            Reposition
+            Util.Reposition
             (
                 target: vic.DesignatedCameraSlots.Where(o => o.name == "commander head").First().transform,
                 to: bmp3_turret.transform.Find("commander head"),
                 delete: true
             );
 
-            Reposition
+            Util.Reposition
             (
                 targets: new Transform[] 
                 { 
@@ -203,7 +147,7 @@ namespace PactIncreasedLethality
                 delete: true
             );
 
-            Reposition
+            Util.Reposition
             (
                 targets: new Transform[] 
                 { 
@@ -214,14 +158,14 @@ namespace PactIncreasedLethality
                 delete: true
             );
 
-            Reposition
+            Util.Reposition
             (
                 target: bmp3_turret.Find("MANTLET/mantlet scripts/7.62mm Machine Gun PKT"),
                 to: bmp3_turret.transform.Find("MANTLET/pkt muzzle identity"),
                 delete: true
             );
 
-            Reposition
+            Util.Reposition
             (
                 target: bmp2_turret.Find("konkurs_azimuth/konkurs_elevation/launcher elevation/Launcher 9P135M"),
                 to: bmp3_turret.transform.Find("MANTLET/2a70 muzzle identity"),
@@ -387,6 +331,16 @@ namespace PactIncreasedLethality
             });
 
             unit_prefab_lookup.AllUnits = all_units_list.ToArray();
+
+            CustomSpawnInfo bmp3_spawn_info = new CustomSpawnInfo()
+            {
+                Prefab = bmp3_prefab,
+                Id = "BMP3",
+                TargetId = "BMP2_SA",
+                OnSpawned = on_spawned,
+            };
+
+            CustomSpawnHandler.RegisterCustomVic(bmp3_spawn_info);
         }
 
         public static void Init()

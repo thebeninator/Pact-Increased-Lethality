@@ -124,6 +124,8 @@
     <Compile Include="APS\APSSchema.cs" />
     <Compile Include="CustomGuidanceComputer.cs" />
     <Compile Include="APS\APS.cs" />
+    <Compile Include="CustomVicUtil\CustomSpawnHandler.cs" />
+    <Compile Include="CustomVicUtil\SpawnedIdCatcher.cs" />
     <Compile Include="ERA\EraVisual.cs" />
     <Compile Include="ERA\PactEra.cs" />
     <Compile Include="ERA\Relikt.cs" />
