@@ -75,6 +75,7 @@ T-80BV, T-80U
 <img width="2559" height="1439" alt="image" src="https://github.com/user-attachments/assets/9fdcaaa6-7096-4b09-8145-7c7e5cfc1549" />
 
 # BMP-2
+- 3UBR11 APFSDS-T
 - 3UBR8 APDS-T
   - Better penetration and ballistics compared to 3UBR6 APBC-T
 - 3UOF8 HEFI
