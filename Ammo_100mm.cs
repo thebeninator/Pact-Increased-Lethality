@@ -27,6 +27,9 @@ namespace PactIncreasedLethality
             ammo_3of70.Mass = 13.4f;
             ammo_3of70.MuzzleVelocity = 355f;
             ammo_3of70.TntEquivalentKg = 3.5f;
+            ammo_3of70.Coeff = 0.12f;
+            ammo_3of70.CachedIndex = -1;
+            Util.CacheAmmo(ammo_3of70);
 
             Util.Coalesce(ref ammo_codex_3of70);
             ammo_codex_3of70.AmmoType = ammo_3of70;

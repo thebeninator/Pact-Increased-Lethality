@@ -13,10 +13,14 @@ using System.Collections.Generic;
 using GHPC.Mission;
 using CustomVicUtil;
 using System;
+using NWH.VehiclePhysics;
+using GHPC.Camera;
+using GHPC.Player;
+using GHPC.Utility;
 
 namespace PactIncreasedLethality
 {
-    public class BMP3 : Module
+    public class BMP3 : ModUtil.Module
     {
         private static GameObject bmp3_prefab;
         private static AmmoFeed.ReloadStage[] bmp3_reload_sequence = new AmmoFeed.ReloadStage[]
@@ -53,14 +57,14 @@ namespace PactIncreasedLethality
             },
             new AmmoFeed.ReloadStage()
             {
-                Duration = 2.7f,
+                Duration = 2f,
                 StageClips = new AudioClip[] { },
                 AnimatedParts = new AnimatedPart[] { },
                 ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
             },
             new AmmoFeed.ReloadStage()
             {
-                Duration = 2f,
+                Duration = 0.9f,
                 StageClips = new AudioClip[] { },
                 AnimatedParts = new AnimatedPart[] { },
                 ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
@@ -99,13 +103,39 @@ namespace PactIncreasedLethality
         {
             if (vic == null) return;
             if (vic.UniqueName != "BMP2_SA") return;
-            if (!vic.gameObject.name.Contains("BMP3")) return;
+            //if (!vic.gameObject.name.Contains("BMP3")) return;
 
             vic._friendlyName = "BMP-3";
+
+            string[] bmp2_turret_lf_objects= new string[]
+            {
+                "Gunner_Seat",
+                "Commander_Seat",
+                "AmmoRack_2000X7.62mm",
+                "AmmoRack_340X30mmHE",
+                "AmmoRack_160X30mmAP",
+                "MG_Coax_PKT_7.62mm",
+                "Commander_Periscope_TKN-3B_001",
+                "Turret_TraverseMotor_PartOf2E36-1Stabilizer",
+                "Turret_ManualDrive",
+                "Commander_ElectronicControls marker",
+                "TURRET",
+            };
 
             Transform bmp2_rig = vic.transform.Find("BMP2_rig");
             Transform bmp2_hull = bmp2_rig.Find("HULL");
             Transform bmp2_turret = bmp2_hull.Find("TURRET");
+
+            LateFollowTarget bmp2_turret_lft = bmp2_turret.GetComponent<LateFollowTarget>();
+            LateFollowTarget bmp2_hull_lft = vic.GetComponent<LateFollowTarget>();
+            IList<LateFollow> bmp2_hull_late_followers = bmp2_hull_lft._lateFollowers;
+            IList<LateFollow> bmp2_turret_late_followers = bmp2_turret_lft._lateFollowers;
+
+            Transform bmp2_turret_aar = bmp2_turret.Find("TURRET");
+            LateFollow bmp2_turret_aar_armour = bmp2_turret_late_followers.Where(o => o.name == "TURRET").First();
+
+            LateFollow bmp2_hull_armour = bmp2_hull_late_followers.Where(o => o.name == "BMP2_armour").First();
+            LateFollow bmp2_hull_aar_armour = bmp2_hull_late_followers.Where(o => o.name == "BMP2 AAR armor model").First();
 
             vic.transform.Find("BMP2_visual").gameObject.SetActive(false);
             vic.transform.Find("BMP2_markings").gameObject.SetActive(false);
@@ -118,6 +148,11 @@ namespace PactIncreasedLethality
 
             Transform bmp3 = vic.transform.Find("bempeh3(Clone)");
             Transform bmp3_turret = bmp3.transform.Find("RIG/HULL/TURRET");
+            Transform bmp3_turret_follower = bmp3_turret.Find("turret late follow");
+
+            LateFollowTarget bmp3_turret_lft = bmp3_turret.gameObject.AddComponent<LateFollowTarget>();
+            LateFollow bmp3_turret_lf = bmp3_turret_follower.gameObject.AddComponent<LateFollow>();
+            bmp3_turret_lf.FollowTarget = bmp3_turret;
 
             bmp2_turret.Find("fire control").SetParent(bmp3_turret);
             bmp2_turret.Find("turret scripts").SetParent(bmp3_turret);
@@ -129,11 +164,38 @@ namespace PactIncreasedLethality
             AimablePlatform mantlet_platform = bmp3_turret.Find("MANTLET/mantlet scripts").GetComponent<AimablePlatform>();
             mantlet_platform.Transform = bmp3_turret.Find("MANTLET");
 
+            bmp2_hull_late_followers.Remove(bmp2_hull_armour);
+            bmp2_hull_late_followers.Remove(bmp2_hull_aar_armour);
+
+            GameObject.DestroyImmediate(bmp2_hull_armour.gameObject);
+            GameObject.DestroyImmediate(bmp2_hull_aar_armour.gameObject);
+
+            Util.Reposition
+            (
+                target: bmp2_turret_lft.LateFollowers[1].transform.Find("COMMANDER"),
+                to: bmp3_turret_follower.Find ("commander marker"),
+                delete_to: true
+            );
+
+            Util.Reposition
+            (
+                target: bmp2_turret_lft.LateFollowers[1].transform.Find("GUNNER"),
+                to: bmp3_turret_follower.Find("gunner marker"),
+                delete_to: true
+            );
+
+            Util.Reposition
+            (
+                target: vic.transform.Find("DRIVER"),
+                to: bmp3.Find("driver marker"),
+                delete_to: true
+            );
+
             Util.Reposition
             (
                 target: vic.DesignatedCameraSlots.Where(o => o.name == "commander head").First().transform,
                 to: bmp3_turret.transform.Find("commander head"),
-                delete: true
+                delete_to: true
             );
 
             Util.Reposition
@@ -144,7 +206,7 @@ namespace PactIncreasedLethality
                     bmp2_turret.Find("gunner night sight 1P3-3") 
                 },
                 to: bmp3_turret.transform.Find("gps"),
-                delete: true
+                delete_to: true
             );
 
             Util.Reposition
@@ -155,22 +217,31 @@ namespace PactIncreasedLethality
                     bmp2_turret.Find("Main gun/Muzzle identity") 
                 },
                 to: bmp3_turret.transform.Find("MANTLET/2a72 muzzle identity"),
-                delete: true
+                delete_to: true
             );
 
             Util.Reposition
             (
                 target: bmp3_turret.Find("MANTLET/mantlet scripts/7.62mm Machine Gun PKT"),
                 to: bmp3_turret.transform.Find("MANTLET/pkt muzzle identity"),
-                delete: true
+                delete_to: true
             );
 
             Util.Reposition
             (
                 target: bmp2_turret.Find("konkurs_azimuth/konkurs_elevation/launcher elevation/Launcher 9P135M"),
                 to: bmp3_turret.transform.Find("MANTLET/2a70 muzzle identity"),
-                delete: true
+                delete_to: true
             );
+
+            List<CameraSlot> designated_camera_slots_temp = vic._designatedCameraSlots.ToList();
+            designated_camera_slots_temp.RemoveAt(2);
+            vic._designatedCameraSlots = designated_camera_slots_temp.ToArray();
+
+            if (vic.GetInstanceID() == PlayerInput.Instance.CurrentPlayerUnit.GetInstanceID())
+            {
+                CameraManager.Instance.RescanCamSlots(vic._designatedCameraSlots);
+            }
 
             WeaponSystemInfo ws_gun_2a70 = vic.LoadoutManager._weaponsManager.GetWeaponInfoByRole(WeaponSystemRole.MountedLauncher);
             WeaponSystem wpn_gun_2a70 = ws_gun_2a70.Weapon;
@@ -181,13 +252,7 @@ namespace PactIncreasedLethality
             FireControlSystem fcs = wpn_gun_30_2a72.FCS;
             UsableOptic day_optic = Util.GetDayOptic(fcs);
 
-            day_optic.slot.ExclusiveWeapons = new WeaponSystem[] { };
-            day_optic.slot.LinkedNightSight.ExclusiveWeapons = new WeaponSystem[] { };
-            List<WeaponSystem> temp_linked = fcs.LinkedWeaponSystems.ToList();
-            temp_linked.Add(wpn_gun_2a70);
-            fcs.LinkedWeaponSystems = temp_linked.ToArray();
-
-            Transform autoloader_carousel = bmp3_turret.Find("autoloader/carousel");
+            Transform autoloader_carousel = bmp3_turret_follower.Find("autoloader/carousel");
 
             GHPC.Weapons.AmmoRack gun_2a70_rack = wpn_gun_2a70.Feed.ReadyRack;
             gun_2a70_rack.ClipTypes[0] = Ammo_100mm.clip_3of70;
@@ -200,7 +265,7 @@ namespace PactIncreasedLethality
                 gun_2a70_rack.AddVisibleClip(i, Ammo_100mm.clip_3of70, false);
             }
 
-            AmmoCarousel ammo_carousel = bmp3_turret.Find("autoloader").gameObject.AddComponent<AmmoCarousel>();
+            AmmoCarousel ammo_carousel = bmp3_turret_follower.Find("autoloader").gameObject.AddComponent<AmmoCarousel>();
             ammo_carousel.RotationTransform = autoloader_carousel;
             ammo_carousel.Mode = AmmoCarousel.RotationMode.Bidirectional;
             ammo_carousel.Acceleration = 50f;
@@ -210,14 +275,31 @@ namespace PactIncreasedLethality
             ammo_carousel.Capacity = 22;
             ammo_carousel.enabled = true;
 
+            day_optic.slot.ExclusiveWeapons = new WeaponSystem[] { };
+            day_optic.slot.LinkedNightSight.ExclusiveWeapons = new WeaponSystem[] { };
+            day_optic.Alignment = OpticAlignment.BoresightStabilized;
+            day_optic.RotateAzimuth = true;
+
+            fcs.WeaponAuthoritative = false;
+            fcs.MaxLaserRange = 4000f;
+            fcs.LaserAim = LaserAimMode.ImpactPoint;
+            fcs.SuperelevateWeapon = true;
+            List<WeaponSystem> temp_linked = fcs.LinkedWeaponSystems.ToList();
+            temp_linked.Add(wpn_gun_2a70);
+            fcs.LinkedWeaponSystems = temp_linked.ToArray();
+
             ws_gun_2a70.Name = "100mm cannon 2A70";
             ws_gun_2a70.FCS = fcs;
+            ws_gun_2a70.ExcludeFromFcsUpdates = false;
             wpn_gun_2a70._muzzleIdentity = wpn_gun_2a70.transform;
             wpn_gun_2a70.FCS = fcs;
             wpn_gun_2a70.TriggerAudioController = null;
             wpn_gun_2a70.WireGuided = false;
             wpn_gun_2a70.TriggerHoldTime = 0f;
             wpn_gun_2a70.WeaponSound.SingleShotEventPaths[0] = "event:/Weapons/canon_105mm-L7";
+            wpn_gun_2a70.Impulse = 3500f;
+            wpn_gun_2a70._impulseLocation = bmp3_turret.Find("MANTLET");
+            wpn_gun_2a70.BaseDeviationAngle = 0.060f;
             wpn_gun_2a70.Feed._clipReloadFMODEvent = "event:/Effects/Reload/MZ_Autoloader";
             wpn_gun_2a70.Feed.Carousel = ammo_carousel;
             wpn_gun_2a70.Feed.ClipReloadStages = bmp3_reload_sequence;
@@ -233,6 +315,14 @@ namespace PactIncreasedLethality
             wpn_gun_30_2a72.WeaponSound.SingleShotByDefault = true;
             wpn_gun_30_2a72.WeaponSound.SingleShotMode = true;
             wpn_gun_30_2a72.WeaponSound.SingleShotEventPaths = new string[] { "actually_2a72" };
+
+            NwhChassis chassis = vic.GetComponent<NwhChassis>();
+            chassis._maxForwardSpeed = 21f;
+            chassis._maxReverseSpeed = 6.3f;
+
+            VehicleController vic_controller = vic.GetComponent<VehicleController>();
+            vic_controller.engine.power = 500f;
+            vic_controller.engine.maxRPM = 5000f;
         }
 
         private static IEnumerator Convert(GameState _)
@@ -326,7 +416,7 @@ namespace PactIncreasedLethality
                 BaseAmmoClipsReference = new UnityEngine.AddressableAssets.AssetReference(),
                 UseDecalLayout = false,
                 AlternativeClasses = new UnitClass[] { UnitClass.APC, UnitClass.Scout },
-                Name = "BMP3",
+                Name = "PIL_BMP3",
                 FriendlyName = "BMP-3"
             });
 
@@ -335,7 +425,7 @@ namespace PactIncreasedLethality
             CustomSpawnInfo bmp3_spawn_info = new CustomSpawnInfo()
             {
                 Prefab = bmp3_prefab,
-                Id = "BMP3",
+                Id = "PIL_BMP3",
                 TargetId = "BMP2_SA",
                 OnSpawned = on_spawned,
             };

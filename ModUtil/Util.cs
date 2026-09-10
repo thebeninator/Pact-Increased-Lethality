@@ -30,25 +30,27 @@ namespace ModUtil
             "t64_menu"
         };
 
-        public static void Reposition(Transform target, Transform to, bool delete = false)
+        public static void Reposition(Transform target, Transform to, bool delete_to = false, bool sendback = false)
         {
+            Transform original_parent_transform = target.parent;
             target.SetParent(to);
             target.localPosition = Vector3.zero;
-            target.SetParent(to.parent);
-            if (delete)
+            target.SetParent(sendback ? original_parent_transform : to.parent);
+
+            if (delete_to)
             {
                 GameObject.Destroy(to.gameObject);
             }
         }
 
-        public static void Reposition(Transform[] targets, Transform to, bool delete = false)
+        public static void Reposition(Transform[] targets, Transform to, bool delete_to = false, bool sendback = false)
         {
             foreach (Transform target in targets)
             {
                 Reposition(target, to);
             }
 
-            if (delete)
+            if (delete_to)
             {
                 GameObject.Destroy(to.gameObject);
             }

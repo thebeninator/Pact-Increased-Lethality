@@ -3,7 +3,6 @@ using UnityEngine;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using MelonLoader;
 
 namespace CustomVicUtil
 {
@@ -29,13 +28,13 @@ namespace CustomVicUtil
         {
             Vehicle original_vic = __instance.GetComponentInParent<Vehicle>();
 
-            CustomSpawnInfo spawn_info = null;
+            CustomSpawnInfo spawn_info = custom_vics["PIL_BMP3"];
             string maybe_custom_vic_id = SpawnedIdCatcher.CurrentSpawnId.Split(' ')[0];
 
-            if (custom_vics.ContainsKey(maybe_custom_vic_id))
-            {
-                spawn_info = custom_vics[maybe_custom_vic_id];
-            }
+            //if (custom_vics.ContainsKey(maybe_custom_vic_id))
+            //{
+            //    spawn_info = custom_vics[maybe_custom_vic_id];
+            //}
 
             if (spawn_info != null && original_vic._uniqueName == spawn_info.TargetId)
             {

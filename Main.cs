@@ -13,7 +13,10 @@ using GHPC.Vehicle;
 using PactIncreasedLethality;
 using ModUtil;
 using ActiveProtectionSystem;
+using GHPC.Mission;
+using GHPC;
 
+[assembly: MelonPriority(-1)]
 [assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7B", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
@@ -43,6 +46,24 @@ namespace PactIncreasedLethality
 
             module_manager.LoadAllDynamicAssets();
             Ammo_125mm.CreateCompositeOptimizations();
+
+            yield break;
+        }
+
+        public IEnumerator OnMissionLoaded(GameState _)
+        {
+            UnitSpawner.Instance.SpawnUnit
+            (
+                "PIL_BMP3",
+                new GHPC.Mission.Data.UnitMetaData()
+                {
+                    Name = "BMP3",
+                    Allegiance = Faction.Neutral,
+                    Position = new Vector3(1226.332f, 23.641f, 1545.113f),
+                    Rotation = Quaternion.Euler(0.123f, 257.5731f, 359.4445f),
+                    UnitType = UnitType.GroundVehicle,
+                }
+            );
 
             yield break;
         }
@@ -118,6 +139,11 @@ namespace PactIncreasedLethality
             if (sceneName == "GT01_Beginers_Luck") 
             {
                 AssetUtil.LoadVanillaVehicle("T72M");
+            }
+
+            if (sceneName == "TR01_showcase")
+            {
+                StateController.RunOrDefer(GameState.MissionUnitsLoaded, new GameStateEventHandler(OnMissionLoaded), GameStatePriority.Medium);
             }
 
             if (Util.menu_screens.Contains(sceneName)) return;
