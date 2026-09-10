@@ -76,6 +76,7 @@ T-80BV, T-80U
 
 # BMP-2
 - 3UBR11 APFSDS-T
+  - Further improvement in penetration and ballistics over 3UBR8 APDS-T
 - 3UBR8 APDS-T
   - Better penetration and ballistics compared to 3UBR6 APBC-T
 - 3UOF8 HEFI
