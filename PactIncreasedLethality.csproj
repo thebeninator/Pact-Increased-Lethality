@@ -44,6 +44,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\BehaviorDesigner.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="CustomVicUnityScripts">
+      <HintPath>D:\GHPC MODDED\Mods\CustomVicUnityScripts.dll</HintPath>
+    </Reference>
     <Reference Include="FMODUnity, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\GHPC MODDED\GHPC_Data\Managed\FMODUnity.dll</HintPath>
@@ -125,6 +128,7 @@
     <Compile Include="CustomGuidanceComputer.cs" />
     <Compile Include="APS\APS.cs" />
     <Compile Include="CustomVicUtil\CustomSpawnHandler.cs" />
+    <Compile Include="CustomVicUtil\Helpers.cs" />
     <Compile Include="CustomVicUtil\SpawnedIdCatcher.cs" />
     <Compile Include="ERA\EraVisual.cs" />
     <Compile Include="ERA\PactEra.cs" />

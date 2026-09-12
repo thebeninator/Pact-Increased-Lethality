@@ -15,6 +15,7 @@ using ModUtil;
 using ActiveProtectionSystem;
 using GHPC.Mission;
 using GHPC;
+using System.Reflection;
 
 [assembly: MelonPriority(-1)]
 [assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7B", "ATLAS")]
@@ -70,6 +71,8 @@ namespace PactIncreasedLethality
 
         public override void OnInitializeMelon()
         {
+            Assembly assembly = Assembly.LoadFrom(Path.Combine(MelonEnvironment.ModsDirectory, "CustomVicUnityScripts.dll"));
+
             module_manager = new ModuleManager("PIL");
             cfg = MelonPreferences.CreateCategory("PactIncreasedLethality");
             T55.Config(cfg);
