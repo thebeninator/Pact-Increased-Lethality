@@ -14,13 +14,13 @@ namespace PactIncreasedLethality
         private static void CreateTrackingObject(GameObject vic, Dim dim) 
         {
             GameObject t = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            t.layer = 8;
             t.name = "TRACKING OBJECT";
             t.transform.parent = vic.transform;
             t.transform.localPosition = dim.pos;
             t.transform.localScale = dim.scale;       
             t.GetComponent<MeshRenderer>().material = null;
-            t.GetComponent<MeshRenderer>().materials = new Material[0];            
+            t.GetComponent<MeshRenderer>().materials = new Material[0];
+            t.GetComponent<MeshRenderer>().enabled = false;
             t.GetComponent<BoxCollider>().enabled = false;
         }
 

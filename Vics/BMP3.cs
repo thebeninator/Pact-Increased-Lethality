@@ -18,8 +18,7 @@ using GHPC.Camera;
 using GHPC.Player;
 using GHPC.Utility;
 using UnityEngine.AddressableAssets;
-using CustomVicUnityScripts;
-using MelonLoader;
+using GHPC.Equipment;
 
 namespace PactIncreasedLethality
 {
@@ -35,9 +34,11 @@ namespace PactIncreasedLethality
             "AmmoRack_2000X7.62mm vis",
             "AmmoRack_340X30mmHE vis",
             "AmmoRack_160X30mmAP vis",
+            "Gun_ControlBox_BU-25-2S",
+            "Radio R-123M"
         };
 
-        private static readonly string[] bmp2_turret_lf_objects = new string[]
+        private static readonly string[] bmp2_turret_lf_repos = new string[]
         {
             "Gunner_Seat",
             "Commander_Seat",
@@ -195,7 +196,8 @@ namespace PactIncreasedLethality
             bmp2_turret.Find("konkurs_azimuth").gameObject.SetActive(false);
             bmp2_turret.Find("turret scripts/R123_Prefab").gameObject.SetActive(false);
 
-            bmp2_turret.Find("fire control").SetParent(bmp3_turret);
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // REPOSITIONING
             bmp2_turret.Find("turret scripts").SetParent(bmp3_turret);
             bmp2_turret.Find("Main gun/mantlet scripts").SetParent(bmp3_turret.Find("MANTLET"));
 
@@ -236,7 +238,8 @@ namespace PactIncreasedLethality
             Util.Reposition
             (
                 targets: new Transform[] 
-                { 
+                {
+                    bmp2_turret.Find("fire control"),
                     bmp2_turret.Find("gunner day sight 1P3-3"), 
                     bmp2_turret.Find("gunner night sight 1P3-3") 
                 },
@@ -291,7 +294,7 @@ namespace PactIncreasedLethality
                 delete_to: true
             );
 
-            foreach (string part_id in bmp2_turret_lf_objects)
+            foreach (string part_id in bmp2_turret_lf_repos)
             {
                 Util.Reposition
                 (
@@ -320,19 +323,9 @@ namespace PactIncreasedLethality
                 delete_to: true
             );
 
-            bool turret_search_non_retained(Transform o)
+            bool turret_search_non_retained(Transform o) 
             {
                 return o.name != "TURRET" && !bmp2_turret_lf_retained.Contains(o.name);
-            }
-
-            void destroy_followers(IList<LateFollow> followers)
-            {
-                foreach (LateFollow f in followers)
-                {
-                    GameObject.DestroyImmediate(f.gameObject);
-                }
-
-                followers.Clear();
             }
 
             List<Transform> bmp2_turret_aar_delete = bmp2_turret_aar.GetComponentsInChildren<Transform>()
@@ -352,6 +345,16 @@ namespace PactIncreasedLethality
                 }
             }
 
+            void destroy_followers(IList<LateFollow> followers)
+            {
+                foreach (LateFollow f in followers)
+                {
+                    GameObject.DestroyImmediate(f.gameObject);
+                }
+
+                followers.Clear();
+            }
+
             destroy_followers(bmp2_hull_late_followers);
             destroy_followers(bmp2_mantlet_late_followers);
             destroy_followers(bmp2_turret_late_followers);
@@ -361,6 +364,8 @@ namespace PactIncreasedLethality
             GameObject.DestroyImmediate(bmp2_tc_ring_aar.gameObject);
             GameObject.DestroyImmediate(bmp2_mantlet_aar.gameObject);
 
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // WEAPONS SETUP
             List<CameraSlot> designated_camera_slots_temp = vic._designatedCameraSlots.ToList();
             designated_camera_slots_temp.RemoveAt(2);
             vic._designatedCameraSlots = designated_camera_slots_temp.ToArray();
@@ -443,6 +448,8 @@ namespace PactIncreasedLethality
             wpn_gun_30_2a72.WeaponSound.SingleShotMode = true;
             wpn_gun_30_2a72.WeaponSound.SingleShotEventPaths = new string[] { "actually_2a72" };
 
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // VEHICLE CONTROLLER SETUP
             NwhChassis chassis = vic.GetComponent<NwhChassis>();
             chassis._maxForwardSpeed = 21f;
             chassis._maxReverseSpeed = 6.3f;
@@ -514,9 +521,17 @@ namespace PactIncreasedLethality
                 arm.SetParent(rotator.transform);
             }
 
-            Helpers.ProcessArmourScripts(bmp3_prefab.transform.Find("RIG/HULL/hull late follow/hull armour"));
-            Helpers.ProcessArmourScripts(bmp3_prefab.transform.Find("RIG/HULL/TURRET/turret late follow/turret armour"));
-            Helpers.ProcessArmourScripts(bmp3_prefab.transform.Find("RIG/HULL/TURRET/mantlet late follow/mantlet armour"));
+            Dictionary<string, ArmorCodexScriptable> armour_codices = new Dictionary<string, ArmorCodexScriptable>()
+            {
+                ["abt102"] = Armour.alloy_abt102_armour,
+                ["hha"] = Armour.hhs_bt70sh_armour,
+                ["fuel"] = Armour.fuel_tank_bmp3_armour
+            };
+
+            Helpers.ProcessArmourScripts(bmp3_prefab.transform.Find("RIG/HULL/hull late follow/hull armour"), armour_codices);
+            Helpers.ProcessArmourScripts(bmp3_prefab.transform.Find("RIG/HULL/TURRET/turret late follow/turret armour"), armour_codices);
+            Helpers.ProcessArmourScripts(bmp3_prefab.transform.Find("RIG/HULL/TURRET/turret late follow/autoloader"), armour_codices);
+            Helpers.ProcessArmourScripts(bmp3_prefab.transform.Find("RIG/HULL/TURRET/mantlet late follow/mantlet armour"), armour_codices);
 
             Material bmp3_material = Resources.FindObjectsOfTypeAll<Material>().Where(o => o.name == "MI_East_IFV_BMP3_01").First();
             bmp3_material.shader = Shader.Find("GHPC/VehicleShader");

@@ -1,12 +1,12 @@
 ﻿using GHPC.Equipment;
 using MelonLoader;
+using ModUtil;
 using UnityEngine;
 
 namespace PactIncreasedLethality
 {
-    public class Armour
+    public class Armour : Module
     {
-        internal static bool done = false;
         public static ArmorCodexScriptable ru_welded_armor;
         public static ArmorCodexScriptable ru_cast_armor;
         public static ArmorCodexScriptable composite_armor;
@@ -14,6 +14,10 @@ namespace PactIncreasedLethality
         public static ArmorCodexScriptable cheek_metal_polymer;
         public static ArmorCodexScriptable ru_hhs_armor;
         public static ArmorCodexScriptable t80u_composite_armor;
+        public static ArmorCodexScriptable alloy_abt102_armour;
+        public static ArmorCodexScriptable fuel_tank_bmp3_armour;
+        public static ArmorCodexScriptable hhs_bt70sh_armour;
+
         public static MelonPreferences_Entry<bool> super_mpoly;
 
         public static void Config(MelonPreferences_Category cfg)
@@ -23,10 +27,8 @@ namespace PactIncreasedLethality
             super_mpoly.Comment = "Increases effectiveness of the composite blocks inside the BDD applique armour against AP and HEAT rounds";
         }
 
-        public static void Init()
+        public override void LoadStaticAssets()
         {
-            if (done) return;
-
             ru_hhs_armor = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
             ru_hhs_armor.name = "ru hhs armor";
             ArmorType ru_hhs = new ArmorType();
@@ -34,11 +36,8 @@ namespace PactIncreasedLethality
             ru_hhs.CanRicochet = true;
             ru_hhs.CanShatterLongRods = true;
             ru_hhs.NormalizesHits = true;
-            ru_hhs.ThicknessSource = ArmorType.RhaSource.Multipliers;
             ru_hhs.SpallAngleMultiplier = 1f;
             ru_hhs.SpallPowerMultiplier = 1f;
-            ru_hhs.RhaeMultiplierCe = 1.3f;
-            ru_hhs.RhaeMultiplierKe = 1.3f;
             ru_hhs.CrushThicknessModifier = 1f;
             ru_hhs.ThicknessSource = ArmorType.RhaSource.BHN;
             ru_hhs.BHN = 445;
@@ -134,7 +133,49 @@ namespace PactIncreasedLethality
             mpoly_hull.CrushThicknessModifier = 1f;
             hull_metal_polymer.ArmorType = mpoly_hull;
 
-            done = true;
+            alloy_abt102_armour = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
+            alloy_abt102_armour.name = "abt102";
+            ArmorType alloy_abt102 = new ArmorType();
+            alloy_abt102.Name = "abt102";
+            alloy_abt102.CanRicochet = true;
+            alloy_abt102.CanShatterLongRods = true;
+            alloy_abt102.NormalizesHits = true;
+            alloy_abt102.ThicknessSource = ArmorType.RhaSource.Multipliers;
+            alloy_abt102.SpallAngleMultiplier = 1f;
+            alloy_abt102.SpallPowerMultiplier = 1f;
+            alloy_abt102.RhaeMultiplierCe = 0.45f;
+            alloy_abt102.RhaeMultiplierKe = 0.45f;
+            alloy_abt102.CrushThicknessModifier = 1f;
+            alloy_abt102_armour.ArmorType = alloy_abt102;
+
+            fuel_tank_bmp3_armour = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
+            fuel_tank_bmp3_armour.name = "fuel tank";
+            ArmorType fuel_tank_bmp3 = new ArmorType();
+            fuel_tank_bmp3.Name = "fuel tank";
+            fuel_tank_bmp3.CanRicochet = false;
+            fuel_tank_bmp3.CanShatterLongRods = false;
+            fuel_tank_bmp3.NormalizesHits = false;
+            fuel_tank_bmp3.ThicknessSource = ArmorType.RhaSource.Multipliers;
+            fuel_tank_bmp3.SpallAngleMultiplier = 0.45f;
+            fuel_tank_bmp3.SpallPowerMultiplier = 0.60f;
+            fuel_tank_bmp3.RhaeMultiplierCe = 0.35f;
+            fuel_tank_bmp3.RhaeMultiplierKe = 0.10f;
+            fuel_tank_bmp3.CrushThicknessModifier = 1f;
+            fuel_tank_bmp3_armour.ArmorType = fuel_tank_bmp3;
+
+            hhs_bt70sh_armour = ScriptableObject.CreateInstance<ArmorCodexScriptable>();
+            hhs_bt70sh_armour.name = "bt70sh";
+            ArmorType bt70sh = new ArmorType();
+            bt70sh.Name = "bt70sh";
+            bt70sh.CanRicochet = true;
+            bt70sh.CanShatterLongRods = true;
+            bt70sh.NormalizesHits = true;
+            bt70sh.SpallAngleMultiplier = 1f;
+            bt70sh.SpallPowerMultiplier = 1f;
+            bt70sh.CrushThicknessModifier = 1f;
+            bt70sh.ThicknessSource = ArmorType.RhaSource.BHN;
+            bt70sh.BHN = 534f;
+            hhs_bt70sh_armour.ArmorType = bt70sh;
         }
     }
 }
