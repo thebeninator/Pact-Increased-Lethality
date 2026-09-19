@@ -53,7 +53,7 @@ namespace PactIncreasedLethality
             ["PT76B"]          = new Dim(new Vector3(0f, 1.14f, 0.32f), new Vector3(3f, 2.25f, 7f)),
             ["Mi-8"]           = new Dim(new Vector3(0f, 1.33f, -0.62f), new Vector3(3.7f, 3.5f, 11f)),
             ["Mi-2"]           = new Dim(new Vector3(0f, 1.228f, -0.221f), new Vector3(2.25f, 2.3f, 5.75f)),
-            ["Mi-24"]          = new Dim(new Vector3(0f, 1.87f, -1.2f), new Vector3(2.7f, 3f, 10f)),
+            ["Mi-24 Mi24"]          = new Dim(new Vector3(0f, 1.87f, -1.2f), new Vector3(2.7f, 3f, 10f)),
             ["AH-1"]           = new Dim(new Vector3(0f, 1.83f, 0.73f), new Vector3(3.4f, 2.5f, 7f)),
             ["OH-58A"]         = new Dim(new Vector3(0f, 2.01f, 0.22f), new Vector3(2f, 2f, 5f))
         };

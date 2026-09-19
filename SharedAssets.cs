@@ -67,7 +67,7 @@ namespace PactIncreasedLethality
             green_flir_mat = m1ip_flir.GetComponent<CameraSlot>().FLIRBlitMaterialOverride;
             m1ip_flir.Find("Reticle Mesh WFOV").GetComponent<ReticleMesh>().Load();
 
-            Vehicle t55a = AssetUtil.LoadVanillaVehicle("T55A");
+            Vehicle t55a = AssetUtil.LoadVanillaVehicle("T55A", true);
             t55a.transform.Find("Gun Scripts/Sights (and FCS)/NVS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
             t55a.WeaponsManager.Weapons[0].FCS.AuthoritativeOptic.reticleMesh.Load();
             ammo_3of412 = Resources.FindObjectsOfTypeAll<AmmoCodexScriptable>().Where(o => o.name == "ammo_3OF412").FirstOrDefault().AmmoType;

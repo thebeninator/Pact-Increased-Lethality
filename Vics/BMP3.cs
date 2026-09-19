@@ -25,6 +25,8 @@ namespace PactIncreasedLethality
     public class BMP3 : ModUtil.Module
     {
         private static GameObject bmp3_prefab;
+        private static AssetBundle bmp3_bundle;
+        private static GameObject muzzle_flash_105_prefab;
 
         private static readonly string[] bmp2_turret_lf_retained = new string[]
         {
@@ -130,7 +132,6 @@ namespace PactIncreasedLethality
         {
             if (vic == null) return;
             if (vic.UniqueName != "PIL_BMP3") return;
-            //if (!vic.gameObject.name.Contains("BMP3")) return;
 
             vic._friendlyName = "BMP-3";
 
@@ -196,6 +197,9 @@ namespace PactIncreasedLethality
             bmp2_turret.Find("konkurs_azimuth").gameObject.SetActive(false);
             bmp2_turret.Find("turret scripts/R123_Prefab").gameObject.SetActive(false);
 
+            GameObject muzzle_flash_105 = GameObject.Instantiate(muzzle_flash_105_prefab);
+            muzzle_flash_105.SetActive(true);
+
             /////////////////////////////////////////////////////////////////////////////////////////////////////////
             // REPOSITIONING
             bmp2_turret.Find("turret scripts").SetParent(bmp3_turret);
@@ -250,9 +254,9 @@ namespace PactIncreasedLethality
             Util.Reposition
             (
                 targets: new Transform[] 
-                { 
-                    bmp3_turret.Find("MANTLET/mantlet scripts/30mm Gun 2A42"), 
-                    bmp2_turret.Find("Main gun/Muzzle identity") 
+                {
+                    bmp3_mantlet.Find("mantlet scripts/30mm Gun 2A42"), 
+                    bmp2_turret.Find("Main gun/Muzzle identity")
                 },
                 to: bmp3_turret.transform.Find("MANTLET/2a72 muzzle identity"),
                 delete_to: true
@@ -260,16 +264,20 @@ namespace PactIncreasedLethality
 
             Util.Reposition
             (
-                target: bmp3_turret.Find("MANTLET/mantlet scripts/7.62mm Machine Gun PKT"),
+                target: bmp3_mantlet.Find("mantlet scripts/7.62mm Machine Gun PKT"),
                 to: bmp3_turret.transform.Find("MANTLET/pkt muzzle identity"),
                 delete_to: true
             );
 
             Util.Reposition
             (
-                target: bmp2_turret.Find("konkurs_azimuth/konkurs_elevation/launcher elevation/Launcher 9P135M"),
-                to: bmp3_turret.transform.Find("MANTLET/2a70 muzzle identity"),
-                delete_to: true
+                targets: new Transform[]
+                {
+                    bmp2_turret.Find("konkurs_azimuth/konkurs_elevation/launcher elevation/Launcher 9P135M"),
+                    muzzle_flash_105.transform
+                },
+                to: bmp3_mantlet.transform.Find("2a70 muzzle identity"),
+                delete_to: false
             );
 
             Util.Reposition
@@ -423,7 +431,15 @@ namespace PactIncreasedLethality
             ws_gun_2a70.Name = "100mm cannon 2A70";
             ws_gun_2a70.FCS = fcs;
             ws_gun_2a70.ExcludeFromFcsUpdates = false;
-            wpn_gun_2a70._muzzleIdentity = wpn_gun_2a70.transform;
+
+            muzzle_flash_105.transform.localEulerAngles = Vector3.zero;
+            muzzle_flash_105.transform.localScale = new Vector3(0.45f, 0.45f, 0.45f);
+            wpn_gun_2a70._muzzleEffects = new ParticleSystem[]
+            {
+                muzzle_flash_105.GetComponent<ParticleSystem>()
+            };
+
+            wpn_gun_2a70._muzzleIdentity = bmp3_mantlet.transform.Find("2a70 muzzle identity");
             wpn_gun_2a70.FCS = fcs;
             wpn_gun_2a70.TriggerAudioController = null;
             wpn_gun_2a70.WireGuided = false;
@@ -469,11 +485,14 @@ namespace PactIncreasedLethality
             yield break;
         }
 
+        public override void LoadDynamicAssets()
+        {
+            muzzle_flash_105_prefab = AssetUtil.CloneVanillaGameObject("T55A", "Gun Scripts/100mm Gun D-10T/GameObject/105mm Muzzle Flash");
+        }
+
         public override void LoadStaticAssets()
         {
-            //bmp3_material = new Material(Shader.Find("GHPC/VehicleShader"));
-            //bmp3_material.name = "bmp3";
-            AssetBundle bmp3_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "bmp3"));
+            bmp3_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "bmp3"));
 
             Texture bmp3_albedo = bmp3_bundle.LoadAsset<Texture>("bmp3 albedo.TGA");
             Texture bmp3_occlusion = bmp3_bundle.LoadAsset<Texture>("bmp3 ao.png");
@@ -496,6 +515,12 @@ namespace PactIncreasedLethality
             }
 
             Transform hull_ammo_rack = bmp3_prefab.transform.Find("RIG/HULL/hull late follow/hull rack");
+            GHPC.Weapons.AmmoRack hull_rack = hull_ammo_rack.gameObject.AddComponent<GHPC.Weapons.AmmoRack>();
+            hull_rack.Name = "hull ammo rack";
+            hull_rack._initialClipCounts = new int[] { 18 };
+            hull_rack.ClipTypes = new AmmoType.AmmoClip[] { Ammo_100mm.clip_3of70 };
+            hull_rack.UseVisibleRounds = true;
+
             for (int i = 0; i < 18; i++)
             {
                 AmmoVisualPlaceholder placeholder = hull_ammo_rack.GetChild(i).gameObject.AddComponent<AmmoVisualPlaceholder>();
@@ -554,6 +579,16 @@ namespace PactIncreasedLethality
             bmp3_track_material.SetTexture("_Normal", bmp3_track_normal);
             bmp3_track_material.SetTexture("_Smoothness", bmp3_track_sm);
 
+            CustomSpawnInfo bmp3_spawn_info = new CustomSpawnInfo()
+            {
+                Prefab = bmp3_prefab,
+                Id = "PIL_BMP3",
+                TargetId = "BMP2_SA",
+                OnSpawned = on_spawned,
+            };
+
+            CustomSpawnHandler.RegisterCustomVic(bmp3_spawn_info);
+
             UnitPrefabLookupScriptable unit_prefab_lookup = Resources.FindObjectsOfTypeAll<UnitPrefabLookupScriptable>().First();
             List<UnitPrefabLookupScriptable.UnitPrefabMetadata> all_units_list = unit_prefab_lookup.AllUnits.ToList();
 
@@ -574,16 +609,6 @@ namespace PactIncreasedLethality
             });
 
             unit_prefab_lookup.AllUnits = all_units_list.ToArray();
-
-            CustomSpawnInfo bmp3_spawn_info = new CustomSpawnInfo()
-            {
-                Prefab = bmp3_prefab,
-                Id = "PIL_BMP3",
-                TargetId = "BMP2_SA",
-                OnSpawned = on_spawned,
-            };
-
-            CustomSpawnHandler.RegisterCustomVic(bmp3_spawn_info);
         }
 
         public static void Init()

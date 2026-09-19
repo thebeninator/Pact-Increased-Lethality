@@ -17,7 +17,6 @@ using GHPC.Mission;
 using GHPC;
 using System.Reflection;
 
-[assembly: MelonPriority(-1)]
 [assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7B", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
@@ -45,7 +44,6 @@ namespace PactIncreasedLethality
             camera_manager = game_manager.GetComponent<CameraManager>();
             vics = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
 
-            module_manager.LoadAllDynamicAssets();
             Ammo_125mm.CreateCompositeOptimizations();
 
             yield break;
@@ -155,7 +153,9 @@ namespace PactIncreasedLethality
             valid_scene_count++;
             if (valid_scene_count == 2)
             {
+                module_manager.LoadAllDynamicAssets();
                 StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnPlayerReady), GameStatePriority.Medium);
+                StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(AssetUtil.ReleaseTempVanillaAssetsDeferred), GameStatePriority.Medium);
 
                 PactEra.Init();
                 //ProximityFuse.Init();
