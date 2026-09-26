@@ -130,7 +130,7 @@ namespace PactIncreasedLethality
                 wheel_controller_tr.localPosition = new Vector3(-1.208f * right_side, 0.771f, wheel_z[i % 6]);
 
                 WheelController wheel_controller = wheel_controller_tr.GetComponent<WheelController>();
-                wheel_controller.TireRadius = 0.325f;
+                wheel_controller.TireRadius = 0.327f;
             }
         };  
 
@@ -441,6 +441,7 @@ namespace PactIncreasedLethality
             ws_gun_2a70.ExcludeFromFcsUpdates = false;
 
             muzzle_flash_105.transform.localEulerAngles = Vector3.zero;
+            muzzle_flash_105.transform.localPosition = new Vector3(0f, 0f, 4.394f);
             muzzle_flash_105.transform.localScale = new Vector3(0.45f, 0.45f, 0.45f);
             wpn_gun_2a70._muzzleEffects = new ParticleSystem[]
             {

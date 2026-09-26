@@ -9,16 +9,93 @@ using GHPC.State;
 using MelonLoader;
 using UnityEngine.Scripting;
 using System;
+using UnityEngine.SceneManagement;
 
 // TODO: gameobject singleton for asset refs
 
 namespace ModUtil
 {
+    internal class AssetPrefabReferenceDatabase : MonoBehaviour
+    {
+        public List<AssetReference> LoadedAssetReferences = new List<AssetReference>();
+        public List<AssetReference> TempAssetReferences = new List<AssetReference>();
+        public static AssetPrefabReferenceDatabase Instance;
+
+        void OnDestroy()
+        {
+            ReleaseVanillaAssets();
+            ReleaseTempVanillaAssets();
+        }
+
+        public static void Create(int build_idx)
+        {
+            if (Instance != null) return;
+
+            GameObject maybe_db = GameObject.Find("ASSET REF DATABASE");
+
+            if (maybe_db != null)
+            {
+                Instance = maybe_db.GetComponent<AssetPrefabReferenceDatabase>();
+                return;
+            }
+
+            GameObject db = new GameObject("ASSET REF DATABASE");
+            Instance = db.AddComponent<AssetPrefabReferenceDatabase>();
+            SceneManager.MoveGameObjectToScene(db, SceneManager.GetSceneByBuildIndex(build_idx));
+        }
+
+        public void AddReference(AssetReference prefab_ref, bool temp = false)
+        {
+            if (temp && !LoadedAssetReferences.Contains(prefab_ref))
+            {
+                TempAssetReferences.Add(prefab_ref);
+            }
+
+            if (!temp)
+            {
+                LoadedAssetReferences.Add(prefab_ref);
+
+                if (TempAssetReferences.Contains(prefab_ref))
+                {
+                    TempAssetReferences.Remove(prefab_ref);
+                }
+            }
+        }
+
+        public void ReleaseTempVanillaAssets()
+        {
+            ReleaseAssets(TempAssetReferences, true);
+        }
+
+        public void ReleaseVanillaAssets()
+        {
+            ReleaseAssets(LoadedAssetReferences);
+        }
+
+        public IEnumerator ReleaseTempVanillaAssetsDeferred(GameState _)
+        {
+            ReleaseTempVanillaAssets();
+            yield break;
+        }
+
+        private void ReleaseAssets(List<AssetReference> asset_references, bool hard_destroy = false)
+        {
+            foreach (AssetReference prefab in asset_references)
+            {
+                if (hard_destroy)
+                {
+                    GameObject.DestroyImmediate(prefab.Asset);
+                }
+                prefab.ReleaseAsset();
+            }
+
+            asset_references.Clear();
+        }
+    }
+
     internal class AssetUtil
     {
         private static UnitPrefabLookupScriptable.UnitPrefabMetadata[] lookup_all_units;
-        private static List<AssetReference> loaded_asset_references = new List<AssetReference>();
-        private static List<AssetReference> temp_asset_references = new List<AssetReference>();
         private static List<GameObject> cloned_vanilla_assets = new List<GameObject>();
 
         internal static Vehicle LoadVanillaVehicle(string name, bool temp = false)
@@ -32,41 +109,11 @@ namespace ModUtil
 
             if (prefab_ref.Asset == null)
             {
-                if (temp && !loaded_asset_references.Contains(prefab_ref))
-                {
-                    temp_asset_references.Add(prefab_ref);
-                } 
-                
-                if (!temp)
-                {
-                    loaded_asset_references.Add(prefab_ref);
-
-                    if (temp_asset_references.Contains(prefab_ref))
-                    {
-                        temp_asset_references.Remove(prefab_ref);
-                    }
-                }
-
+                AssetPrefabReferenceDatabase.Instance.AddReference(prefab_ref, temp);
                 return prefab_ref.LoadAssetAsync<GameObject>().WaitForCompletion().GetComponent<Vehicle>();
             }
 
             return (prefab_ref.Asset as GameObject).GetComponent<Vehicle>();
-        }
-
-        internal static void ReleaseTempVanillaAssets()
-        {
-            ReleaseAssets(temp_asset_references, true);
-        }
-
-        internal static void ReleaseVanillaAssets()
-        {
-            ReleaseAssets(loaded_asset_references);
-        }
-
-        internal static IEnumerator ReleaseTempVanillaAssetsDeferred(GameState _)
-        {
-            ReleaseTempVanillaAssets();
-            yield break;
         }
 
         internal static bool VehicleInMission(string name)
@@ -112,20 +159,6 @@ namespace ModUtil
         private static void CloneVanillaMaterial(ref Material dest, Material source)
         {
             dest = new Material(source);
-        }
-
-        private static void ReleaseAssets(List<AssetReference> asset_references, bool hard_destroy = false)
-        {
-            foreach (AssetReference prefab in asset_references)
-            {
-                if (hard_destroy)
-                {
-                    GameObject.DestroyImmediate(prefab.Asset);
-                }
-                prefab.ReleaseAsset();
-            }
-
-            asset_references.Clear();
         }
     }
 }

@@ -125,29 +125,32 @@ namespace PactIncreasedLethality
             //BMP2.Update();
         }
 
-        public override void OnSceneWasLoaded(int buildIndex, string sceneName)
+        public override void OnSceneWasLoaded(int build_idx, string scene_name)
         {
-            if (sceneName == "MainMenu2_Scene" || sceneName == "MainMenu2-1_Scene" || sceneName == "t64_menu")
+            if (scene_name == "MainMenu2_Scene" || scene_name == "MainMenu2-1_Scene" || scene_name == "t64_menu")
             {
                 module_manager.LoadAllStaticAssets();
                 //APSLauncher.Init();
             }
 
-            if (Util.menu_screens.Contains(sceneName)) return;
+            if (Util.menu_screens.Contains(scene_name)) return;
 
             valid_scene_count++;
 
             if (valid_scene_count == 1)
             {
                 module_manager.UnloadAllDynamicAssets();
-                AssetUtil.ReleaseVanillaAssets();
+                AssetPrefabReferenceDatabase.Create(build_idx);
             }
 
             if (valid_scene_count == 2)
             {
+                AssetPrefabReferenceDatabase ref_db = AssetPrefabReferenceDatabase.Instance;
+
                 module_manager.LoadAllDynamicAssets();
+                StateController.RunOrDefer(GameState.MissionLoaded, new GameStateEventHandler(OnMissionLoaded), GameStatePriority.Medium);
                 StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnPlayerReady), GameStatePriority.Medium);
-                StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(AssetUtil.ReleaseTempVanillaAssetsDeferred), GameStatePriority.Low);
+                StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(ref_db.ReleaseTempVanillaAssetsDeferred), GameStatePriority.Low);
 
                 PactEra.Init();
                 //ProximityFuse.Init();
