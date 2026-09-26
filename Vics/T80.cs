@@ -82,7 +82,7 @@ namespace PactIncreasedLethality
 
             t80_random_ammo = cfg.CreateEntry<bool>("Random AP Round (T-80B)", false);
             t80_random_ammo_pool = cfg.CreateEntry<List<string>>("Random AP Round Pool (T-80B)", random_ammo_pool);
-            t80_random_ammo_pool.Comment = "3BM26, 3BM32, 3BM42, 3BM46, 3B60";
+            t80_random_ammo_pool.Comment = "3BM26, 3BM32, 3BM42, 3BM46, 3BM60";
 
             t80_atgm_type = cfg.CreateEntry<string>("GLATGM (T-80B)", "9M119");
             t80_atgm_type.Comment = "9M112M, 9M119, 9M119M1";
@@ -128,7 +128,7 @@ namespace PactIncreasedLethality
             if (zoom_snapper.Value && !super_fcs_t80.Value)
                 day_optic.gameObject.AddComponent<DigitalZoomSnapper>();
 
-            int rand = UnityEngine.Random.Range(0, Ammo_125mm.ap.Count);
+            int rand = UnityEngine.Random.Range(0, t80_random_ammo_pool.Value.Count);
             string ammo_str = t80_random_ammo.Value ? t80_random_ammo_pool.Value.ElementAt(rand) : t80_ammo_type.Value;
 
             vic.AimablePlatforms[1].transform.Find("optic cover parent").gameObject.SetActive(false);

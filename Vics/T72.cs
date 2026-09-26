@@ -14,11 +14,7 @@ using GHPC.Effects.Voices;
 using MelonLoader.Utils;
 using System.IO;
 using NWH.VehiclePhysics;
-using HarmonyLib;
 using GHPC.Equipment;
-using GHPC.Mission;
-using GHPC.AI;
-using GHPC.Mission.Data;
 using ModUtil;
 
 namespace PactIncreasedLethality
@@ -232,7 +228,7 @@ namespace PactIncreasedLethality
             vic.AimablePlatforms[1].transform.Find("optic cover parent").gameObject.SetActive(false);
             vic.AimablePlatforms[1].transform.Find("shutter parent").GetChild(0).gameObject.SetActive(false);
 
-            bool was_t72m = vic.GetComponent<PreviouslyT72M>() != null;
+            bool was_t72m = vic.GetComponent<T72MtoT72M1.PreviouslyT72M>() != null;
             bool is_t72m = vic.UniqueName == "T72M" || was_t72m;
             bool is_t72m1 = vic.UniqueName == "T72M1" && !was_t72m;
             bool has_k5 = (k5_t72m1.Value && is_t72m1) || (k5_t72m.Value && is_t72m);
@@ -658,34 +654,6 @@ namespace PactIncreasedLethality
             }
 
             yield break;
-        }
-
-        public class PreviouslyT72M : MonoBehaviour { }
-
-        [HarmonyPatch(typeof(UnitSpawner), "SpawnUnit", new Type[] { typeof(string), typeof(UnitMetaData), typeof(WaypointHolder), typeof(Transform) })]
-        public static class OverrideT72M
-        {
-            private static void Prefix(out bool __state, UnitSpawner __instance, ref string uniqueName)
-            {
-                __state = false;
-
-                bool conversion_reqd = t72m_composite_cheeks.Value || t72m_super_composite_cheeks.Value || era_t72m.Value || k5_t72m.Value;
-
-                if (uniqueName == "T72M" && conversion_reqd)
-                {
-                    __state = true;
-                    uniqueName = "T72M1";
-                }
-            }
-
-            private static void Postfix(bool __state, ref IUnit __result)
-            {
-                if (__state)
-                {
-                    PreviouslyT72M comp = __result.transform.gameObject.AddComponent<PreviouslyT72M>();
-                    comp.enabled = false;
-                }
-            }
         }
 
         public override void LoadDynamicAssets()

@@ -118,7 +118,7 @@ namespace ModUtil
             {
                 if (hard_destroy)
                 {
-                    GameObject.Destroy(prefab.Asset as GameObject);
+                    GameObject.DestroyImmediate(prefab.Asset);
                 }
                 prefab.ReleaseAsset();
             }

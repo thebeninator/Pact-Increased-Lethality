@@ -16,7 +16,7 @@ using GHPC.Mission;
 using GHPC;
 using System.Reflection;
 
-[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7B", "ATLAS")]
+[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7C", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -131,17 +131,6 @@ namespace PactIncreasedLethality
             {
                 module_manager.LoadAllStaticAssets();
                 //APSLauncher.Init();
-            }
-
-            //TODO why is this needed?        
-            if (sceneName == "GT01_Beginers_Luck") 
-            {
-                AssetUtil.LoadVanillaVehicle("T72M");
-            }
-
-            if (sceneName == "TR01_showcase")
-            {
-                StateController.RunOrDefer(GameState.MissionUnitsLoaded, new GameStateEventHandler(OnMissionLoaded), GameStatePriority.Medium);
             }
 
             if (Util.menu_screens.Contains(sceneName)) return;
