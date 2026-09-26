@@ -12,7 +12,6 @@ using FMOD;
 using GHPC.Vehicle;
 using PactIncreasedLethality;
 using ModUtil;
-using ActiveProtectionSystem;
 using GHPC.Mission;
 using GHPC;
 using System.Reflection;
@@ -128,12 +127,9 @@ namespace PactIncreasedLethality
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            module_manager.UnloadAllDynamicAssets();
-
             if (sceneName == "MainMenu2_Scene" || sceneName == "MainMenu2-1_Scene" || sceneName == "t64_menu")
             {
                 module_manager.LoadAllStaticAssets();
-                AssetUtil.ReleaseVanillaAssets();
                 //APSLauncher.Init();
             }
 
@@ -151,11 +147,18 @@ namespace PactIncreasedLethality
             if (Util.menu_screens.Contains(sceneName)) return;
 
             valid_scene_count++;
+
+            if (valid_scene_count == 1)
+            {
+                module_manager.UnloadAllDynamicAssets();
+                AssetUtil.ReleaseVanillaAssets();
+            }
+
             if (valid_scene_count == 2)
             {
                 module_manager.LoadAllDynamicAssets();
                 StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnPlayerReady), GameStatePriority.Medium);
-                StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(AssetUtil.ReleaseTempVanillaAssetsDeferred), GameStatePriority.Medium);
+                StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(AssetUtil.ReleaseTempVanillaAssetsDeferred), GameStatePriority.Low);
 
                 PactEra.Init();
                 //ProximityFuse.Init();

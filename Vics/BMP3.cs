@@ -19,6 +19,8 @@ using GHPC.Player;
 using GHPC.Utility;
 using UnityEngine.AddressableAssets;
 using GHPC.Equipment;
+using NWH.WheelController3D;
+using MelonLoader;
 
 namespace PactIncreasedLethality
 {
@@ -123,8 +125,12 @@ namespace PactIncreasedLethality
                 wheel_node_cfg.VisualNodes[i] = arm.GetChild(0).GetChild(0).gameObject;
                 wheel_node_cfg.TrackNodes[i] = track_nodes.GetChild(i).gameObject;
 
-                int right_side = -1 * (i >= 6 ? 1 : -1);
-                wheel_node_cfg.transform.GetChild(i).transform.localPosition = new Vector3(-1.208f * right_side, 0.771f, wheel_z[i % 6]);
+                int right_side = i >= 6 ? -1 : 1;
+                Transform wheel_controller_tr = wheel_node_cfg.transform.GetChild(i);
+                wheel_controller_tr.localPosition = new Vector3(-1.208f * right_side, 0.771f, wheel_z[i % 6]);
+
+                WheelController wheel_controller = wheel_controller_tr.GetComponent<WheelController>();
+                wheel_controller.TireRadius = 0.325f;
             }
         };  
 
@@ -383,10 +389,12 @@ namespace PactIncreasedLethality
                 CameraManager.Instance.RescanCamSlots(vic._designatedCameraSlots);
             }
 
-            WeaponSystemInfo ws_gun_2a70 = vic.LoadoutManager._weaponsManager.GetWeaponInfoByRole(WeaponSystemRole.MountedLauncher);
+            LoadoutManager loadout_manager = vic.LoadoutManager;
+
+            WeaponSystemInfo ws_gun_2a70 = loadout_manager._weaponsManager.GetWeaponInfoByRole(WeaponSystemRole.MountedLauncher);
             WeaponSystem wpn_gun_2a70 = ws_gun_2a70.Weapon;
 
-            WeaponSystemInfo ws_gun_30_2a72 = vic.LoadoutManager._weaponsManager.GetWeaponInfoByRole(WeaponSystemRole.MainGun);
+            WeaponSystemInfo ws_gun_30_2a72 = loadout_manager._weaponsManager.GetWeaponInfoByRole(WeaponSystemRole.MainGun);
             WeaponSystem wpn_gun_30_2a72 = ws_gun_30_2a72.Weapon;
 
             FireControlSystem fcs = wpn_gun_30_2a72.FCS;
@@ -464,6 +472,8 @@ namespace PactIncreasedLethality
             wpn_gun_30_2a72.WeaponSound.SingleShotMode = true;
             wpn_gun_30_2a72.WeaponSound.SingleShotEventPaths = new string[] { "actually_2a72" };
 
+            vic.LoadoutManager = null;
+
             /////////////////////////////////////////////////////////////////////////////////////////////////////////
             // VEHICLE CONTROLLER SETUP
             NwhChassis chassis = vic.GetComponent<NwhChassis>();
@@ -473,6 +483,13 @@ namespace PactIncreasedLethality
             VehicleController vic_controller = vic.GetComponent<VehicleController>();
             vic_controller.engine.power = 500f;
             vic_controller.engine.maxRPM = 5000f;
+
+            Tracks tracks = vic_controller.tracks;
+            tracks.leftTrackRenderer = bmp3.transform.Find("LEFT TRACK").GetComponent<SkinnedMeshRenderer>();
+            tracks.rightTrackRenderer = bmp3.transform.Find("RIGHT TRACK").GetComponent<SkinnedMeshRenderer>();
+            tracks.leftMat = tracks.leftTrackRenderer.material;
+            tracks.rightMat = tracks.rightTrackRenderer.material;
+            tracks.uvDirection = new Vector2(0f, -0.8f);
         }
 
         private static IEnumerator Convert(GameState _)

@@ -6,6 +6,9 @@ using GHPC.Vehicle;
 using UnityEngine.AddressableAssets;
 using System.Collections;
 using GHPC.State;
+using MelonLoader;
+using UnityEngine.Scripting;
+using System;
 
 namespace ModUtil
 {
@@ -22,6 +25,7 @@ namespace ModUtil
             {
                 lookup_all_units = Resources.FindObjectsOfTypeAll<UnitPrefabLookupScriptable>().FirstOrDefault().AllUnits;
             }
+
             AssetReference prefab_ref = lookup_all_units.Where(o => o.Name == name).FirstOrDefault().PrefabReference;
 
             if (prefab_ref.Asset == null)
@@ -97,7 +101,7 @@ namespace ModUtil
             to_clone.SetActive(false);
             GameObject clone = GameObject.Instantiate(to_clone);
             clone.name = clone.name.Substring(0, clone.name.Length - "(Clone)".Length);
-            cloned_vanilla_assets.Add(clone);
+            //cloned_vanilla_assets.Add(clone);
             to_clone.SetActive(true);
 
             return clone;
@@ -114,7 +118,7 @@ namespace ModUtil
             {
                 if (hard_destroy)
                 {
-                    GameObject.DestroyImmediate(prefab.Asset);
+                    GameObject.Destroy(prefab.Asset as GameObject);
                 }
                 prefab.ReleaseAsset();
             }
