@@ -36,7 +36,7 @@ namespace PactIncreasedLethality
                     if (transmog)
                     {
                         __state.TransmogNeeded = true;
-                        AssetUtil.TempLoadVanillaVehicle("T72M");
+                        AssetUtil.LoadVanillaVehicle("T72M", true);
                         uniqueName = "T72M1";
                     }
                 }

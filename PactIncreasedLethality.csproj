@@ -120,6 +120,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ammo_100mm.cs" />
     <Compile Include="APS\APSCollider.cs" />
     <Compile Include="APS\APSLauncher.cs" />
     <Compile Include="APS\InterceptionHandler.cs" />
@@ -148,6 +149,7 @@
     <Compile Include="Vics\BMP1.cs" />
     <Compile Include="Vics\BMP2.cs" />
     <Compile Include="Sights\BOM.cs" />
+    <Compile Include="Vics\BMP3.cs" />
     <Compile Include="Vics\BTR60.cs" />
     <Compile Include="Sights\CRTShock.cs" />
     <Compile Include="Sights\DigitalZoomSnapper.cs" />

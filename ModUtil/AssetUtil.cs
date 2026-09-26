@@ -10,6 +10,8 @@ using MelonLoader;
 using UnityEngine.Scripting;
 using System;
 
+// TODO: gameobject singleton for asset refs
+
 namespace ModUtil
 {
     internal class AssetUtil

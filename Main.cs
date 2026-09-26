@@ -103,7 +103,7 @@ namespace PactIncreasedLethality
 
             module_manager.Add("SharedAssets", new SharedAssets());
             module_manager.Add("Armour", new Armour());
-            //module_manager.Add("AMMO_30MM", new Ammo_30mm());
+            module_manager.Add("AMMO_30MM", new Ammo_30mm());
             module_manager.Add("AMMO_125MM", new Ammo_125mm());
             module_manager.Add("AMMO_100MM", new Ammo_100mm());
             module_manager.Add("T72", new T72());
@@ -111,7 +111,7 @@ namespace PactIncreasedLethality
             //module_manager.Add("T55", new T55());
             //module_manager.Add("T62", new T62());
             //module_manager.Add("BMP2", new BMP2());
-            //module_manager.Add("BMP1", new BMP1());
+            module_manager.Add("BMP1", new BMP1());
             //module_manager.Add("BTR60", new BTR60());
             module_manager.Add("SuperFCS", new SuperFCS());
             module_manager.Add("PactThermal", new PactThermal());
@@ -158,7 +158,7 @@ namespace PactIncreasedLethality
                 //T62.Init();
                 //T64A.Init();
                 //T64B.Init();
-                //BMP1.Init();
+                BMP1.Init();
                 //BMP2.Init();
                 //BTR60.Init();
                 BMP3.Init();
