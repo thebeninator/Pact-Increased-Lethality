@@ -133,6 +133,11 @@ namespace PactIncreasedLethality
                 //APSLauncher.Init();
             }
 
+            if (scene_name == "TR01_showcase")
+            {
+                StateController.RunOrDefer(GameState.MissionLoaded, new GameStateEventHandler(OnMissionLoaded), GameStatePriority.Medium);
+            }
+
             if (Util.menu_screens.Contains(scene_name)) return;
 
             valid_scene_count++;
@@ -148,7 +153,6 @@ namespace PactIncreasedLethality
                 AssetPrefabReferenceDatabase ref_db = AssetPrefabReferenceDatabase.Instance;
 
                 module_manager.LoadAllDynamicAssets();
-                StateController.RunOrDefer(GameState.MissionLoaded, new GameStateEventHandler(OnMissionLoaded), GameStatePriority.Medium);
                 StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnPlayerReady), GameStatePriority.Medium);
                 StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(ref_db.ReleaseTempVanillaAssetsDeferred), GameStatePriority.Low);
 
@@ -161,7 +165,7 @@ namespace PactIncreasedLethality
                 //T62.Init();
                 //T64A.Init();
                 //T64B.Init();
-                BMP1.Init();
+                //BMP1.Init();
                 //BMP2.Init();
                 //BTR60.Init();
                 BMP3.Init();
