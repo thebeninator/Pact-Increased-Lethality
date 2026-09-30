@@ -42,7 +42,6 @@ namespace PactIncreasedLethality
             vics = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
 
             module_manager.LoadAllDynamicAssets();
-            Ammo_125mm.CreateCompositeOptimizations();
 
             yield break;
         }
@@ -118,7 +117,8 @@ namespace PactIncreasedLethality
             if (valid_scene_count == 2)
             {
                 StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(AssetUtil.ReleaseTempVanillaAssetsDeferred), GameStatePriority.Medium);
-                StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnPlayerReady), GameStatePriority.Medium);
+                StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnPlayerReady), GameStatePriority.Highest);
+                StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(Ammo_125mm.CreateCompositeOptimizationsDeferred), GameStatePriority.Low);
 
                 PactEra.Init();
                 Armour.Init();

@@ -894,7 +894,7 @@ namespace PactIncreasedLethality
         {
             if (!bmp2_patch.Value) return;
 
-            StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
+            StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(Convert), GameStatePriority.High);
         }
     }
 }
