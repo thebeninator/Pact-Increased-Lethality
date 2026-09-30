@@ -1,7 +1,8 @@
-﻿using UnityEngine;
 using GHPC.Weaponry;
-using System.Linq;
 using ModUtil;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {
@@ -11,6 +12,10 @@ namespace PactIncreasedLethality
         internal static AmmoType.AmmoClip clip_3ubr8;
         internal static AmmoCodexScriptable ammo_codex_3ubr8;
         internal static AmmoType ammo_3ubr8;
+        internal static AmmoClipCodexScriptable clip_codex_3ubr11;
+        internal static AmmoType.AmmoClip clip_3ubr11;
+        internal static AmmoCodexScriptable ammo_codex_3ubr11;
+        internal static AmmoType ammo_3ubr11;
 
         internal static AmmoClipCodexScriptable clip_codex_3uof8;
         internal static AmmoType.AmmoClip clip_3uof8;
@@ -23,6 +28,8 @@ namespace PactIncreasedLethality
         internal static AmmoClipCodexScriptable clip_codex_3uor6;
         internal static AmmoCodexScriptable ammo_codex_3uor6;
         internal static AmmoType ammo_3uor6;
+
+        public static Dictionary<string, AmmoClipCodexScriptable> ap;
 
         public override void LoadDynamicAssets()
         {
@@ -46,7 +53,32 @@ namespace PactIncreasedLethality
             clip_codex_3uor6 = clip_codex_scriptables.Where(o => o.name == "clip_3UOR6_340rd_load").FirstOrDefault();
             ammo_codex_3uor6 = clip_codex_3uor6.ClipType.MinimalPattern[0];
             ammo_3uor6 = clip_codex_3uor6.ClipType.MinimalPattern[0].AmmoType;
+            /////////////////////////////////////////////////////////////////////////////////
+            ammo_3ubr11 = new AmmoType();
+            Util.ShallowCopy(ammo_3ubr11, ammo_3ubr6);
+            ammo_3ubr11.Name = "3UBR11 APFSDS-T";
+            ammo_3ubr11.Mass = 0.15f;
+            ammo_3ubr11.Coeff = 0.008f;
+            ammo_3ubr11.MuzzleVelocity = 1260f;
+            ammo_3ubr11.RhaPenetration = 97f;
+            ammo_3ubr11.SpallMultiplier = 0.9f;
+            ammo_3ubr11.VisualType = GHPC.Weapons.LiveRoundMarshaller.LiveRoundVisualType.Custom;
 
+            Util.Coalesce(ref ammo_codex_3ubr11);
+            ammo_codex_3ubr11.AmmoType = ammo_3ubr11;
+            ammo_codex_3ubr11.name = "ammo_3ubr11";
+
+            clip_3ubr11 = new AmmoType.AmmoClip();
+            clip_3ubr11.Capacity = 160;
+            clip_3ubr11.Name = "3UBR11 APFSDS-T";
+            clip_3ubr11.MinimalPattern = new AmmoCodexScriptable[1];
+            clip_3ubr11.MinimalPattern[0] = ammo_codex_3ubr11;
+
+            Util.Coalesce(ref clip_codex_3ubr11);
+            clip_codex_3ubr11.name = "clip_3ubr11";
+            clip_codex_3ubr11.ClipType = clip_3ubr11;
+
+            //////////////////////////////////////////////////////////////////////////////
             ammo_3ubr8 = new AmmoType();
             Util.ShallowCopy(ammo_3ubr8, ammo_3ubr6);
             ammo_3ubr8.Name = "3UBR8 APDS-T";
@@ -100,6 +132,13 @@ namespace PactIncreasedLethality
             Util.Coalesce(ref clip_codex_3uof8);
             clip_codex_3uof8.name = "clip_3uof8";
             clip_codex_3uof8.ClipType = clip_3uof8;
+            //////////////////////////////////////////////////////////////////
+            ap = new Dictionary<string, AmmoClipCodexScriptable>()
+            {
+                ["3UBR11"] = clip_codex_3ubr11,
+                ["3UBR8"] = clip_codex_3ubr8,
+                ["3UBR6"] = clip_codex_3ubr6,
+            };
         }
     }
 }

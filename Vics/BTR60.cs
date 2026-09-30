@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using MelonLoader;
@@ -20,6 +20,7 @@ using ModUtil;
 using FMOD;
 using FMODUnity;
 using HarmonyLib;
+using System.Linq;
 
 namespace PactIncreasedLethality
 {
@@ -35,7 +36,9 @@ namespace PactIncreasedLethality
 
         static MelonPreferences_Entry<bool> btr60_patch;
         internal static MelonPreferences_Entry<bool> autocannon;
-        static MelonPreferences_Entry<bool> use_3ubr8;
+        static MelonPreferences_Entry<string> btr_AP_round;
+        static MelonPreferences_Entry<bool> btr_random_ammo;
+        static MelonPreferences_Entry<List<string>> btr_random_ammo_pool;
         static MelonPreferences_Entry<bool> use_3uof8;
         static MelonPreferences_Entry<bool> stab;
 
@@ -94,13 +97,23 @@ namespace PactIncreasedLethality
 
         public static void Config(MelonPreferences_Category cfg)
         {
+            var random_ammo_pool = new List<string>()
+            {
+                "3UBR11",
+                "3UBR8",
+                "3UBR6"
+            };
+
             btr60_patch = cfg.CreateEntry<bool>("BTR-60 Patch", true);
             btr60_patch.Description = "//////////////////////////////////////////////////////////////////////////////////////////";
             stab = cfg.CreateEntry<bool>("Stabilizer (BTR-60)", false);
             autocannon = cfg.CreateEntry<bool>("Use 30mm 2A72 Autocannon (BTR-60)", true);
             autocannon.Comment = "BTR-60A conversion; has fixed 6x magnification day sight and passive night vision sight";
-            use_3ubr8 = cfg.CreateEntry<bool>("Use 3UBR8 (BTR-60A)", false);
-            use_3ubr8.Comment = "Replaces 3UBR6; has improved penetration and better ballistics";
+            btr_AP_round = cfg.CreateEntry<string>("AP Round (BTR-60A)", "3UBR6");
+            btr_AP_round.Comment = "3UBR6, 3UBR8, 3UBR11";
+            btr_random_ammo = cfg.CreateEntry<bool>("Random AP Round (BTR-60A)", false);
+            btr_random_ammo_pool = cfg.CreateEntry<List<string>>("Random AP Round Pool (BTR-60A)", random_ammo_pool);
+            btr_random_ammo_pool.Comment = "3UBR6, 3UBR8, 3UBR11";
             use_3uof8 = cfg.CreateEntry<bool>("Use 3UOF8 (BTR-60A)", false);
             use_3uof8.Comment = "Mixed belt of 3UOR6 and 3UOF8 (1:2); 3UOF8 has more explosive filler but no tracer";
         }
@@ -207,7 +220,9 @@ namespace PactIncreasedLethality
 
                 btr_gun.Find("Gun Aimable/gunner sight/GPS/Quad").gameObject.SetActive(false);
 
-                AmmoClipCodexScriptable ap = use_3ubr8.Value ? Ammo_30mm.clip_codex_3ubr8 : Ammo_30mm.clip_codex_3ubr6;
+                int rand = UnityEngine.Random.Range(0, Ammo_30mm.ap.Count);
+                string ammo_str = btr_random_ammo.Value ? btr_random_ammo_pool.Value.ElementAt(rand) : btr_AP_round.Value;
+                AmmoClipCodexScriptable ap = Ammo_30mm.ap[ammo_str];
                 AmmoClipCodexScriptable he = use_3uof8.Value ? Ammo_30mm.clip_codex_3uof8 : Ammo_30mm.clip_codex_3uor6;
 
                 feed.AmmoTypeInBreech = null;
@@ -320,7 +335,7 @@ namespace PactIncreasedLethality
             reticleSO.name = "btr80a";
 
             Util.ShallowCopy(reticle_cached, ReticleMesh.cachedReticles["BMP-2_BPK-1-42"]);
-                
+
             reticle_cached.tree = reticleSO;
 
             reticle_cached.tree.lights = new List<ReticleTree.Light>() {

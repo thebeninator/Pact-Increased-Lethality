@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using GHPC.Equipment.Optics;
 using GHPC.State;
@@ -131,7 +131,8 @@ namespace PactIncreasedLethality
         static AmmoType ammo_ofzt;
 
         static MelonPreferences_Entry<bool> bmp2_patch;
-        static MelonPreferences_Entry<bool> use_3ubr8;
+        static MelonPreferences_Entry<string> bmp2_AP_round;
+        static MelonPreferences_Entry<bool> bmp2_random_ammo;
         static MelonPreferences_Entry<bool> use_3uof8;
         static MelonPreferences_Entry<bool> use_9m113as;
         static MelonPreferences_Entry<bool> super_fcs;
@@ -139,6 +140,7 @@ namespace PactIncreasedLethality
         static MelonPreferences_Entry<bool> has_thermals;
         static MelonPreferences_Entry<string> thermals_quality;
         static MelonPreferences_Entry<bool> has_kornets;
+        static MelonPreferences_Entry<List<string>> bmp2_random_ammo_pool;
         static MelonPreferences_Entry<bool> zsu_conversion;
         static MelonPreferences_Entry<int> zsu_conversion_chance;
 
@@ -157,30 +159,44 @@ namespace PactIncreasedLethality
         static Mesh turret_only_thermals;
         static GameObject bmp2m_kit;
 
-        public class MultiBarrelFix : MonoBehaviour {
+        public class MultiBarrelFix : MonoBehaviour
+        {
             public AmmoFeed feed;
             public GameObject[] loaded_objects;
             public int max_ammo;
             public WeaponSystem weapon;
 
-            void Update() {
-                if (feed.CurrentClipRemainingCount == max_ammo) {
+            void Update()
+            {
+                if (feed.CurrentClipRemainingCount == max_ammo)
+                {
                     foreach (GameObject obj in loaded_objects) { obj.SetActive(true); }
                     return;
                 }
 
-                for (int i = 0; i < max_ammo - feed.CurrentClipRemainingCount; i++) {
+                for (int i = 0; i < max_ammo - feed.CurrentClipRemainingCount; i++)
+                {
                     loaded_objects[i].SetActive(false);
                 }
             }
         }
-
         public static void Config(MelonPreferences_Category cfg)
         {
+            var random_ammo_pool = new List<string>()
+            {
+                "3UBR11",
+                "3UBR8",
+                "3UBR6"
+            };
+
             bmp2_patch = cfg.CreateEntry<bool>("BMP-2 Patch", true);
             bmp2_patch.Description = "//////////////////////////////////////////////////////////////////////////////////////////";
-            use_3ubr8 = cfg.CreateEntry<bool>("Use 3UBR8", true);
-            use_3ubr8.Comment = "Replaces 3UBR6; has improved penetration and better ballistics";
+            bmp2_AP_round = cfg.CreateEntry<string>("AP Round (BMP-2)", "3UBR6");
+            bmp2_AP_round.Comment = "3UBR6, 3UBR8, 3UBR11";
+
+            bmp2_random_ammo = cfg.CreateEntry<bool>("Random AP Round (BMP-2)", false);
+            bmp2_random_ammo_pool = cfg.CreateEntry<List<string>>("Random AP Round Pool (BMP-2)", random_ammo_pool);
+            bmp2_random_ammo_pool.Comment = "3UBR6, 3UBR8, 3UBR11";
 
             use_3uof8 = cfg.CreateEntry<bool>("Use 3UOF8", true);
             use_3uof8.Comment = "Mixed belt of 3UOR6 and 3UOF8 (1:2); 3UOF8 has more explosive filler but no tracer";
@@ -209,10 +225,10 @@ namespace PactIncreasedLethality
         }
 
         public static void Update()
-        {         
+        {
             if (!zsu_conversion.Value) return;
             if (Mod.player_manager == null) return;
-            ReplaceSound.Cleanup();   
+            ReplaceSound.Cleanup();
         }
 
         private static void HandleConversion(Vehicle vic)
@@ -240,9 +256,10 @@ namespace PactIncreasedLethality
             int rand = UnityEngine.Random.Range(1, 100);
             bool is_zsu = zsu_conversion.Value && rand <= zsu_conversion_chance.Value;
 
-            AmmoClipCodexScriptable ap = use_3ubr8.Value ? Ammo_30mm.clip_codex_3ubr8 : Ammo_30mm.clip_codex_3ubr6;
+            rand = UnityEngine.Random.Range(0, Ammo_30mm.ap.Count);
+            string ammo_str = bmp2_random_ammo.Value ? bmp2_random_ammo_pool.Value.ElementAt(rand) : bmp2_AP_round.Value;
+            AmmoClipCodexScriptable ap = Ammo_30mm.ap[ammo_str];
             AmmoClipCodexScriptable he = use_3uof8.Value ? Ammo_30mm.clip_codex_3uof8 : Ammo_30mm.clip_codex_3uor6;
-
             if (super_fcs.Value)
             {
                 MissileGuidanceUnit computer = vic.GetComponentInChildren<MissileGuidanceUnit>();
@@ -347,8 +364,8 @@ namespace PactIncreasedLethality
 
                 vic._friendlyName = "BMP-23-4";
 
-                he = clip_codex_bzt;
-                ap = clip_codex_ofz;
+                ap = clip_codex_bzt;
+                he = clip_codex_ofz;
             }
 
             if (has_lrf.Value && !is_zsu && !super_fcs.Value)
@@ -521,9 +538,8 @@ namespace PactIncreasedLethality
                 atgm.Feed.AmmoTypeInBreech = null;
                 atgm.Feed.Start();
             }
-
-            loadout_manager.LoadedAmmoList.AmmoClips[0] = ap;
-            loadout_manager.LoadedAmmoList.AmmoClips[1] = he;
+                loadout_manager.LoadedAmmoList.AmmoClips[0] = ap;
+                loadout_manager.LoadedAmmoList.AmmoClips[1] = he;
 
             GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[0].Rack;
             Util.EmptyRack(rack);
@@ -563,7 +579,7 @@ namespace PactIncreasedLethality
             yield break;
         }
 
-        public static void ZSUReticle() 
+        public static void ZSUReticle()
         {
             reticleSO = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["BMP-2_BPK-1-42"].tree);
             reticleSO.name = "bmp2static";
@@ -577,7 +593,7 @@ namespace PactIncreasedLethality
             (angular.elements[1] as ReticleTree.Angular).align = ReticleTree.GroupBase.Alignment.Boresight;
         }
 
-        public static void LRFReticle() 
+        public static void LRFReticle()
         {
             reticleSO_lrf = ScriptableObject.Instantiate(ReticleMesh.cachedReticles["BMP-2_BPK-1-42"].tree);
             reticleSO_lrf.name = "bmp2_lrf_ac";
@@ -604,14 +620,16 @@ namespace PactIncreasedLethality
 
             ReticleTree.Angular sight_picture = angular.elements[0] as ReticleTree.Angular;
 
-            for (int i = 1; i < sight_picture.elements.Count; i++) {
+            for (int i = 1; i < sight_picture.elements.Count; i++)
+            {
                 ReticleTree.Line line = (sight_picture.elements[i] as ReticleTree.Angular).elements[0] as ReticleTree.Line;
                 line.length.mrad *= 0.66f;
                 line.position.y *= 0.66f;
                 line.roundness = 0f;
             }
 
-            foreach (ReticleTree.Line line in (sight_picture.elements[0] as ReticleTree.Angular).elements) {
+            foreach (ReticleTree.Line line in (sight_picture.elements[0] as ReticleTree.Angular).elements)
+            {
                 line.length.mrad *= 0.66f;
                 line.position.y *= 0.66f;
                 line.position.x *= 0.66f;
