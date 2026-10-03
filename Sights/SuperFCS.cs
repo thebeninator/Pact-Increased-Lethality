@@ -354,9 +354,11 @@ namespace PactIncreasedLethality
             s.guidance_computer = mgu;
             s.tracking_gates = tracking_gates.GetComponent<RectTransform>();
 
-            fcs.RegisteredRangeLimits = new Vector2(50f, 4000f);
-            fcs._originalRangeLimits = new Vector2(50f, 4000f);
-            fcs._currentRange = 50f;
+            fcs.RegisteredRangeLimits = new Vector2(200f, 4000f);
+            fcs._originalRangeLimits = new Vector2(200f, 4000f);
+            fcs._currentRange = 200f;
+            fcs.DefaultRange = 200f;
+            fcs.TargetRange = 200f;
             fcs.UpdateRange();
 
             night_optic.gameObject.SetActive(true);

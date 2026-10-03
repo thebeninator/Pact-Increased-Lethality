@@ -48,7 +48,7 @@ namespace PactIncreasedLethality
             yield break;
         }
 
-        public IEnumerator OnMissionLoaded(GameState _)
+        public IEnumerator MissionUnitsLoaded(GameState _)
         {
             UnitSpawner.Instance.SpawnUnit
             (
@@ -107,11 +107,11 @@ namespace PactIncreasedLethality
             module_manager.Add("AMMO_125MM", new Ammo_125mm());
             module_manager.Add("AMMO_100MM", new Ammo_100mm());
             module_manager.Add("T72", new T72());
-            //module_manager.Add("T80", new T80());
+            module_manager.Add("T80", new T80());
             //module_manager.Add("T55", new T55());
             //module_manager.Add("T62", new T62());
             //module_manager.Add("BMP2", new BMP2());
-            module_manager.Add("BMP1", new BMP1());
+            //module_manager.Add("BMP1", new BMP1());
             //module_manager.Add("BTR60", new BTR60());
             module_manager.Add("SuperFCS", new SuperFCS());
             module_manager.Add("PactThermal", new PactThermal());
@@ -135,7 +135,7 @@ namespace PactIncreasedLethality
 
             if (scene_name == "TR01_showcase")
             {
-                StateController.RunOrDefer(GameState.MissionLoaded, new GameStateEventHandler(OnMissionLoaded), GameStatePriority.Medium);
+                StateController.RunOrDefer(GameState.MissionUnitsLoaded, new GameStateEventHandler(MissionUnitsLoaded), GameStatePriority.Medium);
             }
 
             if (Util.menu_screens.Contains(scene_name)) return;
@@ -160,7 +160,7 @@ namespace PactIncreasedLethality
                 //ProximityFuse.Init();
                 EFP.Init();
                 T72.Init();
-                //T80.Init();
+                T80.Init();
                 //T55.Init();
                 //T62.Init();
                 //T64A.Init();

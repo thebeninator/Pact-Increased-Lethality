@@ -18,14 +18,20 @@ using GHPC.Camera;
 using GHPC.Player;
 using GHPC.Utility;
 using UnityEngine.AddressableAssets;
-using GHPC.Equipment;
 using NWH.WheelController3D;
+using HarmonyLib;
+using GHPC.Effects.Voices;
 using MelonLoader;
+using FMOD;
+using GHPC.Effects;
+using GHPC.Crew;
 
 namespace PactIncreasedLethality
 {
     public class BMP3 : ModUtil.Module
     {
+        internal static GameObject vis_3of70;
+
         private static GameObject bmp3_prefab;
         private static AssetBundle bmp3_bundle;
         private static GameObject muzzle_flash_105_prefab;
@@ -42,7 +48,7 @@ namespace PactIncreasedLethality
             "Radio R-123M"
         };
 
-        private static readonly string[] bmp2_turret_lf_repos = new string[]
+        private static readonly string[] bmp2_turret_lf_reposition = new string[]
         {
             "Gunner_Seat",
             "Commander_Seat",
@@ -102,6 +108,11 @@ namespace PactIncreasedLethality
             },
         };
 
+        private static readonly GHPC.Weaponry.VehicleAmmoListScriptable gun_2a70_ammo_list = new GHPC.Weaponry.VehicleAmmoListScriptable
+        {
+            AmmoClips = new GHPC.Weaponry.AmmoClipCodexScriptable[2]
+        };
+
         private static readonly Action<GameObject, Vehicle> on_spawned = (GameObject instance, Vehicle original_vic) =>
         {
             TrackedWheelNodeConfig wheel_node_cfg = original_vic.transform.Find("WheelControllers").GetComponent<TrackedWheelNodeConfig>();
@@ -132,7 +143,40 @@ namespace PactIncreasedLethality
                 WheelController wheel_controller = wheel_controller_tr.GetComponent<WheelController>();
                 wheel_controller.TireRadius = 0.327f;
             }
-        };  
+        };
+
+        [HarmonyPatch(typeof(GHPC.Weapons.AmmoRack), "HasClipWithPattern", new Type[] { typeof(AmmoType.AmmoClip) })]
+        public static class test
+        {
+            public static bool Prefix(GHPC.Weapons.AmmoRack __instance, AmmoType.AmmoClip pattern, ref bool __result)
+            {
+                if (pattern.Name == Ammo_100mm.clip_9m117_bmp3.Name)
+                {
+                    __result = false;
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        [HarmonyPatch(typeof(PlayerInput), "QueueAmmoIndex", new Type[] { typeof(int) })]
+        public static class AllowQueueAmmoFor2A72
+        {
+            public static void Postfix(PlayerInput __instance, int index)
+            {
+                if (__instance.CurrentPlayerWeapon.Weapon.name != "bmp3 2a72") return;
+
+                GHPC.Weapons.AmmoRack ready_rack = __instance.CurrentPlayerCrewBrain.WeaponsModule.ActiveWeapon.Weapon.Feed.ReadyRack;
+
+                if (index >= ready_rack.ClipTypes.Length)
+                {
+                    return;
+                }
+
+                __instance.CurrentPlayerCrewBrain.WeaponsModule.QueueClipType(ready_rack.ClipTypes[index], false);
+            }
+        }
 
         private static void HandleConversion(Vehicle vic)
         {
@@ -173,6 +217,11 @@ namespace PactIncreasedLethality
             Transform bmp3_mantlet_follower = bmp3_turret.Find("mantlet late follow");
             Transform bmp3_hull_follower = bmp3_hull.Find("hull late follow");
 
+            Compartment bmp3_hull_main_compartment = bmp3_hull_follower.Find("volumes/hull fighting compartment").GetComponent<Compartment>();
+            Compartment bmp3_fuel_bay_compartment = bmp3_hull_follower.Find("volumes/fuel bay").GetComponent<Compartment>();
+            Compartment bmp3_rear_bay_compartment = bmp3_hull_follower.Find("volumes/rear bay").GetComponent<Compartment>();
+            Compartment bmp3_turret_compartment = bmp3_turret_follower.Find("turret fighting compartment").GetComponent<Compartment>();
+
             LateFollowTarget bmp3_hull_lft = bmp3_hull.gameObject.AddComponent<LateFollowTarget>();
             LateFollow bmp3_hull_lf = bmp3_hull_follower.gameObject.AddComponent<LateFollow>();
             bmp3_hull_lf.FollowTarget = bmp3_hull;
@@ -205,6 +254,163 @@ namespace PactIncreasedLethality
 
             GameObject muzzle_flash_105 = GameObject.Instantiate(muzzle_flash_105_prefab);
             muzzle_flash_105.SetActive(true);
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // TURRET DETACH SETUP
+            DetachableParent detachable = bmp3_turret.Find("detach script").gameObject.AddComponent<DetachableParent>();
+            detachable._chassis = vic._chassis;
+            detachable.ForceReceivingLocation = bmp3_turret;
+            detachable.Transform = bmp3_turret;
+            detachable.RBody = vic.GetComponent<Rigidbody>();
+            detachable.MassDecreaseItem = detachable.RBody;
+            detachable.KillEngine = true;
+            detachable.MassKg = 4800f;
+            detachable.OverpressureTrigger = 500f;
+            detachable.OverpressureToForceFactor = 140f;
+            detachable.MaxTorque = 50000f;
+            detachable.MinLateralForce = 20000f;
+            detachable.MaxLateralForce = 30000f;
+            detachable.MaxDetachForce = 200000f;
+            detachable.DownforceMultiplier = 0.2f;
+            detachable.LocalShiftOnDetach = new Vector3(0f, 0.05f, 0f);
+            detachable.ColliderObjects = new GameObject[] { };
+            detachable.ObjectsToDeactivate = new GameObject[] { };
+            detachable.TransformsToLeaveBehind = new Transform[] { };
+            detachable.AarHideItemsParents = new Transform[] { };
+            detachable.OtherParents = new Transform[] { };
+            detachable.enabled = true;
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // COMPARTMENT SETUP
+            FlammablesManager flammables_manager = vic.GetComponent<FlammablesManager>();
+            flammables_manager.Compartments = new Compartment[]
+            {
+                bmp3_fuel_bay_compartment,
+                bmp3_hull_main_compartment,
+                bmp3_rear_bay_compartment,
+                bmp3_turret_compartment
+            };
+
+            foreach (Compartment compartment in flammables_manager.Compartments)
+            {
+                compartment.RegisterFlammablesManager(flammables_manager);
+            }
+
+            bmp3_fuel_bay_compartment.TotalVolume = 0.2f;
+            bmp3_rear_bay_compartment.TotalVolume = 2f;
+            bmp3_hull_main_compartment.TotalVolume = 4f;
+            bmp3_turret_compartment.TotalVolume = 3f;
+
+            bmp3_turret_compartment.Parent = bmp3_hull_main_compartment;
+            bmp3_turret_compartment.DetachThisFromParent = detachable;
+            bmp3_hull_main_compartment.Detachables.Add(detachable);
+            bmp3_hull_main_compartment._detachablesCumulativeOverpressure = new float[] { 0 };
+
+            FlammablesCluster gun_2a72_flammable_cluster = new FlammablesCluster()
+            {
+                Items = new List<FlammableItem>()
+                {
+                    bmp2_turret_aar_armour.Find("AmmoRack_160X30mmAP").GetComponent<FlammableItem>(),
+                    bmp2_turret_aar_armour.Find("AmmoRack_340X30mmHE").GetComponent<FlammableItem>(),
+                    bmp2_turret_aar_armour.Find("AmmoRack_2000X7.62mm").GetComponent<FlammableItem>(),
+                },
+                TempGrowCoeff = 0.1f,
+                MaxTempC = 2000f,
+            };
+
+            foreach (FlammableItem flammable in gun_2a72_flammable_cluster.Items)
+            {
+                // artificially lowering these otherwise the turret tosses as soon as any of the feeds are sneezed at
+                flammable._tntEquivalent = flammable.name == "AmmoRack_340X30mmHE" ? 0.0165f : 0.01f;
+                flammable.RegisterCluster(gun_2a72_flammable_cluster);
+            }
+
+            bmp3_turret_compartment.AddCluster(gun_2a72_flammable_cluster);
+            bmp3_turret_compartment.AddCluster(new FlammablesCluster()
+            {
+                Items = new List<FlammableItem>()
+                {
+                    bmp3_turret_follower.Find("flammables/generic turret flammable").GetComponent<FlammableItem>()
+                },
+                _fireMarker = bmp3_turret_follower.Find("flammables/generic turret flammable"),
+                TempGrowCoeff = 1f,
+                MaxTempC = 2000f,
+            });
+
+            bmp3_hull_main_compartment.AddCluster(new FlammablesCluster()
+            {
+                Items = new List<FlammableItem>()
+                {
+                    bmp3_hull_follower.Find("flammables/generic hull flammable").GetComponent<FlammableItem>()
+                },
+                _fireMarker = bmp3_hull_follower.Find("flammables/generic hull flammable"),
+                TempGrowCoeff = 1f,
+                MaxTempC = 2000f,
+            });
+
+            bmp3_turret_compartment.Exits.Add(new CompartmentExit()
+            {
+                PositionMarker = bmp3_turret.Find("gunner hatch firemarker"),
+                Closed = true,
+                PressureToOpenBar = 10f,
+                SourceType = FlammableSourceType.CrewHatch,
+                Radius = 0.1f,
+                FlameHeightThreshold = 0.2f,
+                KillFireWhenDetached = true,
+                DetachTrigger = detachable,
+                AnimatedParts = new AnimatedPart[] { },
+                Name = "gunner hatch"
+            });
+
+            bmp3_turret_compartment.Exits.Add(new CompartmentExit()
+            {
+                PositionMarker = bmp3_turret.Find("commander hatch firemarker"),
+                Closed = true,
+                PressureToOpenBar = 10f,
+                SourceType = FlammableSourceType.CrewHatch,
+                Radius = 0.1f,
+                FlameHeightThreshold = 0.2f,
+                KillFireWhenDetached = true,
+                DetachTrigger = detachable,
+                AnimatedParts = new AnimatedPart[] { },
+                Name = "commander hatch",
+            });
+
+            bmp3_hull_main_compartment.Exits.Add(new CompartmentExit()
+            {
+                PositionMarker = bmp3_hull_follower.Find("hole firemarker"),
+                Closed = true,
+                KillFireWhenDetached = false,
+                PressureToOpenBar = 0f,
+                SourceType = FlammableSourceType.TopLarge,
+                Radius = 1f,
+                FlameHeightThreshold = 0f,
+                DetachTrigger = detachable,
+                AnimatedParts = new AnimatedPart[] { },
+                Name = "hole",
+                _compartment = bmp3_hull_main_compartment
+            });
+
+            foreach (CompartmentExit exit in bmp3_turret_compartment.Exits)
+            {
+                detachable.DidDetach += exit.DetachTriggered;
+                exit._compartment = bmp3_turret_compartment;
+            }
+
+            bmp3_hull_main_compartment.Exits.AddRange(bmp3_turret_compartment.Exits);
+            detachable.DidDetach += bmp3_hull_main_compartment.Exits[0].DetachTriggered;
+
+            CrewManager crew_manager = vic.GetComponent<CrewManager>();
+            crew_manager.GetCrewMember(CrewPosition.Driver).Compartment = bmp3_hull_main_compartment;
+            crew_manager.GetCrewMember(CrewPosition.Gunner).Compartment = bmp3_turret_compartment;
+            crew_manager.GetCrewMember(CrewPosition.Commander).Compartment = bmp3_turret_compartment;
+
+            bmp3_turret_compartment.FireStarted += crew_manager.DoFireEvacuation;
+            bmp3_hull_main_compartment.FireStarted += crew_manager.DoFireEvacuation;
+            bmp3_rear_bay_compartment.FireStarted += crew_manager.DoFireEvacuation;
+
+            bmp3_turret_compartment.IsCrewCompartment = true;
+            bmp3_hull_main_compartment.IsCrewCompartment = true;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////
             // REPOSITIONING
@@ -308,7 +514,7 @@ namespace PactIncreasedLethality
                 delete_to: true
             );
 
-            foreach (string part_id in bmp2_turret_lf_repos)
+            foreach (string part_id in bmp2_turret_lf_reposition)
             {
                 Util.Reposition
                 (
@@ -403,15 +609,44 @@ namespace PactIncreasedLethality
             Transform autoloader_carousel = bmp3_turret_follower.Find("autoloader/carousel");
 
             GHPC.Weapons.AmmoRack gun_2a70_rack = wpn_gun_2a70.Feed.ReadyRack;
-            gun_2a70_rack.ClipTypes[0] = Ammo_100mm.clip_3of70;
+            gun_2a70_rack.Name = "autoloader carousel";
+            gun_2a70_rack.ClipTypes = new AmmoType.AmmoClip[] { Ammo_100mm.clip_3of70 };
             gun_2a70_rack.ClipCapacity = 22;
             gun_2a70_rack.UseVisibleRounds = true;
+            gun_2a70_rack.StoredClips.Clear();
+            gun_2a70_rack._compartment = bmp3_turret_compartment;
+            gun_2a70_rack.Flammables._fireMarker = autoloader_carousel;
 
             for (int i = 0; i < 22; i++)
             {
                 gun_2a70_rack.VisualSlots.Add(autoloader_carousel.GetChild(i));
                 gun_2a70_rack.AddVisibleClip(i, Ammo_100mm.clip_3of70, false);
             }
+
+            bmp3_hull_main_compartment.AddCluster(gun_2a70_rack.Flammables);
+
+            LoadoutManager.RackLoadout hull_rack_loadout = new LoadoutManager.RackLoadout();
+            hull_rack_loadout.Name = "rear hull rack";
+            hull_rack_loadout.AdditiveRestockCapacities = new int[] { };
+            hull_rack_loadout.AmmoCounts = new int[] { };
+            hull_rack_loadout.ForbiddenAmmoIndices = new int[] { };
+            hull_rack_loadout.FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] { };
+            hull_rack_loadout.OverrideInitialClips = new GHPC.Weaponry.AmmoClipCodexScriptable[] { };
+            hull_rack_loadout.Rack = bmp3_hull_follower.Find("hull rack").GetComponent<GHPC.Weapons.AmmoRack>();
+
+            LoadoutManager.RackLoadout autoloader_rack_loadout = loadout_manager.RackLoadouts[0];
+            autoloader_rack_loadout.Name = "autoloader carousel";
+            autoloader_rack_loadout.Rack = gun_2a70_rack;
+
+            loadout_manager.RackLoadouts = new LoadoutManager.RackLoadout[]
+            {
+                autoloader_rack_loadout,
+                hull_rack_loadout
+            };
+            loadout_manager._loadedAmmoList = gun_2a70_ammo_list;
+            loadout_manager.WeaponIndex = 1;
+            loadout_manager.NoRestocking = false;
+            loadout_manager.RefreshSnapshot();
 
             AmmoCarousel ammo_carousel = bmp3_turret_follower.Find("autoloader").gameObject.AddComponent<AmmoCarousel>();
             ammo_carousel.RotationTransform = autoloader_carousel;
@@ -465,6 +700,7 @@ namespace PactIncreasedLethality
             wpn_gun_2a70.Feed.Start();
 
             ws_gun_30_2a72.Name = "30mm gun 2A72";
+            wpn_gun_30_2a72.name = "bmp3 2a72";
             wpn_gun_30_2a72.CodexEntry = null;
             wpn_gun_30_2a72.BaseDeviationAngle = 0.155f;
             wpn_gun_30_2a72._cycleTimeSeconds = 0.16f;
@@ -472,8 +708,9 @@ namespace PactIncreasedLethality
             wpn_gun_30_2a72.WeaponSound.SingleShotByDefault = true;
             wpn_gun_30_2a72.WeaponSound.SingleShotMode = true;
             wpn_gun_30_2a72.WeaponSound.SingleShotEventPaths = new string[] { "actually_2a72" };
+            wpn_gun_30_2a72.Feed.ReadyRack._compartment = bmp3_turret_compartment;
 
-            vic.LoadoutManager = null;
+            //vic.LoadoutManager = null;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////
             // VEHICLE CONTROLLER SETUP
@@ -506,6 +743,8 @@ namespace PactIncreasedLethality
         public override void LoadDynamicAssets()
         {
             muzzle_flash_105_prefab = AssetUtil.CloneVanillaGameObject("T55A", "Gun Scripts/100mm Gun D-10T/GameObject/105mm Muzzle Flash");
+            gun_2a70_ammo_list.AmmoClips[0] = Ammo_100mm.clip_codex_3of70;
+            gun_2a70_ammo_list.AmmoClips[1] = Ammo_100mm.clip_codex_9m117_bmp3;
         }
 
         public override void LoadStaticAssets()
@@ -522,22 +761,53 @@ namespace PactIncreasedLethality
             Texture bmp3_track_normal = bmp3_bundle.LoadAsset<Texture>("bmp3 track normal.TGA");
             Texture bmp3_track_sm = bmp3_bundle.LoadAsset<Texture>("bmp3 track sm.png");
 
+            Texture bmp3_scorched_albedo = bmp3_bundle.LoadAsset<Texture>("bmp3 scorched albedo.TGA");
+            Texture bmp3_scorched_normal = bmp3_bundle.LoadAsset<Texture>("bmp3 scorched normal.TGA");
+
             bmp3_prefab = bmp3_bundle.LoadAsset<GameObject>("bempeh3.prefab");
             bmp3_prefab.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
-            Transform autoloader_carousel = bmp3_prefab.transform.Find("RIG/HULL/TURRET/turret late follow/autoloader/carousel");
+            vis_3of70 = bmp3_bundle.LoadAsset<GameObject>("3of70 vis.prefab");
+            vis_3of70.AddComponent<AmmoStoredVisual>();
+            vis_3of70.hideFlags = HideFlags.DontUnloadUnusedAsset;
+
+            Transform bmp3_hull = bmp3_prefab.transform.Find("RIG/HULL");
+            Transform bmp3_turret = bmp3_hull.transform.Find("TURRET");
+
+            Transform bmp3_hull_follower = bmp3_hull.transform.Find("hull late follow");
+            Transform bmp3_turret_follower = bmp3_turret.Find("turret late follow");
+            Transform bmp3_mantlet_follower = bmp3_turret.Find("mantlet late follow");
+
+            Transform[] compartments = new Transform[]
+            {
+                bmp3_hull_follower.Find("volumes/hull fighting compartment"),
+                bmp3_hull_follower.Find("volumes/fuel bay"),
+                bmp3_hull_follower.Find("volumes/rear bay"),
+                bmp3_turret_follower.Find("turret fighting compartment")
+            };
+
+            foreach(Transform compartment in compartments)
+            {
+                compartment.gameObject.tag = "Compartment";
+                compartment.gameObject.layer = 8;
+                Compartment compartment_comp = compartment.gameObject.AddComponent<Compartment>();
+                compartment_comp.Name = compartment.name;
+            }
+
+            Transform autoloader_carousel = bmp3_turret_follower.Find("autoloader/carousel");
             for (int i = 0; i < 22; i++)
             {
                 AmmoVisualPlaceholder placeholder = autoloader_carousel.GetChild(i).gameObject.AddComponent<AmmoVisualPlaceholder>();
                 placeholder.RackIndex = i;
             }
 
-            Transform hull_ammo_rack = bmp3_prefab.transform.Find("RIG/HULL/hull late follow/hull rack");
+            Transform hull_ammo_rack = bmp3_hull_follower.Find("hull rack");
             GHPC.Weapons.AmmoRack hull_rack = hull_ammo_rack.gameObject.AddComponent<GHPC.Weapons.AmmoRack>();
-            hull_rack.Name = "hull ammo rack";
-            hull_rack._initialClipCounts = new int[] { 18 };
-            hull_rack.ClipTypes = new AmmoType.AmmoClip[] { Ammo_100mm.clip_3of70 };
+            hull_rack.Name = "rear hull rack";
+            hull_rack._initialClipCounts = new int[] { 17, 1 };
+            hull_rack.ClipTypes = new AmmoType.AmmoClip[] { Ammo_100mm.clip_3of70, Ammo_100mm.clip_9m117_bmp3 };
             hull_rack.UseVisibleRounds = true;
+            hull_rack._compartment = bmp3_hull_follower.Find("volumes/rear bay").GetComponent<Compartment>();
 
             for (int i = 0; i < 18; i++)
             {
@@ -545,7 +815,7 @@ namespace PactIncreasedLethality
                 placeholder.RackIndex = i;
             }
 
-            Transform wheel_arms = bmp3_prefab.transform.Find("RIG/HULL/wheel arms");
+            Transform wheel_arms = bmp3_hull.Find("wheel arms");
 
             Transform[] wheel_arms_transforms = new Transform[12];
             for (int i = 0; i < 12; i++)
@@ -571,10 +841,13 @@ namespace PactIncreasedLethality
                 ["fuel"] = Armour.fuel_tank_bmp3_armour
             };
 
-            Helpers.ProcessArmourScripts(bmp3_prefab.transform.Find("RIG/HULL/hull late follow/hull armour"), armour_codices);
-            Helpers.ProcessArmourScripts(bmp3_prefab.transform.Find("RIG/HULL/TURRET/turret late follow/turret armour"), armour_codices);
-            Helpers.ProcessArmourScripts(bmp3_prefab.transform.Find("RIG/HULL/TURRET/turret late follow/autoloader"), armour_codices);
-            Helpers.ProcessArmourScripts(bmp3_prefab.transform.Find("RIG/HULL/TURRET/mantlet late follow/mantlet armour"), armour_codices);
+            Helpers.ProcessCVScripts(bmp3_hull_follower.Find("hull armour"), armour_codices);
+            Helpers.ProcessCVScripts(bmp3_turret_follower.Find("turret armour"), armour_codices);
+            Helpers.ProcessCVScripts(bmp3_mantlet_follower.transform.Find("mantlet armour"), armour_codices);
+            Helpers.ProcessCVScripts(bmp3_turret_follower.Find("autoloader"));
+            Helpers.ProcessCVScripts(bmp3_turret_follower.Find("flammables"));
+            Helpers.ProcessCVScripts(bmp3_hull_follower.Find("flammables"));
+            Helpers.ProcessCVScripts(vis_3of70.transform);
 
             Material bmp3_material = Resources.FindObjectsOfTypeAll<Material>().Where(o => o.name == "MI_East_IFV_BMP3_01").First();
             bmp3_material.shader = Shader.Find("GHPC/VehicleShader");
@@ -585,6 +858,9 @@ namespace PactIncreasedLethality
             bmp3_material.SetTexture("_Occlusion", bmp3_occlusion);
             bmp3_material.SetTexture("_Normal", bmp3_normal);
             bmp3_material.SetTexture("_Smoothness", bmp3_sm);
+            bmp3_material.SetTexture("_ScorchAlbedo", bmp3_scorched_albedo);
+            bmp3_material.SetTexture("_scorchnormal", bmp3_scorched_normal);
+            bmp3_material.SetFloat("_scorchtiling", 1f);
 
             Material bmp3_track_material = Resources.FindObjectsOfTypeAll<Material>().Where(o => o.name == "MI_East_IFV_BMP3_02").First();
             bmp3_track_material.shader = Shader.Find("TrackShader");
