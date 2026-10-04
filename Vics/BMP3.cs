@@ -261,23 +261,26 @@ namespace PactIncreasedLethality
             detachable._chassis = vic._chassis;
             detachable.ForceReceivingLocation = bmp3_turret;
             detachable.Transform = bmp3_turret;
-            detachable.RBody = vic.GetComponent<Rigidbody>();
-            detachable.MassDecreaseItem = detachable.RBody;
+            detachable.MassDecreaseItem = vic.GetComponent<Rigidbody>();
             detachable.KillEngine = true;
-            detachable.MassKg = 4800f;
+            detachable.MassKg = 5000f;
             detachable.OverpressureTrigger = 500f;
             detachable.OverpressureToForceFactor = 140f;
-            detachable.MaxTorque = 50000f;
-            detachable.MinLateralForce = 20000f;
-            detachable.MaxLateralForce = 30000f;
+            detachable.MaxTorque = 30000f;
+            detachable.MinLateralForce = 25000f;
+            detachable.MaxLateralForce = 35000f;
             detachable.MaxDetachForce = 200000f;
             detachable.DownforceMultiplier = 0.2f;
             detachable.LocalShiftOnDetach = new Vector3(0f, 0.05f, 0f);
-            detachable.ColliderObjects = new GameObject[] { };
+            detachable.ColliderObjects = new GameObject[]
+            {
+                bmp3_turret.Find("thrown colliders/turret").gameObject,
+                bmp3_turret.Find("thrown colliders/gun").gameObject,
+            };
             detachable.ObjectsToDeactivate = new GameObject[] { };
             detachable.TransformsToLeaveBehind = new Transform[] { };
             detachable.AarHideItemsParents = new Transform[] { };
-            detachable.OtherParents = new Transform[] { };
+            detachable.OtherParents = new Transform[] { bmp3_turret_follower };
             detachable.enabled = true;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -710,6 +713,8 @@ namespace PactIncreasedLethality
             wpn_gun_30_2a72.WeaponSound.SingleShotEventPaths = new string[] { "actually_2a72" };
             wpn_gun_30_2a72.Feed.ReadyRack._compartment = bmp3_turret_compartment;
 
+            detachable.AddDetachablesFromTransform(bmp3_turret);
+
             //vic.LoadoutManager = null;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -761,9 +766,6 @@ namespace PactIncreasedLethality
             Texture bmp3_track_normal = bmp3_bundle.LoadAsset<Texture>("bmp3 track normal.TGA");
             Texture bmp3_track_sm = bmp3_bundle.LoadAsset<Texture>("bmp3 track sm.png");
 
-            Texture bmp3_scorched_albedo = bmp3_bundle.LoadAsset<Texture>("bmp3 scorched albedo.TGA");
-            Texture bmp3_scorched_normal = bmp3_bundle.LoadAsset<Texture>("bmp3 scorched normal.TGA");
-
             bmp3_prefab = bmp3_bundle.LoadAsset<GameObject>("bempeh3.prefab");
             bmp3_prefab.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
@@ -777,6 +779,13 @@ namespace PactIncreasedLethality
             Transform bmp3_hull_follower = bmp3_hull.transform.Find("hull late follow");
             Transform bmp3_turret_follower = bmp3_turret.Find("turret late follow");
             Transform bmp3_mantlet_follower = bmp3_turret.Find("mantlet late follow");
+
+            foreach (Transform thrown_collider in bmp3_turret.Find("thrown colliders"))
+            {
+                thrown_collider.gameObject.tag = "Penetrable";
+                thrown_collider.gameObject.layer = 14;
+                thrown_collider.GetComponent<MeshCollider>().material = Resources.FindObjectsOfTypeAll<PhysicMaterial>().Where(o => o.name == "Thrown turret").First();
+            }
 
             Transform[] compartments = new Transform[]
             {
@@ -850,6 +859,9 @@ namespace PactIncreasedLethality
             Helpers.ProcessCVScripts(vis_3of70.transform);
 
             Material bmp3_material = Resources.FindObjectsOfTypeAll<Material>().Where(o => o.name == "MI_East_IFV_BMP3_01").First();
+            Texture scorch_co = Resources.FindObjectsOfTypeAll<Texture>().Where(o => o.name == "scorch_co").First();
+            Texture scorch_nm = Resources.FindObjectsOfTypeAll<Texture>().Where(o => o.name == "scorch_nm").First();
+
             bmp3_material.shader = Shader.Find("GHPC/VehicleShader");
             bmp3_material.EnableKeyword("_METALLICGLOSSMAP");
             bmp3_material.EnableKeyword("_NORMALMAP");
@@ -858,9 +870,8 @@ namespace PactIncreasedLethality
             bmp3_material.SetTexture("_Occlusion", bmp3_occlusion);
             bmp3_material.SetTexture("_Normal", bmp3_normal);
             bmp3_material.SetTexture("_Smoothness", bmp3_sm);
-            bmp3_material.SetTexture("_ScorchAlbedo", bmp3_scorched_albedo);
-            bmp3_material.SetTexture("_scorchnormal", bmp3_scorched_normal);
-            bmp3_material.SetFloat("_scorchtiling", 1f);
+            bmp3_material.SetTexture("_ScorchAlbedo", scorch_co);
+            bmp3_material.SetTexture("_scorchnormal", scorch_nm);
 
             Material bmp3_track_material = Resources.FindObjectsOfTypeAll<Material>().Where(o => o.name == "MI_East_IFV_BMP3_02").First();
             bmp3_track_material.shader = Shader.Find("TrackShader");
