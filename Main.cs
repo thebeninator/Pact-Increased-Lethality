@@ -41,8 +41,6 @@ namespace PactIncreasedLethality
             camera_manager = game_manager.GetComponent<CameraManager>();
             vics = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
 
-            module_manager.LoadAllDynamicAssets();
-
             yield break;
         }
 
@@ -102,23 +100,26 @@ namespace PactIncreasedLethality
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            module_manager.UnloadAllDynamicAssets();
-
             if (sceneName == "MainMenu2_Scene" || sceneName == "MainMenu2-1_Scene" || sceneName == "t64_menu")
             {
                 module_manager.LoadAllStaticAssets();
-                AssetUtil.ReleaseVanillaAssets();
                 APSLauncher.Init();
             }
 
             if (Util.menu_screens.Contains(sceneName)) return;
 
             valid_scene_count++;
+
+            if (valid_scene_count == 1)
+            {
+                module_manager.UnloadAllDynamicAssets();
+            }
+
             if (valid_scene_count == 2)
             {
-                StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(AssetUtil.ReleaseTempVanillaAssetsDeferred), GameStatePriority.Medium);
+                module_manager.LoadAllDynamicAssets();
                 StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnPlayerReady), GameStatePriority.Highest);
-                StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(Ammo_125mm.CreateCompositeOptimizationsDeferred), GameStatePriority.Low);
+                StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Ammo_125mm.CreateCompositeOptimizationsDeferred), GameStatePriority.Low);
 
                 PactEra.Init();
                 Armour.Init();

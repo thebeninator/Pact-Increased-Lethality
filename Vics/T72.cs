@@ -16,6 +16,7 @@ using System.IO;
 using NWH.VehiclePhysics;
 using GHPC.Equipment;
 using ModUtil;
+using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
 {
@@ -661,11 +662,11 @@ namespace PactIncreasedLethality
             if (!t72_patch.Value) return;
 
             string[] t72s = { "T72M", "T72M1" };
-            if (!AssetUtil.VehicleInMission(t72s)) return;
+            if (!AssetUtilApi.VehicleInMission(t72s)) return;
 
             if (soviet_t72m.Value || soviet_t72m1.Value)
             {
-                Vehicle t80b = AssetUtil.LoadVanillaVehicle("T80B");
+                Vehicle t80b = AssetUtilApi.LoadVanillaVehicle("T80B", temp: true);
                 soviet_crew_voice = t80b.GetComponentInChildren<CrewVoiceHandler>().gameObject;
             }
         }

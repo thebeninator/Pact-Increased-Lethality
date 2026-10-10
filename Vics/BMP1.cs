@@ -12,12 +12,11 @@ using HarmonyLib;
 using GHPC.Camera;
 using GHPC.Weaponry;
 using GHPC;
-using UnityEngine.Rendering.PostProcessing;
 using TMPro;
 using GHPC.UI.Map;
 using GHPC.UI;
 using ModUtil;
-using System.Linq;
+using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
 {
@@ -431,7 +430,7 @@ namespace PactIncreasedLethality
             //pg15v_bc.RefreshData();
 
             string[] bmp1s = { "BMP1", "BMP1 Soviet", "BMP1P (Variant)", "BMP1P (Variant) Soviet" };
-            bool has_vog_bmp1 = AssetUtil.VehicleInMission(bmp1s) && (ags_17_bmp1.Value || ags_17_bmp1p.Value);
+            bool has_vog_bmp1 = AssetUtilApi.VehicleInMission(bmp1s) && (ags_17_bmp1.Value || ags_17_bmp1p.Value);
 
             if (!has_vog_bmp1) return;
 

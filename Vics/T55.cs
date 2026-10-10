@@ -17,6 +17,7 @@ using GHPC.Weaponry;
 using System.Linq;
 using ModUtil;
 using ActiveProtectionSystem;
+using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
 {
@@ -526,9 +527,9 @@ namespace PactIncreasedLethality
             ammo_3bk17m.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3bk17m;
             ammo_3bk17m.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3bk17m;
 
-            if ((AssetUtil.VehicleInMission("T55A") && use_9m117.Value) || (AssetUtil.VehicleInMission("T62") && T62.use_9m117.Value))
+            if ((AssetUtilApi.VehicleInMission("T55A") && use_9m117.Value) || (AssetUtilApi.VehicleInMission("T62") && T62.use_9m117.Value))
             {
-                AssetUtil.LoadVanillaVehicle("STATIC_9K111_SA");
+                AssetUtilApi.LoadVanillaVehicle("STATIC_9K111_SA", temp: true);
 
                 codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoCodexScriptable>();
                 ammo_9m111 = codex_scriptables.Where(o => o.name == "ammo_9M111").FirstOrDefault().AmmoType;
@@ -572,9 +573,9 @@ namespace PactIncreasedLethality
                 ammo_9m117.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_9m117;
             }
 
-            if ((AssetUtil.VehicleInMission("T55A") && has_lrf.Value) || (AssetUtil.VehicleInMission("T62") && T62.has_lrf.Value))
+            if ((AssetUtilApi.VehicleInMission("T55A") && has_lrf.Value) || (AssetUtilApi.VehicleInMission("T62") && T62.has_lrf.Value))
             {
-                Vehicle t72m1 = AssetUtil.LoadVanillaVehicle("T72M1");
+                Vehicle t72m1 = AssetUtilApi.LoadVanillaVehicle("T72M1", temp: true);
                 t72m1.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
 
                 range_readout = GameObject.Instantiate(SharedAssets.m1ip_range_canvas);

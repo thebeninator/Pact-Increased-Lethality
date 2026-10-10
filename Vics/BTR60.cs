@@ -20,6 +20,7 @@ using ModUtil;
 using FMOD;
 using FMODUnity;
 using HarmonyLib;
+using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
 {
@@ -437,18 +438,15 @@ namespace PactIncreasedLethality
             if (!btr60_patch.Value) return;
             if (!autocannon.Value) return;
 
-            Vehicle m60a1 = AssetUtil.LoadVanillaVehicle("M60A1");
-
-            m60a1_nvs = GameObject.Instantiate(m60a1.transform.Find("Turret Scripts/Sights/NVS").gameObject);
-            m60a1_nvs.SetActive(false);
-            UnityEngine.Object.Destroy(m60a1_nvs.transform.GetChild(0).gameObject);
+            Vehicle m60a1 = AssetUtilApi.LoadVanillaVehicle("M60A1", temp: true);
+            m60a1_nvs = AssetUtilApi.CloneVanillaGameObject("M60A1", "Turret Scripts/Sights/NVS");
             GameObject.Destroy(m60a1_nvs.transform.GetChild(0).gameObject);
             Component.Destroy(m60a1_nvs.GetComponent<UsableOptic>());
             Component.Destroy(m60a1_nvs.GetComponent<CameraSlot>());
             m60a1_nvs.GetComponent<PostProcessVolume>().enabled = false;
             m60a1_nvs.GetComponent<PostProcessVolume>().priority = 0;
 
-            Vehicle bmp2 = AssetUtil.LoadVanillaVehicle("BMP2_SA");
+            Vehicle bmp2 = AssetUtilApi.LoadVanillaVehicle("BMP2_SA", temp: true);
             bmp2.transform.Find("fire control/gunner day sight 1P3-3/Optic/Reticle Mesh").GetComponent<ReticleMesh>().Load();
 
             Reticle();
