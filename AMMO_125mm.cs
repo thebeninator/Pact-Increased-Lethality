@@ -4,6 +4,8 @@ using GHPC.Weapons;
 using UnityEngine;
 using GHPC.Weaponry;
 using ModUtil;
+using System.Collections;
+using GHPC.State;
 
 namespace PactIncreasedLethality
 {
@@ -54,7 +56,14 @@ namespace PactIncreasedLethality
             var composite_optimizations_3bm26 = new List<AmmoType.ArmorOptimization>() { };
             var composite_optimizations_3bm42 = new List<AmmoType.ArmorOptimization>() { };
 
-            string[] composite_names = new string[] {
+            string[] composite_names = new string[] 
+            {
+                "Vorschlaghammer heavy composite",
+                "Vorschlaghammer medium composite",
+                "Vorschlaghammer light composite",
+                "Eber heavy composite",
+                "Eber medium composite",
+                "Eber light composite",
                 "Abrams special armor gen 1 hull front",
                 "Abrams special armor gen 1 mantlet",
                 "Abrams special armor gen 1 turret cheeks",
@@ -87,6 +96,12 @@ namespace PactIncreasedLethality
 
             ammo_3bm26.ArmorOptimizations = composite_optimizations_3bm26.ToArray<AmmoType.ArmorOptimization>();
             ammo_3bm42.ArmorOptimizations = composite_optimizations_3bm42.ToArray<AmmoType.ArmorOptimization>();
+        }
+
+        public static IEnumerator CreateCompositeOptimizationsDeferred(GameState _)
+        {
+            CreateCompositeOptimizations();
+            yield break;
         }
 
         public override void UnloadDynamicAssets()

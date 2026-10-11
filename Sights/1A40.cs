@@ -8,6 +8,7 @@ using Reticle;
 using static Reticle.ReticleTree;
 using GHPC.Vehicle;
 using ModUtil;
+using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
 {
@@ -125,11 +126,11 @@ namespace PactIncreasedLethality
         public override void LoadDynamicAssets()
         {
             bool t72m_converted = T72.t72m_composite_cheeks.Value || T72.t72m_super_composite_cheeks.Value || T72.era_t72m.Value || T72.k5_t72m.Value;
-            bool t72m_present = (t72m_converted && AssetUtil.VehicleInMission("T72M1")) || AssetUtil.VehicleInMission("T72M");
+            bool t72m_present = (t72m_converted && AssetUtilApi.VehicleInMission("T72M1")) || AssetUtilApi.VehicleInMission("T72M");
 
             bool lead_calc_t72m = t72m_present && T72.lead_calculator_t72m.Value;
-            bool lead_calc_t72m1 = AssetUtil.VehicleInMission("T72M1") && T72.lead_calculator_t72m1.Value;
-            bool lead_calc_t64a = AssetUtil.VehicleInMission("T64A 1983") && T64A.lead_calculator_t64.Value;
+            bool lead_calc_t72m1 = AssetUtilApi.VehicleInMission("T72M1") && T72.lead_calculator_t72m1.Value;
+            bool lead_calc_t64a = AssetUtilApi.VehicleInMission("T64A 1983") && T64A.lead_calculator_t64.Value;
 
             if (!lead_calc_t64a && !lead_calc_t72m && !lead_calc_t72m1) return;
 
@@ -145,7 +146,7 @@ namespace PactIncreasedLethality
             GameObject.DestroyImmediate(lead_readout_canvas.transform.GetChild(0).GetChild(1).gameObject);
             lead_readout_canvas.SetActive(false);
 
-            Vehicle t72m1 = AssetUtil.LoadVanillaVehicle("T72M1");
+            Vehicle t72m1 = AssetUtilApi.LoadVanillaVehicle("T72M1", temp: true);
             t72m1.transform.Find("---MAIN GUN SCRIPTS---/2A46/TPD-K1 gunner's sight/GPS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
 
             Reticle();

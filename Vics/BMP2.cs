@@ -21,7 +21,7 @@ using GHPC.Crew;
 using GHPC.Weaponry;
 using System.Linq;
 using ModUtil;
-using GHPC.Audio;
+using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
 {
@@ -681,7 +681,7 @@ namespace PactIncreasedLethality
         public override void LoadDynamicAssets()
         {
             string[] bmp2s = { "BMP2 Soviet", "BMP2" };
-            if (!AssetUtil.VehicleInMission(bmp2s)) return;
+            if (!AssetUtilApi.VehicleInMission(bmp2s)) return;
 
             AmmoClipCodexScriptable[] clip_codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoClipCodexScriptable>();
             AmmoCodexScriptable[] codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoCodexScriptable>();
@@ -912,7 +912,7 @@ namespace PactIncreasedLethality
         {
             if (!bmp2_patch.Value) return;
 
-            StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(Convert), GameStatePriority.Lowest);
+            StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(Convert), GameStatePriority.Medium);
         }
     }
 }

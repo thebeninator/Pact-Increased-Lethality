@@ -15,6 +15,8 @@ namespace ModUtil
 
         public void Add(string id, Module module)
         {
+            module.Id = id;
+            module.mod_id = mod_id;
             modules.Add(id, module);
         }
 
@@ -37,11 +39,11 @@ namespace ModUtil
             foreach (string id in modules.Keys)
             {
                 Module module = modules[id];
-                bool loaded = module.TryLoadDynamicAssets();
+                bool started = module.TryLoadDynamicAssets();
 
-                if (loaded)
+                if (started)
                 {
-                    MelonLogger.Msg(mod_id + " dynamic assets loaded from module: " + id);
+                    MelonLogger.Msg(mod_id + " deferred dynamic assets loading from module: " + id);
                 }
             }
         }
