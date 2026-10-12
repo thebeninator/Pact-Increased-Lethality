@@ -58,12 +58,8 @@ namespace PactIncreasedLethality
 
             string[] composite_names = new string[] 
             {
-                "Vorschlaghammer heavy composite",
-                "Vorschlaghammer medium composite",
-                "Vorschlaghammer light composite",
-                "Eber heavy composite",
-                "Eber medium composite",
-                "Eber light composite",
+                "Vorschlaghammer composite",
+                "Eber composite",
                 "Abrams special armor gen 1 hull front",
                 "Abrams special armor gen 1 mantlet",
                 "Abrams special armor gen 1 turret cheeks",
@@ -157,7 +153,7 @@ namespace PactIncreasedLethality
             ammo_3bm42.MuzzleVelocity = 1700f;
             ammo_3bm42.MaxSpallRha = 24f;
             ammo_3bm42.MinSpallRha = 6f;
-            ammo_3bm26.SpallMultiplier = 0.9f;
+            ammo_3bm42.SpallMultiplier = 0.9f;
 
             Util.Coalesce(ref ammo_codex_3bm42);
             ammo_codex_3bm42.AmmoType = ammo_3bm42;
