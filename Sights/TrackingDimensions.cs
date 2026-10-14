@@ -37,25 +37,25 @@ namespace PactIncreasedLethality
         }
 
         private static Dictionary<string, Dim> DIMS = new Dictionary<string, Dim>() {
-            ["Marder Bradley"] = new Dim(new Vector3(0f, 1.38f, 0.45f), new Vector3(3f, 2.5f, 6f)),
-            ["M60 LEO"]        = new Dim(new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f)),
-            ["_M1"]            = new Dim(new Vector3(0f, 1.21f, -0.25f), new Vector3(3.5f, 2.4f, 7.8f)),
-            ["M113 M901"]      = new Dim(new Vector3(0f, 1.17f, 0.35f), new Vector3(2.5f, 2.4f, 4.7f)),
-            ["M151"]           = new Dim(new Vector3(0f, 0.77f, -0.25f), new Vector3(0.5f, 1.5f, 3f)),
-            ["M923"]           = new Dim(new Vector3(0f, 1.37f, -0.78f), new Vector3(2.3f, 2.8f, 7.5f)),
-            ["T72 T80 T64"]    = new Dim(new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f)),
-            ["T55A T62 T54A"] = new Dim(new Vector3(0f, 1.124f, 0.087f), new Vector3(3.25f, 2.35f, 6f)),
-            ["Ural"]           = new Dim(new Vector3(0f, 1.471f, -1.215f), new Vector3(2.65f, 3f, 7.3f)),
-            ["BMP"]            = new Dim(new Vector3(0f, 1.002f, 0.12f), new Vector3(3f, 2f, 6.95f)),
-            ["BTR"]            = new Dim(new Vector3(0f, 1.35f, 0f), new Vector3(3f, 2.6f, 7.5f)),
-            ["BRDM2"]          = new Dim(new Vector3(0f, 1.228f, -0.221f), new Vector3(2.25f, 2.3f, 5.75f)),
-            ["T-34-85"]        = new Dim(new Vector3(0f, 1.34f, 0.36f), new Vector3(3f, 2.6f, 6f)),
-            ["PT76B"]          = new Dim(new Vector3(0f, 1.14f, 0.32f), new Vector3(3f, 2.25f, 7f)),
-            ["Mi-8"]           = new Dim(new Vector3(0f, 1.33f, -0.62f), new Vector3(3.7f, 3.5f, 11f)),
-            ["Mi-2"]           = new Dim(new Vector3(0f, 1.228f, -0.221f), new Vector3(2.25f, 2.3f, 5.75f)),
-            ["Mi-24"]          = new Dim(new Vector3(0f, 1.87f, -1.2f), new Vector3(2.7f, 3f, 10f)),
-            ["AH-1"]           = new Dim(new Vector3(0f, 1.83f, 0.73f), new Vector3(3.4f, 2.5f, 7f)),
-            ["OH-58A"]         = new Dim(new Vector3(0f, 2.01f, 0.22f), new Vector3(2f, 2f, 5f))
+            ["Marder Bradley"]      = new Dim(new Vector3(0f, 1.38f, 0.45f), new Vector3(3f, 2.5f, 6f)),
+            ["M60 LEO1"]            = new Dim(new Vector3(0f, 1.32f, 0f), new Vector3(3.6f, 3f, 7f)),
+            ["_M1 LEO2"]            = new Dim(new Vector3(0f, 1.21f, -0.25f), new Vector3(3.5f, 2.4f, 7.8f)),
+            ["M113 M901"]           = new Dim(new Vector3(0f, 1.17f, 0.35f), new Vector3(2.5f, 2.4f, 4.7f)),
+            ["M151"]                = new Dim(new Vector3(0f, 0.77f, -0.25f), new Vector3(0.5f, 1.5f, 3f)),
+            ["M923"]                = new Dim(new Vector3(0f, 1.37f, -0.78f), new Vector3(2.3f, 2.8f, 7.5f)),
+            ["T72 T80 T64"]         = new Dim(new Vector3(0f, 1.096f, -0.523f), new Vector3(3.6f, 2.2f, 6.5f)),
+            ["T55A T62 T54A"]       = new Dim(new Vector3(0f, 1.124f, 0.087f), new Vector3(3.25f, 2.35f, 6f)),
+            ["Ural"]                = new Dim(new Vector3(0f, 1.471f, -1.215f), new Vector3(2.65f, 3f, 7.3f)),
+            ["BMP"]                 = new Dim(new Vector3(0f, 1.002f, 0.12f), new Vector3(3f, 2f, 6.95f)),
+            ["BTR Luchs"]           = new Dim(new Vector3(0f, 1.35f, 0f), new Vector3(3f, 2.6f, 7.5f)),
+            ["BRDM2"]               = new Dim(new Vector3(0f, 1.228f, -0.221f), new Vector3(2.25f, 2.3f, 5.75f)),
+            ["T-34-85"]             = new Dim(new Vector3(0f, 1.34f, 0.36f), new Vector3(3f, 2.6f, 6f)),
+            ["PT76B"]               = new Dim(new Vector3(0f, 1.14f, 0.32f), new Vector3(3f, 2.25f, 7f)),
+            ["Mi-8"]                = new Dim(new Vector3(0f, 1.33f, -0.62f), new Vector3(3.7f, 3.5f, 11f)),
+            ["Mi-2"]                = new Dim(new Vector3(0f, 1.228f, -0.221f), new Vector3(2.25f, 2.3f, 5.75f)),
+            ["Mi-24"]               = new Dim(new Vector3(0f, 1.87f, -1.2f), new Vector3(2.7f, 3f, 10f)),
+            ["AH-1"]                = new Dim(new Vector3(0f, 1.83f, 0.73f), new Vector3(3.4f, 2.5f, 7f)),
+            ["OH-58A BO105 BO-105"] = new Dim(new Vector3(0f, 2.01f, 0.22f), new Vector3(2f, 2f, 5f))        
         };
 
         private static bool MatchesDimKey(string prefab_name, string key) {

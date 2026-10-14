@@ -27,7 +27,8 @@ namespace ModUtil
             "MainMenu2-1_Scene",
             "LOADER_MENU",
             "LOADER_INITIAL",
-            "t64_menu"
+            "t64_menu",
+            "leo2_menu",
         };
 
         public static void CacheAmmo(AmmoType ammo)
