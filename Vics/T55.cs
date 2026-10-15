@@ -352,7 +352,9 @@ namespace PactIncreasedLethality
                 fenders_parent.Find("steel fender").gameObject.SetActive(true);
 
                 GameObject t55am1_kit = GameObject.Instantiate(t55am_kit, vic.transform.Find("T55A_base (1)"));
-                t55am1_kit.transform.Find("HULL/SKIRTS").GetComponent<MeshRenderer>().SetMaterials(new List<Material>() { SharedAssets.t80b_mat });
+
+                MeshRenderer t55am1_skirts_rend = t55am1_kit.transform.Find("HULL/SKIRTS").GetComponent<MeshRenderer>();
+                t55am1_skirts_rend.sharedMaterial = SharedAssets.t80b_mat;
 
                 Transform hull_parts = t55am1_kit.transform.Find("HULL");
                 hull_parts.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);

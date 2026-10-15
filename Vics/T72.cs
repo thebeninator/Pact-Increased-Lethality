@@ -501,7 +501,7 @@ namespace PactIncreasedLethality
                     GameObject kontakt = GameObject.Instantiate(kontakt_prefab, vic.transform.Find("T72M1_mesh (1)/T72M1_hull"));
                     kontakt.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
 
-                    Material t72_material = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret").GetComponent<MeshRenderer>().materials[0];
+                    Material t72_material = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret").GetComponent<MeshRenderer>().sharedMaterials[0];
                     Transform smoke_launcher = kontakt.transform.Find("SMOKE LAUNCHER");
 
                     Transform hull_follow = vic.transform.GetComponent<LateFollowTarget>()._lateFollowers[0].transform;
@@ -510,9 +510,9 @@ namespace PactIncreasedLethality
                     for (int i = 1; i < smoke_launcher.childCount; i++)
                     {
                         Transform smoke = smoke_launcher.GetChild(i);
-                        Material[] smokes_mat = smoke.GetComponent<MeshRenderer>().materials;
+                        Material[] smokes_mat = smoke.GetComponent<MeshRenderer>().sharedMaterials;
                         smokes_mat[0] = t72_material;
-                        smoke.GetComponent<MeshRenderer>().materials = smokes_mat;
+                        smoke.GetComponent<MeshRenderer>().sharedMaterials = smokes_mat;
                     }
                     smoke_launcher.parent = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret");
 

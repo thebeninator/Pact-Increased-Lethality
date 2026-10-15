@@ -14,7 +14,7 @@ using PactIncreasedLethality;
 using ModUtil;
 using ActiveProtectionSystem;
 
-[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7E", "ATLAS")]
+[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7F", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -100,13 +100,13 @@ namespace PactIncreasedLethality
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            if (sceneName == "MainMenu2_Scene" || sceneName == "MainMenu2-1_Scene" || sceneName == "t64_menu")
+            if (Util.MenuScreens.Contains(sceneName))
             {
                 module_manager.LoadAllStaticAssets();
                 APSLauncher.Init();
             }
 
-            if (Util.menu_screens.Contains(sceneName)) return;
+            if (Util.MenuScreensWithLoader.Contains(sceneName)) return;
 
             valid_scene_count++;
 

@@ -53,8 +53,6 @@ namespace PactIncreasedLethality
             ammo_3bm32 = clip_codex_3bm32.ClipType.MinimalPattern[0].AmmoType;
 
             ammo_kobra = codex_scriptables.Where(o => o.name == "ammo_9M112M").FirstOrDefault().AmmoType;
-
-            tpd_etch_sdf = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().Where(o => o.name == "TPD_Etch SDF").FirstOrDefault();
         }
 
         public override void LoadDynamicAssets()
@@ -78,9 +76,10 @@ namespace PactIncreasedLethality
 
             Vehicle t80b = AssetUtilApi.LoadVanillaVehicle("T80B", temp: true);
             t80b_canvas = t80b.transform.Find("---MAIN GUN SCRIPTS---/2A46-2/1G42 gunner's sight/GPS/1G42 Canvas").gameObject;
-            t80b_mat = t80b.transform.Find("T80_mesh/body").GetComponent<MeshRenderer>().materials[0];
+            t80b_mat = t80b.transform.Find("T80_mesh/body").GetComponent<MeshRenderer>().sharedMaterials[0];
             t80b.transform.Find("---MAIN GUN SCRIPTS---/2A46-2/TPN‑3‑49 night sight/Reticle Mesh").GetComponent<ReticleMesh>().Load();
             sov_7_segment_font = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().Where(o => o.name == "Soviet7SegmentFont SDF").FirstOrDefault();
+            tpd_etch_sdf = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().Where(o => o.name == "TPD_Etch SDF").FirstOrDefault();
 
             Vehicle brdm2 = AssetUtilApi.LoadVanillaVehicle("BRDM2", temp: true);
             brdm2_hull = AssetUtilApi.CloneVanillaGameObject("BRDM2", "BRDM2_1983 (1)/BRDM_hull_1983");

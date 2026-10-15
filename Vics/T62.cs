@@ -195,7 +195,9 @@ namespace PactIncreasedLethality
                 vic.transform.Find("---T62_rig---/HULL/TURRET/turret").GetComponent<MeshFilter>().sharedMesh = t62m_turret;
 
                 GameObject _t62m_kit = GameObject.Instantiate(t62m_kit, vic.transform.Find("T62_base/hull"));
-                _t62m_kit.transform.Find("HULL/SKIRTS").GetComponent<MeshRenderer>().SetMaterials(new List<Material>() { SharedAssets.t80b_mat });
+
+                MeshRenderer t62m_skirts_rend = _t62m_kit.transform.Find("HULL/SKIRTS").GetComponent<MeshRenderer>();
+                t62m_skirts_rend.sharedMaterial = SharedAssets.t80b_mat;
 
                 Transform hull_parts = _t62m_kit.transform.Find("HULL");
                 hull_parts.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);
