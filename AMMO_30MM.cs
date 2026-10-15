@@ -2,6 +2,7 @@
 using GHPC.Weaponry;
 using System.Linq;
 using ModUtil;
+using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
 {
@@ -30,12 +31,12 @@ namespace PactIncreasedLethality
             string[] btr60s = { "BTR60PB", "BTR60PB Soviet" };
             string[] bmp1s = { "BMP1", "BMP1 Soviet", "BMP1P (Variant)", "BMP1P (Variant) Soviet" };
 
-            bool has_30mm_btr60 = AssetUtil.VehicleInMission(btr60s) && BTR60.autocannon.Value;
-            bool has_vog_bmp1 = AssetUtil.VehicleInMission(bmp1s) && (BMP1.ags_17_bmp1.Value || BMP1.ags_17_bmp1p.Value);
+            bool has_30mm_btr60 = AssetUtilApi.VehicleInMission(btr60s) && BTR60.autocannon.Value;
+            bool has_vog_bmp1 = AssetUtilApi.VehicleInMission(bmp1s) && (BMP1.ags_17_bmp1.Value || BMP1.ags_17_bmp1p.Value);
 
-            if (!AssetUtil.VehicleInMission(bmp2s) && !has_30mm_btr60 && !has_vog_bmp1) return;
+            if (!AssetUtilApi.VehicleInMission(bmp2s) && !has_30mm_btr60 && !has_vog_bmp1) return;
 
-            AssetUtil.LoadVanillaVehicle("BMP2_SA");
+            AssetUtilApi.LoadVanillaVehicle("BMP2_SA", temp: true);
 
             AmmoClipCodexScriptable[] clip_codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoClipCodexScriptable>();
             AmmoCodexScriptable[] codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoCodexScriptable>();

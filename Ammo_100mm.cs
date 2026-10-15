@@ -4,9 +4,8 @@ using System.Linq;
 using ModUtil;
 using GHPC.Weapons;
 using GHPC.Vehicle;
-using Reticle;
-using MelonLoader;
 using GHPC.State;
+using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
 {
@@ -34,7 +33,7 @@ namespace PactIncreasedLethality
 
         public override void LoadDynamicAssets()
         {
-            Vehicle t55a = AssetUtil.LoadVanillaVehicle("T55A", true);
+            Vehicle t55a = AssetUtilApi.LoadVanillaVehicle("T55A", true);
             AmmoType ammo_3of412 = Resources.FindObjectsOfTypeAll<AmmoCodexScriptable>().Where(o => o.name == "ammo_3OF412").FirstOrDefault().AmmoType;
 
             Util.ShallowCopy(ammo_3of70, ammo_3of412);

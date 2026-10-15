@@ -5,7 +5,7 @@ using GHPC;
 using UnityEngine;
 using HarmonyLib;
 using System;
-using ModUtil;
+using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
 {
@@ -36,7 +36,7 @@ namespace PactIncreasedLethality
                     if (transmog)
                     {
                         __state.TransmogNeeded = true;
-                        AssetUtil.LoadVanillaVehicle("T72M", true);
+                        AssetUtilApi.LoadVanillaVehicle("T72M", temp: true);
                         uniqueName = "T72M1";
                     }
                 }

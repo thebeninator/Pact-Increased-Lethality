@@ -22,12 +22,20 @@ namespace ModUtil
     {
         public static ImpactEffectsDatabaseScriptable impact_fx_db;
 
-        public static string[] menu_screens = new string[] {
+        public static string[] MenuScreensWithLoader = new string[] {
             "MainMenu2_Scene",
             "MainMenu2-1_Scene",
             "LOADER_MENU",
             "LOADER_INITIAL",
-            "t64_menu"
+            "t64_menu",
+            "leo2_menu"
+        };
+
+        public static string[] MenuScreens = new string[] {
+            "MainMenu2_Scene",
+            "MainMenu2-1_Scene",
+            "t64_menu",
+            "leo2_menu"
         };
 
         public static void Reposition(Transform target, Transform to, bool delete_to = false, bool sendback = false)

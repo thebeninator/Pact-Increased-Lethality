@@ -7,6 +7,7 @@ using Reticle;
 using TMPro;
 using UnityEngine;
 using ModUtil;
+using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
 {
@@ -52,18 +53,11 @@ namespace PactIncreasedLethality
             ammo_3bm32 = clip_codex_3bm32.ClipType.MinimalPattern[0].AmmoType;
 
             ammo_kobra = codex_scriptables.Where(o => o.name == "ammo_9M112M").FirstOrDefault().AmmoType;
-
-            tpd_etch_sdf = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().Where(o => o.name == "TPD_Etch SDF").FirstOrDefault();
         }
 
         public override void LoadDynamicAssets()
         {
-            Vehicle t55a = AssetUtil.LoadVanillaVehicle("T55A", true);
-            t55a.transform.Find("Gun Scripts/Sights (and FCS)/NVS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
-            t55a.WeaponsManager.Weapons[0].FCS.AuthoritativeOptic.reticleMesh.Load();
-            ammo_3of412 = Resources.FindObjectsOfTypeAll<AmmoCodexScriptable>().Where(o => o.name == "ammo_3OF412").FirstOrDefault().AmmoType;
-
-            Vehicle m1ip = AssetUtil.LoadVanillaVehicle("M1IP");
+            Vehicle m1ip = AssetUtilApi.LoadVanillaVehicle("M1IP", temp: true);
             Transform m1ip_flir = m1ip.transform.Find("Turret Scripts/GPS/FLIR");
             abrams_vic_controller = m1ip.GetComponent<VehicleController>();
             m1ip_range_canvas = m1ip.transform.Find("Turret Scripts/GPS/Optic/Abrams GPS canvas").gameObject;
@@ -72,18 +66,23 @@ namespace PactIncreasedLethality
             green_flir_mat = m1ip_flir.GetComponent<CameraSlot>().FLIRBlitMaterialOverride;
             m1ip_flir.Find("Reticle Mesh WFOV").GetComponent<ReticleMesh>().Load();
 
-            Vehicle m2_bradley = AssetUtil.LoadVanillaVehicle("M2BRADLEY");
+            Vehicle t55a = AssetUtilApi.LoadVanillaVehicle("T55A", temp: true);
+            t55a.transform.Find("Gun Scripts/Sights (and FCS)/NVS/Reticle Mesh").GetComponent<ReticleMesh>().Load();
+            t55a.WeaponsManager.Weapons[0].FCS.AuthoritativeOptic.reticleMesh.Load();
+
+            Vehicle m2_bradley = AssetUtilApi.LoadVanillaVehicle("M2BRADLEY", temp: true);
             m2_bradley_canvas = m2_bradley.transform.Find("FCS and sights/GPS Optic/M2 Bradley GPS canvas").gameObject;
             tow_front_blast = m2_bradley.transform.Find("Gun Scripts/Launcher M2 TOW/muzzle effects L/TOW Front FX").gameObject;
 
-            Vehicle t80b = AssetUtil.LoadVanillaVehicle("T80B");
+            Vehicle t80b = AssetUtilApi.LoadVanillaVehicle("T80B", temp: true);
             t80b_canvas = t80b.transform.Find("---MAIN GUN SCRIPTS---/2A46-2/1G42 gunner's sight/GPS/1G42 Canvas").gameObject;
-            t80b_mat = t80b.transform.Find("T80_mesh/body").GetComponent<MeshRenderer>().materials[0];
+            t80b_mat = t80b.transform.Find("T80_mesh/body").GetComponent<MeshRenderer>().sharedMaterials[0];
             t80b.transform.Find("---MAIN GUN SCRIPTS---/2A46-2/TPN‑3‑49 night sight/Reticle Mesh").GetComponent<ReticleMesh>().Load();
             sov_7_segment_font = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().Where(o => o.name == "Soviet7SegmentFont SDF").FirstOrDefault();
+            tpd_etch_sdf = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().Where(o => o.name == "TPD_Etch SDF").FirstOrDefault();
 
-            Vehicle brdm2 = AssetUtil.LoadVanillaVehicle("BRDM2");
-            brdm2_hull = brdm2.transform.Find("BRDM2_1983 (1)/BRDM_hull_1983").gameObject;
+            Vehicle brdm2 = AssetUtilApi.LoadVanillaVehicle("BRDM2", temp: true);
+            brdm2_hull = AssetUtilApi.CloneVanillaGameObject("BRDM2", "BRDM2_1983 (1)/BRDM_hull_1983");
         }
     }
 }

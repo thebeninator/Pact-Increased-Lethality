@@ -20,11 +20,9 @@ using GHPC.Utility;
 using UnityEngine.AddressableAssets;
 using NWH.WheelController3D;
 using HarmonyLib;
-using GHPC.Effects.Voices;
-using MelonLoader;
-using FMOD;
 using GHPC.Effects;
 using GHPC.Crew;
+using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
 {
@@ -747,7 +745,7 @@ namespace PactIncreasedLethality
 
         public override void LoadDynamicAssets()
         {
-            muzzle_flash_105_prefab = AssetUtil.CloneVanillaGameObject("T55A", "Gun Scripts/100mm Gun D-10T/GameObject/105mm Muzzle Flash");
+            muzzle_flash_105_prefab = AssetUtilApi.CloneVanillaGameObject("T55A", "Gun Scripts/100mm Gun D-10T/GameObject/105mm Muzzle Flash");
             gun_2a70_ammo_list.AmmoClips[0] = Ammo_100mm.clip_codex_3of70;
             gun_2a70_ammo_list.AmmoClips[1] = Ammo_100mm.clip_codex_9m117_bmp3;
         }

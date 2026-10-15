@@ -12,11 +12,9 @@ using FMOD;
 using GHPC.Vehicle;
 using PactIncreasedLethality;
 using ModUtil;
-using GHPC.Mission;
-using GHPC;
-using System.Reflection;
+using ActiveProtectionSystem;
 
-[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7C", "ATLAS")]
+[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7F", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -43,33 +41,11 @@ namespace PactIncreasedLethality
             camera_manager = game_manager.GetComponent<CameraManager>();
             vics = GameObject.FindObjectsByType<Vehicle>(FindObjectsSortMode.None);
 
-            Ammo_125mm.CreateCompositeOptimizations();
-
-            yield break;
-        }
-
-        public IEnumerator MissionUnitsLoaded(GameState _)
-        {
-            UnitSpawner.Instance.SpawnUnit
-            (
-                "PIL_BMP3",
-                new GHPC.Mission.Data.UnitMetaData()
-                {
-                    Name = "BMP3",
-                    Allegiance = Faction.Neutral,
-                    Position = new Vector3(1226.332f, 23.641f, 1545.113f),
-                    Rotation = Quaternion.Euler(0.123f, 257.5731f, 359.4445f),
-                    UnitType = UnitType.GroundVehicle,
-                }
-            );
-
             yield break;
         }
 
         public override void OnInitializeMelon()
         {
-            Assembly assembly = Assembly.LoadFrom(Path.Combine(MelonEnvironment.ModsDirectory, "CustomVicUnityScripts.dll"));
-
             module_manager = new ModuleManager("PIL");
             cfg = MelonPreferences.CreateCategory("PactIncreasedLethality");
             T55.Config(cfg);
@@ -104,71 +80,62 @@ namespace PactIncreasedLethality
             module_manager.Add("SharedAssets", new SharedAssets());
             module_manager.Add("Armour", new Armour());
             module_manager.Add("AMMO_30MM", new Ammo_30mm());
-            module_manager.Add("AMMO_125MM", new Ammo_125mm());
             module_manager.Add("AMMO_100MM", new Ammo_100mm());
+            module_manager.Add("AMMO_125MM", new Ammo_125mm());
             module_manager.Add("T72", new T72());
             module_manager.Add("T80", new T80());
-            //module_manager.Add("T55", new T55());
-            //module_manager.Add("T62", new T62());
-            //module_manager.Add("BMP2", new BMP2());
-            //module_manager.Add("BMP1", new BMP1());
-            //module_manager.Add("BTR60", new BTR60());
+            module_manager.Add("T55", new T55());
+            module_manager.Add("T62", new T62());
+            module_manager.Add("BMP2", new BMP2());
+            module_manager.Add("BMP3", new BMP3());
+            module_manager.Add("BMP1", new BMP1());
+            module_manager.Add("BTR60", new BTR60());
             module_manager.Add("SuperFCS", new SuperFCS());
             module_manager.Add("PactThermal", new PactThermal());
             module_manager.Add("1A40", new FireControlSystem1A40());
             module_manager.Add("BOM", new BOM());
-            module_manager.Add("BMP3", new BMP3());
         }
 
         public override void OnUpdate() 
         {
-            //BMP2.Update();
+            BMP2.Update();
         }
 
-        public override void OnSceneWasLoaded(int build_idx, string scene_name)
+        public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            if (scene_name == "MainMenu2_Scene" || scene_name == "MainMenu2-1_Scene" || scene_name == "t64_menu")
+            if (Util.MenuScreens.Contains(sceneName))
             {
                 module_manager.LoadAllStaticAssets();
-                //APSLauncher.Init();
+                APSLauncher.Init();
             }
 
-            if (scene_name == "TR01_showcase")
-            {
-                StateController.RunOrDefer(GameState.MissionUnitsLoaded, new GameStateEventHandler(MissionUnitsLoaded), GameStatePriority.Medium);
-            }
-
-            if (Util.menu_screens.Contains(scene_name)) return;
+            if (Util.MenuScreensWithLoader.Contains(sceneName)) return;
 
             valid_scene_count++;
 
             if (valid_scene_count == 1)
             {
                 module_manager.UnloadAllDynamicAssets();
-                AssetPrefabReferenceDatabase.Create(build_idx);
             }
 
             if (valid_scene_count == 2)
             {
-                AssetPrefabReferenceDatabase ref_db = AssetPrefabReferenceDatabase.Instance;
-
                 module_manager.LoadAllDynamicAssets();
-                StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnPlayerReady), GameStatePriority.Medium);
-                StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(ref_db.ReleaseTempVanillaAssetsDeferred), GameStatePriority.Low);
+                StateController.RunOrDefer(GameState.PlayerReady, new GameStateEventHandler(OnPlayerReady), GameStatePriority.Highest);
+                StateController.RunOrDefer(GameState.GameReady, new GameStateEventHandler(Ammo_125mm.CreateCompositeOptimizationsDeferred), GameStatePriority.Low);
 
                 PactEra.Init();
-                //ProximityFuse.Init();
+                ProximityFuse.Init();
                 EFP.Init();
                 T72.Init();
                 T80.Init();
-                //T55.Init();
-                //T62.Init();
-                //T64A.Init();
-                //T64B.Init();
-                //BMP1.Init();
-                //BMP2.Init();
-                //BTR60.Init();
-                BMP3.Init();
+                T55.Init();
+                T62.Init();
+                T64A.Init();
+                T64B.Init();
+                BMP1.Init();
+                BMP2.Init();
+                BTR60.Init();
 
                 valid_scene_count = 0;
             }
