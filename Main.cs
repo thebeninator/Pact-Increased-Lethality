@@ -1,18 +1,20 @@
-﻿using System.Linq;
-using MelonLoader;
-using UnityEngine;
-using GHPC.State;
-using System.Collections;
-using MelonLoader.Utils;
+﻿using System.Collections;
 using System.IO;
-using GHPC.Audio;
-using GHPC.Player;
-using GHPC.Camera;
-using FMOD;
-using GHPC.Vehicle;
-using PactIncreasedLethality;
-using ModUtil;
+using System.Linq;
 using ActiveProtectionSystem;
+using FMOD;
+using GHPC;
+using GHPC.Audio;
+using GHPC.Camera;
+using GHPC.Mission;
+using GHPC.Player;
+using GHPC.State;
+using GHPC.Vehicle;
+using MelonLoader;
+using MelonLoader.Utils;
+using ModUtil;
+using PactIncreasedLethality;
+using UnityEngine;
 
 [assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.8", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
@@ -32,6 +34,76 @@ namespace PactIncreasedLethality
         private int valid_scene_count = 0;
 
         internal static FMOD.ChannelGroup audio_channel_group;
+
+        public IEnumerator MissionUnitsLoaded(GameState _)
+        {
+            UnitSpawner.Instance.SpawnUnit
+            (
+                "T72M1",
+                new GHPC.Mission.Data.UnitMetaData()
+                {
+                    Name = "T72M1",
+                    Allegiance = Faction.Neutral,
+                    Position = new Vector3(849.7374f, 14.4967f, 1412.224f),
+                    Rotation = Quaternion.Euler(359.882f, 91.7424f, 359.096f),
+                    UnitType = UnitType.GroundVehicle,
+                }
+            );
+
+            UnitSpawner.Instance.SpawnUnit
+            (
+                "T72M1",
+                new GHPC.Mission.Data.UnitMetaData()
+                {
+                    Name = "T72M1",
+                    Allegiance = Faction.Neutral,
+                    Position = new Vector3(330.4259f, 7.1038f, 1432.017f),
+                    Rotation = Quaternion.Euler(0.36f, 87.3901f, 359.5795f),
+                    UnitType = UnitType.GroundVehicle,
+                }
+            );
+
+            UnitSpawner.Instance.SpawnUnit
+            (
+                "T80B",
+                new GHPC.Mission.Data.UnitMetaData()
+                {
+                    Name = "T80B",
+                    Allegiance = Faction.Neutral,
+                    Position = new Vector3(171.012f, 4.2746f, 1480.873f),
+                    Rotation = Quaternion.Euler(359.5852f, 90.3407f, 359.9118f),
+                    UnitType = UnitType.GroundVehicle,
+                }
+            );
+
+            UnitSpawner.Instance.SpawnUnit
+            (
+                "T80B",
+                new GHPC.Mission.Data.UnitMetaData()
+                {
+                    Name = "T80B",
+                    Allegiance = Faction.Neutral,
+                    Position = new Vector3(-300.2264f, 3.4258f, 1567.263f),
+                    Rotation = Quaternion.Euler(358.8109f, 96.9203f, 1.8364f),
+                    UnitType = UnitType.GroundVehicle,
+                }
+            );
+
+            UnitSpawner.Instance.SpawnUnit
+            (
+                "T72M1",
+                new GHPC.Mission.Data.UnitMetaData()
+                {
+                    Name = "T72M1",
+                    Allegiance = Faction.Neutral,
+                    Position = new Vector3(-775.4324f, 6.5356f, 1677.792f),
+                    Rotation = Quaternion.Euler(0.6645f, 100.6866f, 359.4566f),
+                    UnitType = UnitType.GroundVehicle,
+                }
+            );
+
+            yield break;
+        }
 
         public IEnumerator OnPlayerReady(GameState _) 
         {
@@ -98,15 +170,20 @@ namespace PactIncreasedLethality
             BMP2.Update();
         }
 
-        public override void OnSceneWasLoaded(int buildIndex, string sceneName)
+        public override void OnSceneWasLoaded(int build_index, string scene_name)
         {
-            if (Util.MenuScreens.Contains(sceneName))
+            if (Util.MenuScreens.Contains(scene_name))
             {
                 module_manager.LoadAllStaticAssets();
                 APSLauncher.Init();
             }
 
-            if (Util.MenuScreensWithLoader.Contains(sceneName)) return;
+            if (scene_name == "TR01_showcase")
+            {
+                StateController.RunOrDefer(GameState.MissionUnitsLoaded, new GameStateEventHandler(MissionUnitsLoaded), GameStatePriority.Medium);
+            }
+
+            if (Util.MenuScreensWithLoader.Contains(scene_name)) return;
 
             valid_scene_count++;
 
