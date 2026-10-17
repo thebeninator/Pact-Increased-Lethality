@@ -14,7 +14,7 @@ using PactIncreasedLethality;
 using ModUtil;
 using ActiveProtectionSystem;
 
-[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7F", "ATLAS")]
+[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.8", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
