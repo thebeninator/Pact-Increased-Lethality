@@ -250,10 +250,7 @@ namespace PactIncreasedLethality
                 CustomGuidanceComputer gc = fcs.transform.parent.gameObject.AddComponent<CustomGuidanceComputer>();
                 gc.fcs = fcs;
                 gc.mgu = computer;
-                if (!has_kornets.Value)
-                {
-                    gc.enabled = false;
-                }
+                gc.enabled = false;
 
                 turret_smr.sharedMesh = turret_only_thermals;
                 SuperFCS.Add(day_optic, night_optic, vic.WeaponsManager.Weapons[2], main_gun_info, gc, vesna: true);
@@ -459,6 +456,7 @@ namespace PactIncreasedLethality
                 atgm.TriggerHoldTime = 0.35f;
                 atgm.TriggerAudioController.enabled = false;
                 atgm.TriggerAudioController.gameObject.SetActive(false);
+                atgm.TriggerAudioController = null;
                 atgm.FireWhileGuidingMissile = false;
 
                 atgm.Feed.RoundCycleStages[0].Duration = 40f;
@@ -718,8 +716,8 @@ namespace PactIncreasedLethality
             ammo_9m133.TntEquivalentKg = 6.5f;
             ammo_9m133.SpallMultiplier = 2.3f;
             ammo_9m133._radius = 0.076f;
-            ammo_9m133.TurnSpeed = 2f;
             ammo_9m133.SectionalArea = 0.018146f;
+            ammo_9m133.TurnSpeed = 0.15f;
             ammo_9m133.Guidance = AmmoType.GuidanceType.Laser;
 
             Util.Coalesce(ref ammo_codex_9m133);

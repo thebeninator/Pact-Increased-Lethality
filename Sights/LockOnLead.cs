@@ -35,7 +35,6 @@ namespace PactIncreasedLethality
 
             target = null;
             engaged = false;
-            guidance_computer.autotrackingEnabled = false;
             offset = Vector2.zero;
         }
 
@@ -106,9 +105,8 @@ namespace PactIncreasedLethality
             {
                 offset += PlayerInput.Instance.VirtualJoystick * (fcs.MainOptic.slot.CurrentFov / 60f * 2f);
 
-                if (!fcs.CurrentWeaponSystem.AbleToFire) return;
-
-                guidance_computer.autotrackingEnabled = true;
+                //if (!fcs.CurrentWeaponSystem.AbleToFire) return;
+                //if (fcs.CurrentWeaponSystem.Feed.Reloading) return;
 
                 // adapted from GHPC.AI.BehaviorTrees.ActionBaseLookAt.GetAimPositionAtTarget
                 MissileGuidanceUnit mgu = fcs.CurrentWeaponSystem.GuidanceUnit;
@@ -124,18 +122,22 @@ namespace PactIncreasedLethality
                 Vector3 target_velocity = target.Aircraft != null ? target.Aircraft.VelocityNormalized : target.Chassis.Velocity;
                 Vector3 travel_dist = flight_time * (target_velocity - fcs.Mounts[0]._unit.Chassis.Velocity);
 
-                if (current_ammo.Guidance > AmmoType.GuidanceType.Unguided)
-                {
-                    travel_dist = Vector3.zero;
-                }
+                //if (current_ammo.Guidance > AmmoType.GuidanceType.Unguided && missile_active)
+                //{
+                //    travel_dist = Vector3.zero;
+                //}
 
                 Vector3 compensated = tracking_center.bounds.center + travel_dist;
 
                 fcs.SetAimWorldPosition(
-                    Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(offset)
+                    Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one)
+                    .MultiplyPoint3x4(offset)
                 );
 
-                guidance_computer.transform.LookAt(Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(offset));
+                mgu.AimElement.LookAt(
+                    Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one)
+                    .MultiplyPoint3x4(offset)
+                );
 
                 float actual_range = (tracking_center.bounds.center - fcs.ReferenceTransform.transform.position).magnitude;
                 fcs.SetRange(actual_range, forceUpdate: true);
@@ -157,7 +159,8 @@ namespace PactIncreasedLethality
                 Vector3 forward = lead.tracking_center.bounds.center - lead.fcs.ReferenceTransform.position;
 
                 __instance.LookAt(
-                    Matrix4x4.TRS(lead.tracking_center.bounds.center, Quaternion.LookRotation(forward), Vector3.one).MultiplyPoint3x4(lead.offset)
+                    Matrix4x4.TRS(lead.tracking_center.bounds.center, Quaternion.LookRotation(forward), Vector3.one)
+                    .MultiplyPoint3x4(lead.offset)
                 );
 
                 return false;
