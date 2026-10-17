@@ -379,20 +379,22 @@ namespace PactIncreasedLethality
                 night_optic.transform.localPosition = new Vector3(-0.727f, 0.4631f, -5.7249f);
             }
 
-            GameObject guidance_computer_obj = GameObject.Instantiate(new GameObject("guidance computer"), fcs.transform.parent);
-            guidance_computer_obj.transform.localPosition = fcs.transform.localPosition + new Vector3(0, 0, 5f);
-            guidance_computer_obj.transform.SetParent(day_optic.transform.parent, true);
-            MissileGuidanceUnit computer = guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
-            computer.AimElement = guidance_computer_obj.transform;
-            weapon.GuidanceUnit = computer;
+            GameObject guidance_computer_obj = new GameObject("guidance computer");
+            guidance_computer_obj.transform.SetParent(fcs.transform.parent);
+            guidance_computer_obj.transform.localPosition = new Vector3(-0.727f, 0.4631f, -5.7249f);
+            guidance_computer_obj.transform.localEulerAngles = Vector3.zero;
+            //guidance_computer_obj.transform.SetParent(day_optic.transform.parent, true);
+            MissileGuidanceUnit mgu = guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
+            mgu.AimElement = mgu.transform;
+            weapon.GuidanceUnit = mgu;
 
             weapon.Feed.ReloadDuringMissileTracking = false;
-            weapon.Feed._missileGuidance = computer;
+            weapon.Feed._missileGuidance = mgu;
             weapon.FireWhileGuidingMissile = false;
 
             CustomGuidanceComputer gc = fcs.transform.parent.gameObject.AddComponent<CustomGuidanceComputer>();
             gc.fcs = fcs;
-            gc.mgu = computer;
+            gc.mgu = mgu;
 
             if (has_sosna)
             {

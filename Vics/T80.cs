@@ -194,8 +194,16 @@ namespace PactIncreasedLethality
                 weapon.FCS.transform.Find("GPS/1G42 Canvas").gameObject.SetActive(false);
 
                 CustomGuidanceComputer gc = weapon.FCS.gameObject.AddComponent<CustomGuidanceComputer>();
+
+                GameObject mgu_aim_element = new GameObject("mgu aim element");
+                mgu_aim_element.transform.SetParent(weapon.FCS.transform);
+                mgu_aim_element.transform.localPosition = Vector3.zero;
+                mgu_aim_element.transform.localEulerAngles = Vector3.zero;
+                mgu_aim_element.transform.SetParent(weapon.FCS.transform.parent);
+
                 gc.fcs = weapon.FCS;
                 gc.mgu = weapon.FCS.GetComponent<MissileGuidanceUnit>();
+                gc.mgu.AimElement = mgu_aim_element.transform;
 
                 SuperFCS.Add(day_optic, weapon.FCS.NightOptic, vic.WeaponsManager.Weapons[1], vic.WeaponsManager.Weapons[0], gc);
 

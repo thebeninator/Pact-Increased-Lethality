@@ -347,7 +347,7 @@ namespace PactIncreasedLethality
             PostProcessProfile profile = post.transform.Find("FLIR Only Volume").GetComponent<PostProcessVolume>().profile;
             ColorGrading color_grading;
             profile.TryGetSettings<ColorGrading>(out color_grading);
-            color_grading.postExposure.value = 0f;
+            color_grading.postExposure.value = 1.1f;
 
             LockOnLead s = fcs.gameObject.AddComponent<LockOnLead>();
             s.fcs = fcs;

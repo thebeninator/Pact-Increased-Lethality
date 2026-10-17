@@ -253,7 +253,7 @@ namespace PactIncreasedLethality
             ammo_9m119m1.TntEquivalentKg = 5.72f;
             ammo_9m119m1.MaxSpallRha = 12f;
             ammo_9m119m1.MinSpallRha = 2f;
-            ammo_9m119m1.TurnSpeed = 2f;
+            ammo_9m119m1.TurnSpeed = 0.15f;
             ammo_9m119m1.Guidance = AmmoType.GuidanceType.Laser;
 
             Util.Coalesce(ref ammo_codex_9m119m1);
@@ -288,7 +288,7 @@ namespace PactIncreasedLethality
             ammo_9m119.TntEquivalentKg = 5.72f;
             ammo_9m119.MaxSpallRha = 12f;
             ammo_9m119.MinSpallRha = 2f;
-            ammo_9m119.TurnSpeed = 2f;
+            ammo_9m119.TurnSpeed = 0.15f;
             ammo_9m119.Guidance = AmmoType.GuidanceType.Laser;
 
             Util.Coalesce(ref ammo_codex_9m119);

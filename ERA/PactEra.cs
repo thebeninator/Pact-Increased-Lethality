@@ -49,7 +49,7 @@ namespace PactIncreasedLethality
                 era_armour.SecondarySabotRha = 0f;
                 era_armour._canShatterLongRods = false;
                 era_armour._normalizesHits = true;
-                era_armour.AngleMatters = true;
+                era_armour.AngleMatters = false;
                 era_armour._isEra = true;
                 era_armour._armorType = schema.era_so;
                 era_armour._noImpactDecals = true;
