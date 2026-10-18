@@ -782,7 +782,7 @@ namespace PactIncreasedLethality
             {
                 thrown_collider.gameObject.tag = "Penetrable";
                 thrown_collider.gameObject.layer = 14;
-                thrown_collider.GetComponent<MeshCollider>().material = Resources.FindObjectsOfTypeAll<PhysicMaterial>().Where(o => o.name == "Thrown turret").First();
+                //thrown_collider.GetComponent<MeshCollider>().material = Resources.FindObjectsOfTypeAll<PhysicMaterial>().Where(o => o.name == "Thrown turret").First();
             }
 
             Transform[] compartments = new Transform[]
