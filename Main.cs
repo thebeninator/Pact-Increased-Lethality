@@ -1,10 +1,10 @@
 ﻿using System.Collections;
 using System.IO;
 using System.Linq;
-using ActiveProtectionSystem;
 using FMOD;
 using GHPC.Audio;
 using GHPC.Camera;
+using GHPC.Mission;
 using GHPC.Player;
 using GHPC.State;
 using GHPC.Vehicle;
@@ -41,10 +41,10 @@ namespace PactIncreasedLethality
                 new GHPC.Mission.Data.UnitMetaData()
                 {
                     Name = "PIL_BMP3",
-                    Allegiance = Faction.Neutral,
+                    Allegiance = GHPC.Faction.Neutral,
                     Position = new Vector3(1226.332f, 23.641f, 1545.113f),
                     Rotation = Quaternion.Euler(0.123f, 257.5731f, 359.4445f),
-                    UnitType = UnitType.GroundVehicle,
+                    UnitType = GHPC.UnitType.GroundVehicle,
                 }
             );
 
