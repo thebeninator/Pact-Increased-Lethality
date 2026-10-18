@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
 using FMOD.Studio;
+using GHPC;
 using GHPC.Audio;
 using GHPC.Effects;
-using GHPC;
-using UnityEngine;
 using PactIncreasedLethality;
+using UnityEngine;
 
 namespace ActiveProtectionSystem
 {

@@ -1,12 +1,12 @@
-﻿using GHPC.Audio;
-using GHPC.Effects;
-using UnityEngine;
-using HarmonyLib;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Collections.Generic;
 using System.Reflection.Emit;
-using GHPC.Equipment;
 using GHPC;
+using GHPC.Audio;
+using GHPC.Effects;
+using GHPC.Equipment;
+using HarmonyLib;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {

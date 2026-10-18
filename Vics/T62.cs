@@ -8,10 +8,9 @@ using GHPC.Vehicle;
 using GHPC.Weapons;
 using MelonLoader;
 using MelonLoader.Utils;
+using ModUtil;
 using NWH.VehiclePhysics;
 using UnityEngine;
-using ModUtil;
-using System.Collections.Generic;
 
 namespace PactIncreasedLethality
 {
@@ -153,21 +152,18 @@ namespace PactIncreasedLethality
             {
                 GHPC.Weapons.AmmoRack rack = loadout_manager.RackLoadouts[i].Rack;
 
-                if (use_9m117.Value)
+                if (use_9m117.Value && (i == 0 || i == 3))
                 {
-                    if (i == 0 || i == 3)
-                    {
-                        loadout_manager.RackLoadouts[i].FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] {
-                            new LoadoutManager.RackLoadoutFixedChoice() {
-                                AmmoClipIndex = 3,
-                                RackSlotIndex = 0,
-                            },
-                            new LoadoutManager.RackLoadoutFixedChoice() {
-                                AmmoClipIndex = 3,
-                                RackSlotIndex = 1,
-                            }
-                        };
-                    }
+                    loadout_manager.RackLoadouts[i].FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] {
+                        new LoadoutManager.RackLoadoutFixedChoice() {
+                            AmmoClipIndex = 3,
+                            RackSlotIndex = 0,
+                        },
+                        new LoadoutManager.RackLoadoutFixedChoice() {
+                            AmmoClipIndex = 3,
+                            RackSlotIndex = 1,
+                        }
+                    };
                 }
 
                 Util.EmptyRack(rack);

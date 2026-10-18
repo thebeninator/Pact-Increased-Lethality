@@ -1,11 +1,10 @@
-﻿using GHPC.AI;
-using GHPC.Mission.Data;
-using GHPC.Mission;
+﻿using System;
 using GHPC;
-using UnityEngine;
+using GHPC.AI;
+using GHPC.Mission;
+using GHPC.Mission.Data;
 using HarmonyLib;
-using System;
-using VanillaAssetUtil.AssetUtil;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {

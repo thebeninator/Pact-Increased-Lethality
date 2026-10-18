@@ -2,16 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using GHPC;
 using GHPC.Equipment.Optics;
 using GHPC.State;
 using GHPC.Vehicle;
 using GHPC.Weapons;
-using GHPC;
 using MelonLoader;
+using ModUtil;
+using NWH.VehiclePhysics;
 using Reticle;
 using UnityEngine;
-using NWH.VehiclePhysics;
-using ModUtil;
 
 namespace PactIncreasedLethality
 {

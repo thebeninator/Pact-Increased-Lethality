@@ -7,12 +7,12 @@ using GHPC.Equipment.Optics;
 using GHPC.Utility;
 using GHPC.Weapons;
 using MelonLoader.Utils;
+using ModUtil;
 using Reticle;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
-using ModUtil;
 
 namespace PactIncreasedLethality
 {

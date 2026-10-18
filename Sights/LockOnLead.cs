@@ -1,10 +1,9 @@
-﻿using GHPC.Vehicle;
-using UnityEngine;
-using HarmonyLib;
-using GHPC.Weapons;
+﻿using System;
 using GHPC.Player;
-using GHPC.Thermals;
-using System;
+using GHPC.Vehicle;
+using GHPC.Weapons;
+using HarmonyLib;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {
@@ -128,16 +127,11 @@ namespace PactIncreasedLethality
                 //}
 
                 Vector3 compensated = tracking_center.bounds.center + travel_dist;
+                Vector3 compensated_world_pos = Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one)
+                    .MultiplyPoint3x4(offset);
 
-                fcs.SetAimWorldPosition(
-                    Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one)
-                    .MultiplyPoint3x4(offset)
-                );
-
-                mgu.AimElement.LookAt(
-                    Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one)
-                    .MultiplyPoint3x4(offset)
-                );
+                fcs.SetAimWorldPosition(compensated_world_pos);
+                mgu.AimElement.LookAt(compensated_world_pos);
 
                 float actual_range = (tracking_center.bounds.center - fcs.ReferenceTransform.transform.position).magnitude;
                 fcs.SetRange(actual_range, forceUpdate: true);

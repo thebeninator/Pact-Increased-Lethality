@@ -1,9 +1,9 @@
-﻿using UnityEngine;
-using GHPC.Weapons;
+﻿using System.Collections.Generic;
 using GHPC.Equipment.Optics;
-using Reticle;
-using System.Collections.Generic;
+using GHPC.Weapons;
 using ModUtil;
+using Reticle;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {

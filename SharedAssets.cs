@@ -2,11 +2,11 @@
 using GHPC.Camera;
 using GHPC.Vehicle;
 using GHPC.Weaponry;
+using ModUtil;
 using NWH.VehiclePhysics;
 using Reticle;
 using TMPro;
 using UnityEngine;
-using ModUtil;
 using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality

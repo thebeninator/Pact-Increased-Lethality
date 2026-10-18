@@ -1,9 +1,9 @@
-﻿using GHPC.Utility;
-using GHPC;
+﻿using GHPC;
+using GHPC.PhysicsHelpers;
+using GHPC.Utility;
+using HarmonyLib;
 using TMPro;
 using UnityEngine;
-using HarmonyLib;
-using GHPC.PhysicsHelpers;
 
 namespace PactIncreasedLethality
 {

@@ -1,7 +1,7 @@
-﻿using GHPC.Equipment.Optics;
-using GHPC.Camera;
-using Reticle;
+﻿using GHPC.Camera;
+using GHPC.Equipment.Optics;
 using GHPC.Weapons;
+using Reticle;
 
 namespace PactIncreasedLethality
 {

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 using GHPC.Weapons;
 using HarmonyLib;
 using MelonLoader;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {
