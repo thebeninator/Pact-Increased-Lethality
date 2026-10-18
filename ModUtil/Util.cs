@@ -2,11 +2,11 @@
 using System.Linq;
 using System.Reflection;
 using GHPC;
-using GHPC.Equipment.Optics;
-using GHPC.Weapons;
-using GHPC.Thermals;
-using UnityEngine;
 using GHPC.Effects;
+using GHPC.Equipment.Optics;
+using GHPC.Thermals;
+using GHPC.Weapons;
+using UnityEngine;
 
 namespace ModUtil
 {

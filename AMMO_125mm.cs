@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using GHPC.Weapons;
-using UnityEngine;
-using GHPC.Weaponry;
-using ModUtil;
-using System.Collections;
 using GHPC.State;
+using GHPC.Weaponry;
+using GHPC.Weapons;
+using ModUtil;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {

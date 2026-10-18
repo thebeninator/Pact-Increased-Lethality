@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using GHPC.Equipment;
+﻿using GHPC.Equipment;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {

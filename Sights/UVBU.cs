@@ -1,9 +1,9 @@
 ﻿using System;
 using GHPC.Utility;
 using GHPC.Weapons;
+using HarmonyLib;
 using TMPro;
 using UnityEngine;
-using HarmonyLib;
 
 namespace PactIncreasedLethality
 {

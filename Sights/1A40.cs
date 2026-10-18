@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Linq;
 using GHPC.Equipment.Optics;
+using GHPC.Vehicle;
 using GHPC.Weapons;
+using ModUtil;
+using Reticle;
 using TMPro;
 using UnityEngine;
-using Reticle;
-using static Reticle.ReticleTree;
-using GHPC.Vehicle;
-using ModUtil;
 using VanillaAssetUtil.AssetUtil;
+using static Reticle.ReticleTree;
 
 namespace PactIncreasedLethality
 {

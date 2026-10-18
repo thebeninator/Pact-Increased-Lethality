@@ -3,12 +3,12 @@ using System.IO;
 using GHPC.Equipment.Optics;
 using GHPC.Weapons;
 using MelonLoader.Utils;
+using ModUtil;
 using Reticle;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 using static Reticle.ReticleTree;
-using ModUtil;
 
 namespace PactIncreasedLethality
 {
