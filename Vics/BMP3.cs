@@ -798,7 +798,8 @@ namespace PactIncreasedLethality
                 albedo: bmp3_track_albedo,
                 occlusion: bmp3_track_occlusion,
                 normal: bmp3_track_normal,
-                smoothness: bmp3_track_sm
+                smoothness: bmp3_track_sm,
+                tracks: true
             );
 
             CustomSpawnInfo bmp3_spawn_info = new CustomSpawnInfo()

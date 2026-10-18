@@ -42,7 +42,7 @@ namespace ModUtil
         };
 
         public static void MakeGhpcMat(
-            ref Material mat, Texture albedo, Texture occlusion, Texture normal, Texture smoothness)
+            ref Material mat, Texture albedo, Texture occlusion, Texture normal, Texture smoothness, bool tracks = false)
         {
             if (scorch_co == null)
             {
@@ -50,10 +50,22 @@ namespace ModUtil
                 scorch_nm = Resources.FindObjectsOfTypeAll<Texture>().Where(o => o.name == "scorch_nm").First();
             }
 
-            mat.shader = Shader.Find("GHPC/VehicleShader");
+            mat.shader = tracks ? Shader.Find("TrackShader") : Shader.Find("GHPC/VehicleShader");
             mat.EnableKeyword("_METALLICGLOSSMAP");
             mat.EnableKeyword("_NORMALMAP");
             mat.EnableKeyword("_ALPHATEST_ON");
+
+            if (tracks)
+            {
+                mat.SetTexture("_Colour", albedo);
+                mat.SetTexture("_MainTex", albedo);
+                mat.SetTexture("_Occlusion", occlusion);
+                mat.SetTexture("_Normal", normal);
+                mat.SetTexture("_Smoothness", smoothness);
+
+                return;
+            }
+
             mat.SetTexture("_Albedo", albedo);
             mat.SetTexture("_Occlusion", occlusion);
             mat.SetTexture("_Normal", normal);
