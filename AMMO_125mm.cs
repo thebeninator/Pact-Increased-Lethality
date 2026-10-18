@@ -58,6 +58,7 @@ namespace PactIncreasedLethality
 
             string[] composite_names = new string[] 
             {
+                "C-Tech composite",
                 "Vorschlaghammer composite",
                 "Eber composite",
                 "Abrams special armor gen 1 hull front",
