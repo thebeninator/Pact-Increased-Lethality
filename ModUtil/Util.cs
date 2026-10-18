@@ -2,11 +2,11 @@
 using System.Linq;
 using System.Reflection;
 using GHPC;
-using GHPC.Equipment.Optics;
-using GHPC.Weapons;
-using GHPC.Thermals;
-using UnityEngine;
 using GHPC.Effects;
+using GHPC.Equipment.Optics;
+using GHPC.Thermals;
+using GHPC.Weapons;
+using UnityEngine;
 
 namespace ModUtil
 {
@@ -20,6 +20,9 @@ namespace ModUtil
 
     public sealed class Util
     {
+        private static Texture scorch_co;
+        private static Texture scorch_nm;
+
         public static ImpactEffectsDatabaseScriptable impact_fx_db;
 
         public static string[] MenuScreensWithLoader = new string[] {
@@ -37,6 +40,27 @@ namespace ModUtil
             "t64_menu",
             "leo2_menu"
         };
+
+        public static void MakeGhpcMat(
+            ref Material mat, Texture albedo, Texture occlusion, Texture normal, Texture smoothness)
+        {
+            if (scorch_co == null)
+            {
+                scorch_co = Resources.FindObjectsOfTypeAll<Texture>().Where(o => o.name == "scorch_co").First();
+                scorch_nm = Resources.FindObjectsOfTypeAll<Texture>().Where(o => o.name == "scorch_nm").First();
+            }
+
+            mat.shader = Shader.Find("GHPC/VehicleShader");
+            mat.EnableKeyword("_METALLICGLOSSMAP");
+            mat.EnableKeyword("_NORMALMAP");
+            mat.EnableKeyword("_ALPHATEST_ON");
+            mat.SetTexture("_Albedo", albedo);
+            mat.SetTexture("_Occlusion", occlusion);
+            mat.SetTexture("_Normal", normal);
+            mat.SetTexture("_Smoothness", smoothness);
+            mat.SetTexture("_ScorchAlbedo", scorch_co);
+            mat.SetTexture("_scorchnormal", scorch_nm);
+        }
 
         public static void Reposition(Transform target, Transform to, bool delete_to = false, bool sendback = false)
         {

@@ -1,27 +1,27 @@
-﻿using GHPC.State;
-using ModUtil;
+﻿using System;
 using System.Collections;
-using GHPC.Vehicle;
-using UnityEngine;
-using MelonLoader.Utils;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using GHPC;
-using GHPC.Weapons;
-using GHPC.Equipment.Optics;
-using System.Collections.Generic;
-using GHPC.Mission;
 using CustomVicUtil;
-using System;
-using NWH.VehiclePhysics;
+using GHPC;
 using GHPC.Camera;
-using GHPC.Player;
-using GHPC.Utility;
-using UnityEngine.AddressableAssets;
-using NWH.WheelController3D;
-using HarmonyLib;
-using GHPC.Effects;
 using GHPC.Crew;
+using GHPC.Effects;
+using GHPC.Equipment.Optics;
+using GHPC.Mission;
+using GHPC.Player;
+using GHPC.State;
+using GHPC.Utility;
+using GHPC.Vehicle;
+using GHPC.Weapons;
+using HarmonyLib;
+using MelonLoader.Utils;
+using ModUtil;
+using NWH.VehiclePhysics;
+using NWH.WheelController3D;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
 using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
@@ -33,78 +33,6 @@ namespace PactIncreasedLethality
         private static GameObject bmp3_prefab;
         private static AssetBundle bmp3_bundle;
         private static GameObject muzzle_flash_105_prefab;
-
-        private static readonly string[] bmp2_turret_lf_retained = new string[]
-        {
-            "AmmoRack_2000X7.62mm",
-            "AmmoRack_340X30mmHE",
-            "AmmoRack_160X30mmAP",
-            "AmmoRack_2000X7.62mm vis",
-            "AmmoRack_340X30mmHE vis",
-            "AmmoRack_160X30mmAP vis",
-            "Gun_ControlBox_BU-25-2S",
-            "Radio R-123M"
-        };
-
-        private static readonly string[] bmp2_turret_lf_reposition = new string[]
-        {
-            "Gunner_Seat",
-            "Commander_Seat",
-            "Turret_TraverseMotor_PartOf2E36-1Stabilizer",
-            "Turret_ManualDrive",
-            "Gun_Elevation_ManualDrive",
-            "Gun_Elevation_Motor_PartOf2E36-1Stabilizer",
-            "Gunner_ElectronicControls",
-            "Commander_ElectronicControls",
-        };
-
-        private static readonly AmmoFeed.ReloadStage[] bmp3_reload_sequence = new AmmoFeed.ReloadStage[]
-        {
-            new AmmoFeed.ReloadStage()
-            {
-                Duration = 0.4f,
-                StageClips = new AudioClip[] { },
-                AnimatedParts = new AnimatedPart[] { },
-                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
-            },
-            new AmmoFeed.ReloadStage()
-            {
-                Duration = 0.4f,
-                WaitForCarousel = true,
-                LessWaitSeconds = 0.2f,
-                StageClips = new AudioClip[] { },
-                AnimatedParts = new AnimatedPart[] { },
-                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
-            },
-            new AmmoFeed.ReloadStage()
-            {
-                Duration = 0.2f,
-                StageClips = new AudioClip[] { },
-                AnimatedParts = new AnimatedPart[] { },
-                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[]
-                {
-                    new AmmoFeed.ReloadStage.FMODParameter()
-                    {
-                        Name = "WaitForCarousel",
-                        Value = 0
-                    }
-                }
-            },
-            new AmmoFeed.ReloadStage()
-            {
-                Duration = 2f,
-                StageClips = new AudioClip[] { },
-                AnimatedParts = new AnimatedPart[] { },
-                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
-            },
-            new AmmoFeed.ReloadStage()
-            {
-                Duration = 0.9f,
-                StageClips = new AudioClip[] { },
-                AnimatedParts = new AnimatedPart[] { },
-                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
-            },
-        };
 
         private static readonly GHPC.Weaponry.VehicleAmmoListScriptable gun_2a70_ammo_list = new GHPC.Weaponry.VehicleAmmoListScriptable
         {
@@ -515,7 +443,7 @@ namespace PactIncreasedLethality
                 delete_to: true
             );
 
-            foreach (string part_id in bmp2_turret_lf_reposition)
+            foreach (string part_id in BMP3Constants.bmp2_turret_lf_reposition)
             {
                 Util.Reposition
                 (
@@ -546,7 +474,7 @@ namespace PactIncreasedLethality
 
             bool turret_search_non_retained(Transform o) 
             {
-                return o.name != "TURRET" && !bmp2_turret_lf_retained.Contains(o.name);
+                return o.name != "TURRET" && !BMP3Constants.bmp2_turret_lf_retained.Contains(o.name);
             }
 
             List<Transform> bmp2_turret_aar_delete = bmp2_turret_aar.GetComponentsInChildren<Transform>()
@@ -695,7 +623,7 @@ namespace PactIncreasedLethality
             wpn_gun_2a70.BaseDeviationAngle = 0.060f;
             wpn_gun_2a70.Feed._clipReloadFMODEvent = "event:/Effects/Reload/MZ_Autoloader";
             wpn_gun_2a70.Feed.Carousel = ammo_carousel;
-            wpn_gun_2a70.Feed.ClipReloadStages = bmp3_reload_sequence;
+            wpn_gun_2a70.Feed.ClipReloadStages = BMP3Constants.bmp3_reload_sequence;
             wpn_gun_2a70.Feed.HumanLoaded = false;
             wpn_gun_2a70.Feed.AmmoTypeInBreech = null;
             wpn_gun_2a70.Feed.Start();
@@ -857,30 +785,21 @@ namespace PactIncreasedLethality
             Helpers.ProcessCVScripts(vis_3of70.transform);
 
             Material bmp3_material = Resources.FindObjectsOfTypeAll<Material>().Where(o => o.name == "MI_East_IFV_BMP3_01").First();
-            Texture scorch_co = Resources.FindObjectsOfTypeAll<Texture>().Where(o => o.name == "scorch_co").First();
-            Texture scorch_nm = Resources.FindObjectsOfTypeAll<Texture>().Where(o => o.name == "scorch_nm").First();
-
-            bmp3_material.shader = Shader.Find("GHPC/VehicleShader");
-            bmp3_material.EnableKeyword("_METALLICGLOSSMAP");
-            bmp3_material.EnableKeyword("_NORMALMAP");
-            bmp3_material.EnableKeyword("_ALPHATEST_ON");
-            bmp3_material.SetTexture("_Albedo", bmp3_albedo);
-            bmp3_material.SetTexture("_Occlusion", bmp3_occlusion);
-            bmp3_material.SetTexture("_Normal", bmp3_normal);
-            bmp3_material.SetTexture("_Smoothness", bmp3_sm);
-            bmp3_material.SetTexture("_ScorchAlbedo", scorch_co);
-            bmp3_material.SetTexture("_scorchnormal", scorch_nm);
-
             Material bmp3_track_material = Resources.FindObjectsOfTypeAll<Material>().Where(o => o.name == "MI_East_IFV_BMP3_02").First();
-            bmp3_track_material.shader = Shader.Find("TrackShader");
-            bmp3_track_material.EnableKeyword("_METALLICGLOSSMAP");
-            bmp3_track_material.EnableKeyword("_NORMALMAP");
-            bmp3_track_material.EnableKeyword("_ALPHATEST_ON");
-            bmp3_track_material.SetTexture("_Colour", bmp3_track_albedo);
-            bmp3_track_material.SetTexture("_MainTex", bmp3_track_albedo);
-            bmp3_track_material.SetTexture("_Occlusion", bmp3_track_occlusion);
-            bmp3_track_material.SetTexture("_Normal", bmp3_track_normal);
-            bmp3_track_material.SetTexture("_Smoothness", bmp3_track_sm);
+
+            Util.MakeGhpcMat(ref bmp3_material,
+                albedo: bmp3_albedo,
+                occlusion: bmp3_occlusion,
+                normal: bmp3_normal,
+                smoothness: bmp3_sm
+            );
+
+            Util.MakeGhpcMat(ref bmp3_track_material,
+                albedo: bmp3_track_albedo,
+                occlusion: bmp3_track_occlusion,
+                normal: bmp3_track_normal,
+                smoothness: bmp3_track_sm
+            );
 
             CustomSpawnInfo bmp3_spawn_info = new CustomSpawnInfo()
             {

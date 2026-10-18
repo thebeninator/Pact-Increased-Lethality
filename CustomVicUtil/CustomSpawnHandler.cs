@@ -1,9 +1,8 @@
-﻿using GHPC.Vehicle;
-using UnityEngine;
-using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using MelonLoader;
+using GHPC.Vehicle;
+using HarmonyLib;
+using UnityEngine;
 
 namespace CustomVicUtil
 {
@@ -39,11 +38,14 @@ namespace CustomVicUtil
 
             if (spawn_info != null && original_vic._uniqueName == spawn_info.TargetId)
             {
-                GameObject instance = GameObject.Instantiate(spawn_info.Prefab, original_vic.transform);
-                instance.transform.localPosition = Vector3.zero;
-                original_vic.GetComponent<Vehicle>()._uniqueName = maybe_custom_vic_id;
+                if (spawn_info.Prefab != null)
+                {
+                    GameObject instance = GameObject.Instantiate(spawn_info.Prefab, original_vic.transform);
+                    instance.transform.localPosition = Vector3.zero;
+                    spawn_info.OnSpawned?.Invoke(instance, original_vic);
+                }
 
-                spawn_info.OnSpawned?.Invoke(instance, original_vic);
+                original_vic.GetComponent<Vehicle>()._uniqueName = maybe_custom_vic_id;
             }
         }
     }
