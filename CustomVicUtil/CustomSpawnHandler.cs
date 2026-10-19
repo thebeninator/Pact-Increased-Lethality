@@ -29,6 +29,7 @@ namespace CustomVicUtil
             Vehicle original_vic = __instance.GetComponentInParent<Vehicle>();
 
             CustomSpawnInfo spawn_info = null;
+
             string maybe_custom_vic_id = SpawnedIdCatcher.CurrentSpawnId.Split(' ')[0];
 
             if (custom_vics.ContainsKey(maybe_custom_vic_id))
@@ -45,7 +46,7 @@ namespace CustomVicUtil
                     spawn_info.OnSpawned?.Invoke(instance, original_vic);
                 }
 
-                original_vic.GetComponent<Vehicle>()._uniqueName = maybe_custom_vic_id;
+                original_vic._uniqueName = maybe_custom_vic_id;
             }
         }
     }
