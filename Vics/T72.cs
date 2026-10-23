@@ -447,6 +447,9 @@ namespace PactIncreasedLethality
                 GameObject kontakt_prefab = null;
                 Mesh turret_mesh = null;
 
+                Transform turret = vic.transform.Find("---MESH---/HULL/TURRET");
+                Transform turret_rend = turret.Find("T72M1_turret");
+
                 if (has_k1 && !has_reflective_plates)
                 {
                     kontakt_prefab = t72av_k1_full;
@@ -464,9 +467,6 @@ namespace PactIncreasedLethality
 
                     if (!has_k5 && !has_k1) kontakt_prefab = t72b_only_smoke;
                 }
-
-                Transform turret = vic.transform.Find("---MESH---/HULL/TURRET");
-                Transform turret_rend = turret.Find("T72M1_turret");
 
                 if (turret_mesh != null)
                 {
@@ -535,10 +535,11 @@ namespace PactIncreasedLethality
                     {
                         patterns[i] = new VehicleSmokeManager.SmokePattern()
                         {
-                            SmokePatternData = new VehicleSmokeManager.SmokePatternData[] {
-                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = smoke_slot_idx++ },
-                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = smoke_slot_idx++ }
-                                }
+                            SmokePatternData = new VehicleSmokeManager.SmokePatternData[] 
+                            {
+                                new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = smoke_slot_idx++ },
+                                new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = smoke_slot_idx++ }
+                            }
                         };
                     }
 
@@ -551,6 +552,8 @@ namespace PactIncreasedLethality
                         _sosna_u.transform.parent = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret");
                         _sosna_u.transform.Find("SOSNA U").parent = turret_follow.transform;
 
+
+                        vic.transform.Find("---MESH---").GetComponent<Animator>().enabled = false;
                         turret.Find("LUNA").localScale = new Vector3(0f, 0f, 0f);
                         turret.Find("night sight cover").localScale = new Vector3(0f, 0f, 0f);
                     }

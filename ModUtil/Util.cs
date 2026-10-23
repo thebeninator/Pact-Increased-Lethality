@@ -87,8 +87,10 @@ namespace ModUtil
         {
             foreach (MeshRenderer mrend in parent.GetComponentsInChildren<MeshRenderer>())
             {
-                foreach (Material mat in mrend.materials)
+                foreach (Material mat in mrend.sharedMaterials)
                 {
+                    if (mat == null) continue;
+                    
                     mat.shader = Shader.Find("Standard (FLIR)");
                 }
             }
