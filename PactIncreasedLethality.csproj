@@ -119,6 +119,7 @@
   <ItemGroup>
     <Compile Include="APS\APSCollider.cs" />
     <Compile Include="APS\APSLauncher.cs" />
+    <Compile Include="APS\APSManager.cs" />
     <Compile Include="APS\InterceptionHandler.cs" />
     <Compile Include="APS\APSSchema.cs" />
     <Compile Include="CustomGuidanceComputer.cs" />
