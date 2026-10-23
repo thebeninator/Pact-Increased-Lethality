@@ -44,6 +44,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Desktop\GHPC MODDED\GHPC_Data\Managed\BehaviorDesigner.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="CustomVicUnityScripts">
+      <HintPath>D:\GHPC MODDED\Mods\CustomVicUnityScripts.dll</HintPath>
+    </Reference>
     <Reference Include="FMODUnity, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\GHPC MODDED\GHPC_Data\Managed\FMODUnity.dll</HintPath>
@@ -87,6 +90,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\GHPC MODDED\GHPC_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\GHPC MODDED\GHPC_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\GHPC MODDED\GHPC_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
@@ -119,7 +126,6 @@
   <ItemGroup>
     <Compile Include="APS\APSCollider.cs" />
     <Compile Include="APS\APSLauncher.cs" />
-    <Compile Include="APS\APSManager.cs" />
     <Compile Include="APS\InterceptionHandler.cs" />
     <Compile Include="APS\APSSchema.cs" />
     <Compile Include="CustomGuidanceComputer.cs" />
