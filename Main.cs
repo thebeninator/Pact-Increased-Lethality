@@ -97,6 +97,7 @@ namespace PactIncreasedLethality
 
             module_manager.Add("SharedAssets", new SharedAssets());
             module_manager.Add("Armour", new Armour());
+            module_manager.Add("Sozh", new Sozh());
             //module_manager.Add("AMMO_30MM", new Ammo_30mm());
             module_manager.Add("AMMO_100MM", new Ammo_100mm());
             //module_manager.Add("AMMO_125MM", new Ammo_125mm());

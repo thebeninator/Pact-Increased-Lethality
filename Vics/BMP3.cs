@@ -587,6 +587,8 @@ namespace PactIncreasedLethality
             ammo_carousel.Capacity = 22;
             ammo_carousel.enabled = true;
 
+            day_optic.slot.DefaultFov = 12f;
+            day_optic.slot.OtherFovs = new float[] { 4.29f };
             day_optic.slot.ExclusiveWeapons = new WeaponSystem[] { };
             day_optic.slot.LinkedNightSight.ExclusiveWeapons = new WeaponSystem[] { };
             day_optic.Alignment = OpticAlignment.BoresightStabilized;
@@ -638,6 +640,10 @@ namespace PactIncreasedLethality
             wpn_gun_30_2a72.WeaponSound.SingleShotMode = true;
             wpn_gun_30_2a72.WeaponSound.SingleShotEventPaths = new string[] { "actually_2a72" };
             wpn_gun_30_2a72.Feed.ReadyRack._compartment = bmp3_turret_compartment;
+
+            day_optic.reticleMesh.reticleSO = Sozh.day_reticleSO;
+            day_optic.reticleMesh.SMR = null;
+            day_optic.reticleMesh.Load();
 
             detachable.AddDetachablesFromTransform(bmp3_turret);
 
