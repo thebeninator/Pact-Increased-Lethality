@@ -1,11 +1,10 @@
 ﻿using GHPC.Weapons;
 using UnityEngine;
 
-namespace PactIncreasedLethality
+namespace PactIncreasedLethality.Vics.BMP3
 {
     internal class BMP3Constants
     {
-
         internal static readonly string[] bmp2_turret_lf_retained = new string[]
         {
             "AmmoRack_2000X7.62mm",

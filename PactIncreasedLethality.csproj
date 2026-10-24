@@ -147,13 +147,15 @@
     <Compile Include="Ammo_30mm.cs" />
     <Compile Include="Ammo_125mm.cs" />
     <Compile Include="Armour.cs" />
+    <Compile Include="Sights\Sozh.cs" />
     <Compile Include="Sights\TrackingDimensions.cs" />
     <Compile Include="T72MtoT72M1.cs" />
     <Compile Include="Vics\BMP1.cs" />
     <Compile Include="Vics\BMP2.cs" />
     <Compile Include="Sights\BOM.cs" />
-    <Compile Include="Vics\BMP3.cs" />
-    <Compile Include="Vics\BMP3Constants.cs" />
+    <Compile Include="Vics\BMP3\BMP3.cs" />
+    <Compile Include="Vics\BMP3\BMP3Constants.cs" />
+    <Compile Include="Vics\BMP3\BMP3Patches.cs" />
     <Compile Include="Vics\BTR60.cs" />
     <Compile Include="Sights\CRTShock.cs" />
     <Compile Include="Sights\DigitalZoomSnapper.cs" />

@@ -1,10 +1,11 @@
-﻿using UnityEngine;
-using GHPC.Weaponry;
-using System.Linq;
-using ModUtil;
-using GHPC.Weapons;
-using GHPC.Vehicle;
+﻿using System.Linq;
 using GHPC.State;
+using GHPC.Vehicle;
+using GHPC.Weaponry;
+using GHPC.Weapons;
+using ModUtil;
+using PactIncreasedLethality.Vics.BMP3;
+using UnityEngine;
 using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality

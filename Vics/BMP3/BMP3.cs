@@ -15,7 +15,6 @@ using GHPC.State;
 using GHPC.Utility;
 using GHPC.Vehicle;
 using GHPC.Weapons;
-using HarmonyLib;
 using MelonLoader.Utils;
 using ModUtil;
 using NWH.VehiclePhysics;
@@ -24,7 +23,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using VanillaAssetUtil.AssetUtil;
 
-namespace PactIncreasedLethality
+namespace PactIncreasedLethality.Vics.BMP3
 {
     public class BMP3 : ModUtil.Module
     {
@@ -70,39 +69,6 @@ namespace PactIncreasedLethality
                 wheel_controller.TireRadius = 0.327f;
             }
         };
-
-        [HarmonyPatch(typeof(GHPC.Weapons.AmmoRack), "HasClipWithPattern", new Type[] { typeof(AmmoType.AmmoClip) })]
-        public static class test
-        {
-            public static bool Prefix(GHPC.Weapons.AmmoRack __instance, AmmoType.AmmoClip pattern, ref bool __result)
-            {
-                if (pattern.Name == Ammo_100mm.clip_9m117_bmp3.Name)
-                {
-                    __result = false;
-                    return false;
-                }
-
-                return true;
-            }
-        }
-
-        [HarmonyPatch(typeof(PlayerInput), "QueueAmmoIndex", new Type[] { typeof(int) })]
-        public static class AllowQueueAmmoFor2A72
-        {
-            public static void Postfix(PlayerInput __instance, int index)
-            {
-                if (__instance.CurrentPlayerWeapon.Weapon.name != "bmp3 2a72") return;
-
-                GHPC.Weapons.AmmoRack ready_rack = __instance.CurrentPlayerCrewBrain.WeaponsModule.ActiveWeapon.Weapon.Feed.ReadyRack;
-
-                if (index >= ready_rack.ClipTypes.Length)
-                {
-                    return;
-                }
-
-                __instance.CurrentPlayerCrewBrain.WeaponsModule.QueueClipType(ready_rack.ClipTypes[index], false);
-            }
-        }
 
         private static void HandleConversion(Vehicle vic)
         {
@@ -326,6 +292,7 @@ namespace PactIncreasedLethality
                 exit._compartment = bmp3_turret_compartment;
             }
 
+            //todo: make this less jank
             bmp3_hull_main_compartment.Exits.AddRange(bmp3_turret_compartment.Exits);
             detachable.DidDetach += bmp3_hull_main_compartment.Exits[0].DetachTriggered;
 
@@ -526,6 +493,8 @@ namespace PactIncreasedLethality
 
             LoadoutManager loadout_manager = vic.LoadoutManager;
 
+            WeaponSystemInfo ws_gun_pk = loadout_manager._weaponsManager.GetWeaponInfoByRole(WeaponSystemRole.Coaxial);
+
             WeaponSystemInfo ws_gun_2a70 = loadout_manager._weaponsManager.GetWeaponInfoByRole(WeaponSystemRole.MountedLauncher);
             WeaponSystem wpn_gun_2a70 = ws_gun_2a70.Weapon;
 
@@ -536,6 +505,8 @@ namespace PactIncreasedLethality
             UsableOptic day_optic = Util.GetDayOptic(fcs);
 
             Transform autoloader_carousel = bmp3_turret_follower.Find("autoloader/carousel");
+
+            wpn_gun_2a70.Feed.ReloadMode = AmmoFeed.DoctrinalReloadMode.SwitchableAutomatic;
 
             GHPC.Weapons.AmmoRack gun_2a70_rack = wpn_gun_2a70.Feed.ReadyRack;
             gun_2a70_rack.Name = "autoloader carousel";
@@ -587,8 +558,10 @@ namespace PactIncreasedLethality
             ammo_carousel.Capacity = 22;
             ammo_carousel.enabled = true;
 
-            day_optic.slot.DefaultFov = 12f;
-            day_optic.slot.OtherFovs = new float[] { 4.29f };
+            day_optic.slot.ZoomInAudioEvent = "event:/Effects/Optic/Optic_Zoom_In";
+            day_optic.slot.ZoomOutAudioEvent = "event:/Effects/Optic/Optic_Zoom_Out";
+            day_optic.slot.DefaultFov = 6.6f;
+            day_optic.slot.OtherFovs = new float[] { 3.5f };
             day_optic.slot.ExclusiveWeapons = new WeaponSystem[] { };
             day_optic.slot.LinkedNightSight.ExclusiveWeapons = new WeaponSystem[] { };
             day_optic.Alignment = OpticAlignment.BoresightStabilized;
@@ -601,6 +574,8 @@ namespace PactIncreasedLethality
             List<WeaponSystem> temp_linked = fcs.LinkedWeaponSystems.ToList();
             temp_linked.Add(wpn_gun_2a70);
             fcs.LinkedWeaponSystems = temp_linked.ToArray();
+
+            ws_gun_pk.ExcludeFromFcsUpdates = true;
 
             ws_gun_2a70.Name = "100mm cannon 2A70";
             ws_gun_2a70.FCS = fcs;
@@ -620,6 +595,7 @@ namespace PactIncreasedLethality
             wpn_gun_2a70.WireGuided = false;
             wpn_gun_2a70.TriggerHoldTime = 0f;
             wpn_gun_2a70.WeaponSound.SingleShotEventPaths[0] = "event:/Weapons/canon_105mm-L7";
+            wpn_gun_2a70.WeaponSound.LoopEventPath = "2a70";
             wpn_gun_2a70.Impulse = 3500f;
             wpn_gun_2a70._impulseLocation = bmp3_turret.Find("MANTLET");
             wpn_gun_2a70.BaseDeviationAngle = 0.060f;
@@ -646,8 +622,6 @@ namespace PactIncreasedLethality
             day_optic.reticleMesh.Load();
 
             detachable.AddDetachablesFromTransform(bmp3_turret);
-
-            //vic.LoadoutManager = null;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////
             // VEHICLE CONTROLLER SETUP
@@ -809,10 +783,11 @@ namespace PactIncreasedLethality
             );
 
             CustomSpawnInfo bmp3_spawn_info = new CustomSpawnInfo()
-            {
+            {              
                 Prefab = bmp3_prefab,
                 Id = "PIL_BMP3",
                 TargetId = "BMP2_SA",
+                Name = "BMP-3",
                 OnSpawned = on_spawned,
             };
 

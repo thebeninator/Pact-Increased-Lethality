@@ -12,6 +12,7 @@ using MelonLoader;
 using MelonLoader.Utils;
 using ModUtil;
 using PactIncreasedLethality;
+using PactIncreasedLethality.Vics.BMP3;
 using UnityEngine;
 
 [assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.8", "ATLAS")]
@@ -94,6 +95,8 @@ namespace PactIncreasedLethality
 
             cor_system.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/zsu", "zsu_23_shot_exterior.wav"), MODE._3D_INVERSETAPEREDROLLOFF | MODE.LOWMEM, out BTR60.ReplaceSound.sound_exterior);
             BTR60.ReplaceSound.sound_exterior.set3DMinMaxDistance(20f, 550f);
+
+            cor_system.createSound(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "gun_2a70_interior_alt.wav"), MODE._2D, out BMP3Patches.ReplaceInterior2A70Sfx.sound_interior);
 
             module_manager.Add("SharedAssets", new SharedAssets());
             module_manager.Add("Armour", new Armour());

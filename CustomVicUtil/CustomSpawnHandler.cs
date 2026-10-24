@@ -9,6 +9,7 @@ namespace CustomVicUtil
     internal class CustomSpawnInfo
     {
         public GameObject Prefab { get; set; }
+        public string Name { get; set; }
         public string Id { get; set; }
         public string TargetId { get; set; }
         public Action<GameObject, Vehicle> OnSpawned { get; set; }
