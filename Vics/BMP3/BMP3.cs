@@ -33,10 +33,7 @@ namespace PactIncreasedLethality.Vics.BMP3
         private static AssetBundle bmp3_bundle;
         private static GameObject muzzle_flash_105_prefab;
 
-        private static readonly GHPC.Weaponry.VehicleAmmoListScriptable gun_2a70_ammo_list = new GHPC.Weaponry.VehicleAmmoListScriptable
-        {
-            AmmoClips = new GHPC.Weaponry.AmmoClipCodexScriptable[2]
-        };
+        private static GHPC.Weaponry.VehicleAmmoListScriptable gun_2a70_ammo_list;
 
         private static readonly Action<GameObject, Vehicle> on_spawned = (GameObject instance, Vehicle original_vic) =>
         {
@@ -309,6 +306,13 @@ namespace PactIncreasedLethality.Vics.BMP3
             bmp3_hull_main_compartment.IsCrewCompartment = true;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // INFANTRY SEATING
+
+
+
+
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////
             // REPOSITIONING
             bmp2_turret.Find("turret scripts").SetParent(bmp3_turret);
             bmp2_turret.Find("Main gun/mantlet scripts").SetParent(bmp3_turret.Find("MANTLET"));
@@ -318,6 +322,14 @@ namespace PactIncreasedLethality.Vics.BMP3
 
             AimablePlatform mantlet_platform = bmp3_turret.Find("MANTLET/mantlet scripts").GetComponent<AimablePlatform>();
             mantlet_platform.Transform = bmp3_turret.Find("MANTLET");
+
+            Util.Reposition
+            (
+                target: vic.transform.Find("Particles/Exhaust BMP"),
+                to: bmp3.Find("exhaust marker"),
+                delete_to: true
+            );
+
 
             Util.Reposition
             (
@@ -558,12 +570,16 @@ namespace PactIncreasedLethality.Vics.BMP3
             ammo_carousel.Capacity = 22;
             ammo_carousel.enabled = true;
 
-            day_optic.slot.ZoomInAudioEvent = "event:/Effects/Optic/Optic_Zoom_In";
-            day_optic.slot.ZoomOutAudioEvent = "event:/Effects/Optic/Optic_Zoom_Out";
-            day_optic.slot.DefaultFov = 6.6f;
-            day_optic.slot.OtherFovs = new float[] { 3.5f };
-            day_optic.slot.ExclusiveWeapons = new WeaponSystem[] { };
-            day_optic.slot.LinkedNightSight.ExclusiveWeapons = new WeaponSystem[] { };
+            CameraSlot day_slot = day_optic.slot;
+            day_slot.ZoomInAudioEvent = "event:/Effects/Optic/Optic_Zoom_In";
+            day_slot.ZoomOutAudioEvent = "event:/Effects/Optic/Optic_Zoom_Out";
+            day_slot.DefaultFov = 6.6f;
+            day_slot.OtherFovs = new float[] { 3.5f };
+            day_slot.ExclusiveWeapons = new WeaponSystem[] { };
+            day_slot.LinkedNightSight.ExclusiveWeapons = new WeaponSystem[] { };
+            day_slot.VibrationBlurScale = 0.1f;
+            day_slot.VibrationShakeMultiplier = 0.05f;
+
             day_optic.Alignment = OpticAlignment.BoresightStabilized;
             day_optic.RotateAzimuth = true;
 
@@ -654,6 +670,11 @@ namespace PactIncreasedLethality.Vics.BMP3
         public override void LoadDynamicAssets()
         {
             muzzle_flash_105_prefab = AssetUtilApi.CloneVanillaGameObject("T55A", "Gun Scripts/100mm Gun D-10T/GameObject/105mm Muzzle Flash");
+
+            gun_2a70_ammo_list = new GHPC.Weaponry.VehicleAmmoListScriptable
+            {
+                AmmoClips = new GHPC.Weaponry.AmmoClipCodexScriptable[2]
+            };
             gun_2a70_ammo_list.AmmoClips[0] = Ammo_100mm.clip_codex_3of70;
             gun_2a70_ammo_list.AmmoClips[1] = Ammo_100mm.clip_codex_9m117_bmp3;
         }

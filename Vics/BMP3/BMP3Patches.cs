@@ -44,7 +44,7 @@ namespace PactIncreasedLethality.Vics.BMP3
 
                     cor_system.playSound(sound_interior, Mod.audio_channel_group, true, out new_channel);
 
-                    new_channel.setVolume(Mod.audio_settings_manager._previousVolume * 2.5f);
+                    new_channel.setVolume(Mod.audio_settings_manager._previousVolume * 2.25f);
                     new_channel.set3DAttributes(ref fmod_pos, ref vel);
                     new_channel.setPaused(false);
                     new_channel.clearHandle();
@@ -71,7 +71,6 @@ namespace PactIncreasedLethality.Vics.BMP3
             }
         }
 
-        // todo: REALLY rare bug where 30mm ammo gets queued up by 2a70
         [HarmonyPatch(typeof(PlayerInput), "QueueAmmoIndex", new Type[] { typeof(int) })]
         public static class AllowQueueAmmoFor2A72
         {
