@@ -26,7 +26,8 @@ namespace PactIncreasedLethality
             self = GetComponentInParent<Vehicle>();
         }
 
-        void ResetTracking() {
+        void ResetTracking()
+        {
             if (target != null)
             {
                 TargetLockChanged(false);
@@ -40,7 +41,8 @@ namespace PactIncreasedLethality
         void Update()
         {
             if (fcs == null) return;
-            if (PlayerInput.Instance?.CurrentPlayerWeapon?.FCS != fcs) {
+            if (PlayerInput.Instance?.CurrentPlayerWeapon?.FCS != fcs)
+            {
                 ResetTracking();
                 return;
             }
@@ -53,7 +55,7 @@ namespace PactIncreasedLethality
                 cd = 0.2f;
 
                 if (!engaged && target != null)
-                {                   
+                {
                     engaged = true;
                 }
                 else
@@ -68,7 +70,7 @@ namespace PactIncreasedLethality
                 ray = new Ray(fcs.ReferenceTransform.position, fcs.AimWorldVector);
             }
 
-            if (engaged) 
+            if (engaged)
             {
                 Vector3 forward = tracking_center.bounds.center - fcs.ReferenceTransform.position;
                 ray = new Ray(fcs.ReferenceTransform.position, forward);
@@ -104,34 +106,31 @@ namespace PactIncreasedLethality
             {
                 offset += PlayerInput.Instance.VirtualJoystick * (fcs.MainOptic.slot.CurrentFov / 60f * 2f);
 
-                //if (!fcs.CurrentWeaponSystem.AbleToFire) return;
-                //if (fcs.CurrentWeaponSystem.Feed.Reloading) return;
-
                 // adapted from GHPC.AI.BehaviorTrees.ActionBaseLookAt.GetAimPositionAtTarget
                 MissileGuidanceUnit mgu = fcs.CurrentWeaponSystem.GuidanceUnit;
                 AmmoType current_ammo = fcs.CurrentAmmoType;
                 BallisticComputerRepository computer = BallisticComputerRepository.Instance;
-                bool missile_active = current_ammo.Guidance > AmmoType.GuidanceType.Unguided && mgu.CurrentMissiles.Count > 0;
+                bool missile_active = mgu != null
+                    && current_ammo.Guidance > AmmoType.GuidanceType.Unguided
+                    && mgu.CurrentMissiles.Count > 0;
 
                 Vector3 position = missile_active ? mgu.CurrentMissiles[0].transform.position : fcs.ReferenceTransform.transform.position;
                 Vector3 forward = tracking_center.bounds.center - position;
                 float range = forward.magnitude;
                 float flight_time = computer.GetFlightTime(current_ammo, range);
 
-                Vector3 target_velocity = target.Aircraft != null ? target.Aircraft.VelocityNormalized : target.Chassis.Velocity;
+                Vector3 target_velocity = target.Aircraft != null ? target.Aircraft.Velocity : target.Chassis.Velocity;
                 Vector3 travel_dist = flight_time * (target_velocity - fcs.Mounts[0]._unit.Chassis.Velocity);
-
-                //if (current_ammo.Guidance > AmmoType.GuidanceType.Unguided && missile_active)
-                //{
-                //    travel_dist = Vector3.zero;
-                //}
 
                 Vector3 compensated = tracking_center.bounds.center + travel_dist;
                 Vector3 compensated_world_pos = Matrix4x4.TRS(compensated, Quaternion.LookRotation(forward), Vector3.one)
-                    .MultiplyPoint3x4(offset);
+                   .MultiplyPoint3x4(offset);
 
                 fcs.SetAimWorldPosition(compensated_world_pos);
-                mgu.AimElement.LookAt(compensated_world_pos);
+                if (mgu != null)
+                {
+                    mgu.AimElement.LookAt(compensated_world_pos);
+                }
 
                 float actual_range = (tracking_center.bounds.center - fcs.ReferenceTransform.transform.position).magnitude;
                 fcs.SetRange(actual_range, forceUpdate: true);
