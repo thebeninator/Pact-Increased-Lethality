@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using GHPC.Equipment;
+﻿using GHPC.Equipment;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {
@@ -11,7 +11,7 @@ namespace PactIncreasedLethality
             era_armour = new ArmorType(),
             name = "Kontakt-5",
             heat_rha = 550f,
-            ke_rha = 200f,
+            ke_rha = 180f,
         };
 
         public static void Setup(Transform era_armour_parent, Transform visual_parent, 

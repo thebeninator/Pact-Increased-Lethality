@@ -2,11 +2,11 @@
 using System.Linq;
 using System.Reflection;
 using GHPC;
-using GHPC.Equipment.Optics;
-using GHPC.Weapons;
-using GHPC.Thermals;
-using UnityEngine;
 using GHPC.Effects;
+using GHPC.Equipment.Optics;
+using GHPC.Thermals;
+using GHPC.Weapons;
+using UnityEngine;
 
 namespace ModUtil
 {
@@ -22,12 +22,20 @@ namespace ModUtil
     {
         public static ImpactEffectsDatabaseScriptable impact_fx_db;
 
-        public static string[] menu_screens = new string[] {
+        public static string[] MenuScreensWithLoader = new string[] {
             "MainMenu2_Scene",
             "MainMenu2-1_Scene",
             "LOADER_MENU",
             "LOADER_INITIAL",
-            "t64_menu"
+            "t64_menu",
+            "leo2_menu"
+        };
+
+        public static string[] MenuScreens = new string[] {
+            "MainMenu2_Scene",
+            "MainMenu2-1_Scene",
+            "t64_menu",
+            "leo2_menu"
         };
 
         public static void CacheAmmo(AmmoType ammo)
@@ -79,8 +87,10 @@ namespace ModUtil
         {
             foreach (MeshRenderer mrend in parent.GetComponentsInChildren<MeshRenderer>())
             {
-                foreach (Material mat in mrend.materials)
+                foreach (Material mat in mrend.sharedMaterials)
                 {
+                    if (mat == null) continue;
+                    
                     mat.shader = Shader.Find("Standard (FLIR)");
                 }
             }

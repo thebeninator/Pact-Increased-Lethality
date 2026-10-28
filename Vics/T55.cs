@@ -1,22 +1,22 @@
-﻿using System.Collections.Generic;
-using GHPC.Equipment.Optics;    
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using ActiveProtectionSystem;
+using GHPC;
+using GHPC.Equipment.Optics;
+using GHPC.State;
 using GHPC.Utility;
 using GHPC.Vehicle;
-using GHPC.Weapons;
-using Reticle;
-using UnityEngine;
-using GHPC.State;
-using System.Collections;
-using MelonLoader;
-using GHPC;
-using TMPro;
-using MelonLoader.Utils;
-using System.IO;
-using NWH.VehiclePhysics;
 using GHPC.Weaponry;
-using System.Linq;
+using GHPC.Weapons;
+using MelonLoader;
+using MelonLoader.Utils;
 using ModUtil;
-using ActiveProtectionSystem;
+using NWH.VehiclePhysics;
+using Reticle;
+using TMPro;
+using UnityEngine;
 using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
@@ -181,20 +181,25 @@ namespace PactIncreasedLethality
 
                 Transform[] launchers = new Transform[]
                 {
-                        drozd.transform.Find("L1"),
-                        drozd.transform.Find("L2"),
-                        drozd.transform.Find("R1"),
-                        drozd.transform.Find("R2"),
+                    drozd.transform.Find("L1"),
+                    drozd.transform.Find("L2"),
+                    drozd.transform.Find("R1"),
+                    drozd.transform.Find("R2"),
                 };
 
                 Transform colliders_holder = drozd.transform.Find("COLLIDERS");
                 Transform[] colliders = colliders_holder.GetComponentsInChildren<Transform>().Where(t => t != colliders_holder).ToArray();
                 int[][] assignments = new int[][]
                 {
+                    // centre
                     new int[] { 0, 3 },
+                    // left 1
                     new int[] { 0 },
+                    // left 2
                     new int[] { 1 },
+                    // right 1
                     new int[] { 2 },
+                    // right 2
                     new int[] { 3 },
                 };
 
@@ -352,7 +357,9 @@ namespace PactIncreasedLethality
                 fenders_parent.Find("steel fender").gameObject.SetActive(true);
 
                 GameObject t55am1_kit = GameObject.Instantiate(t55am_kit, vic.transform.Find("T55A_base (1)"));
-                t55am1_kit.transform.Find("HULL/SKIRTS").GetComponent<MeshRenderer>().SetMaterials(new List<Material>() { SharedAssets.t80b_mat });
+
+                MeshRenderer t55am1_skirts_rend = t55am1_kit.transform.Find("HULL/SKIRTS").GetComponent<MeshRenderer>();
+                t55am1_skirts_rend.sharedMaterial = SharedAssets.t80b_mat;
 
                 Transform hull_parts = t55am1_kit.transform.Find("HULL");
                 hull_parts.SetParent(vic.GetComponent<LateFollowTarget>()._lateFollowers[0].transform);

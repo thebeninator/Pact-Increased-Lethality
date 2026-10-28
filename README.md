@@ -3,6 +3,9 @@ Turret model for BTR-60A from https://sketchfab.com/3d-models/btr-80a-5e4b7a1b18
 
 Kornet launchers and Sodema sight models for the BMP-2M from https://marketplace.vigilante.us/product/bmp2m-east/ by Vigilante
 
+# Dependencies
+VanillaAssetUtil: https://github.com/thebeninator/VanillaAssetUtil/releases/latest
+
 # Pact Increased Lethality
 
 All features listed below can be toggled on/off.

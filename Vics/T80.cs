@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using GHPC;
+using GHPC.Equipment;
 using GHPC.Equipment.Optics;
 using GHPC.State;
 using GHPC.Utility;
 using GHPC.Vehicle;
 using GHPC.Weapons;
-using GHPC;
 using MelonLoader;
-using UnityEngine;
-using NWH.VehiclePhysics;
 using MelonLoader.Utils;
-using System.IO;
-using GHPC.Equipment;
-using Reticle;
 using ModUtil;
+using NWH.VehiclePhysics;
+using Reticle;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {
@@ -194,8 +194,16 @@ namespace PactIncreasedLethality
                 weapon.FCS.transform.Find("GPS/1G42 Canvas").gameObject.SetActive(false);
 
                 CustomGuidanceComputer gc = weapon.FCS.gameObject.AddComponent<CustomGuidanceComputer>();
+
+                GameObject mgu_aim_element = new GameObject("mgu aim element");
+                mgu_aim_element.transform.SetParent(weapon.FCS.transform);
+                mgu_aim_element.transform.localPosition = Vector3.zero;
+                mgu_aim_element.transform.localEulerAngles = Vector3.zero;
+                mgu_aim_element.transform.SetParent(weapon.FCS.transform.parent);
+
                 gc.fcs = weapon.FCS;
                 gc.mgu = weapon.FCS.GetComponent<MissileGuidanceUnit>();
+                gc.mgu.AimElement = mgu_aim_element.transform;
 
                 SuperFCS.Add(day_optic, weapon.FCS.NightOptic, vic.WeaponsManager.Weapons[1], vic.WeaponsManager.Weapons[0], gc);
 
@@ -220,7 +228,7 @@ namespace PactIncreasedLethality
             {
                 Transform turret_rend = turret.Find("turret");
                 turret_rend.GetComponent<MeshFilter>().sharedMesh = t80bv_turret;
-                turret_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0, 0, 0, 0);
+                turret_rend.GetComponent<MeshRenderer>().sharedMaterials[1].color = new Color(0, 0, 0, 0);
 
                 turret.Find("turret numbers").gameObject.SetActive(false);
                 vic.transform.Find("T80B_stowage/towropes_front").gameObject.SetActive(false);
@@ -242,13 +250,13 @@ namespace PactIncreasedLethality
                 k1_full.transform.Find("HULL MOUNTING FRAMES").SetParent(hull_follow);
 
                 Material[] smokes_mat = new Material[1];
-                smokes_mat[0] = vic.transform.Find("T80_mesh/skirts").GetComponent<MeshRenderer>().materials[0];
-                k1_full.transform.Find("SMOKE TUBES 1").GetComponent<MeshRenderer>().materials = smokes_mat;
-                k1_full.transform.Find("SMOKE TUBES 2").GetComponent<MeshRenderer>().materials = smokes_mat;
+                smokes_mat[0] = vic.transform.Find("T80_mesh/skirts").GetComponent<MeshRenderer>().sharedMaterials[0];
+                k1_full.transform.Find("SMOKE TUBES 1").GetComponent<MeshRenderer>().sharedMaterials = smokes_mat;
+                k1_full.transform.Find("SMOKE TUBES 2").GetComponent<MeshRenderer>().sharedMaterials = smokes_mat;
 
                 foreach (Transform smoke_cap in k1_full.transform.Find("SMOKES"))
                 {
-                    smoke_cap.GetComponent<MeshRenderer>().materials = smokes_mat;
+                    smoke_cap.GetComponent<MeshRenderer>().sharedMaterials = smokes_mat;
                 }
 
                 VehicleSmokeManager smoke_manager = vic.transform.Find("T80 -Smoke Launcher System").GetComponent<VehicleSmokeManager>();
@@ -275,7 +283,7 @@ namespace PactIncreasedLethality
 
                 Transform turret_rend = turret.Find("turret");
                 turret_rend.GetComponent<MeshFilter>().sharedMesh = turret_cleaned_mesh;
-                turret_rend.GetComponent<MeshRenderer>().materials[1].color = new Color(0, 0, 0, 0);
+                turret_rend.GetComponent<MeshRenderer>().sharedMaterials[1].color = new Color(0, 0, 0, 0);
 
                 turret.Find("turret numbers").gameObject.SetActive(false);
                 vic.transform.Find("T80B_stowage/towropes_front").gameObject.SetActive(false);
@@ -307,15 +315,15 @@ namespace PactIncreasedLethality
                 front_flaps.transform.localEulerAngles = new Vector3(0f, 270f, 0f);
                 front_flaps.transform.SetParent(hull_follow);
 
-                Material[] front_flaps_mat = front_flaps.GetComponent<MeshRenderer>().materials;
-                front_flaps_mat[0] = skirts_rend.GetComponent<MeshRenderer>().materials[0];
-                front_flaps.GetComponent<MeshRenderer>().materials = front_flaps_mat;
+                Material[] front_flaps_mat = front_flaps.GetComponent<MeshRenderer>().sharedMaterials;
+                front_flaps_mat[0] = skirts_rend.GetComponent<MeshRenderer>().sharedMaterials[0];
+                front_flaps.GetComponent<MeshRenderer>().sharedMaterials = front_flaps_mat;
 
                 foreach (Transform t in k5_turret.transform.Find("t80u_smokes"))
                 {
-                    Material[] smokes_mat = t.GetComponent<MeshRenderer>().materials;
-                    smokes_mat[0] = skirts_rend.GetComponent<MeshRenderer>().materials[0];
-                    t.GetComponent<MeshRenderer>().materials = smokes_mat;
+                    Material[] smokes_mat = t.GetComponent<MeshRenderer>().sharedMaterials;
+                    smokes_mat[0] = skirts_rend.GetComponent<MeshRenderer>().sharedMaterials[0];
+                    t.GetComponent<MeshRenderer>().sharedMaterials = smokes_mat;
                 }
 
                 VehicleSmokeManager smoke_manager = vic.transform.Find("T80 -Smoke Launcher System").GetComponent<VehicleSmokeManager>();
@@ -503,14 +511,14 @@ namespace PactIncreasedLethality
             Transform hull_k5 = t80u_hull.transform.Find("HULL ERA/ARMOUR");
             Transform hull_sides_k5 = t80u_hull_sides.transform.Find("HULL SIDE ERA/ARMOUR");
 
-            Kontakt5.Setup(turret_k5, turret_k5.parent, hide_on_detonate: false, destroyed_mat: turret_destroyed, destroyed_target: "turret plate");
-            Kontakt5.Setup(hull_k5, hull_k5.parent, hide_on_detonate: false, destroyed_mat: hull_destroyed, destroyed_target: "hp plate");
-            Kontakt5.Setup(hull_sides_k5, hull_sides_k5.parent, hide_on_detonate: false, destroyed_mat: sides_destroyed, destroyed_target: "hs plate");
-
             Util.SetupFLIRShaders(t80u_front_flaps);
             Util.SetupFLIRShaders(t80u_hull);
             Util.SetupFLIRShaders(t80u_hull_sides);
             Util.SetupFLIRShaders(t80u_turret);
+
+            Kontakt5.Setup(turret_k5, turret_k5.parent, hide_on_detonate: false, destroyed_mat: turret_destroyed, destroyed_target: "turret plate");
+            Kontakt5.Setup(hull_k5, hull_k5.parent, hide_on_detonate: false, destroyed_mat: hull_destroyed, destroyed_target: "hp plate");
+            Kontakt5.Setup(hull_sides_k5, hull_sides_k5.parent, hide_on_detonate: false, destroyed_mat: sides_destroyed, destroyed_target: "hs plate");
 
             t80bv_turret = t80bv_bundle.LoadAsset<Mesh>("t80bv_turret.asset");
             t80bv_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
@@ -523,10 +531,10 @@ namespace PactIncreasedLethality
 
             Transform hull_k1 = t80bv_full.transform.Find("HULL K1/HULL K1 ARMOUR");
             Transform turret_k1 = t80bv_full.transform.Find("TURRET K1/TURRET K1 ARMOUR");
-            Kontakt1.Setup(hull_k1, hull_k1.parent);
-            Kontakt1.Setup(turret_k1, turret_k1.parent);
 
             Util.SetupFLIRShaders(t80bv_full);
+            Kontakt1.Setup(hull_k1, hull_k1.parent);
+            Kontakt1.Setup(turret_k1, turret_k1.parent);
         }
 
         public override void UnloadDynamicAssets()

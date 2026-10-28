@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using GHPC.Weapons;
-using UnityEngine;
-using GHPC.Weaponry;
-using ModUtil;
-using System.Collections;
 using GHPC.State;
+using GHPC.Weaponry;
+using GHPC.Weapons;
+using ModUtil;
+using UnityEngine;
 
 namespace PactIncreasedLethality
 {
@@ -58,12 +58,9 @@ namespace PactIncreasedLethality
 
             string[] composite_names = new string[] 
             {
-                "Vorschlaghammer heavy composite",
-                "Vorschlaghammer medium composite",
-                "Vorschlaghammer light composite",
-                "Eber heavy composite",
-                "Eber medium composite",
-                "Eber light composite",
+                "C-Tech composite",
+                "Vorschlaghammer composite",
+                "Eber composite",
                 "Abrams special armor gen 1 hull front",
                 "Abrams special armor gen 1 mantlet",
                 "Abrams special armor gen 1 turret cheeks",
@@ -157,7 +154,7 @@ namespace PactIncreasedLethality
             ammo_3bm42.MuzzleVelocity = 1700f;
             ammo_3bm42.MaxSpallRha = 24f;
             ammo_3bm42.MinSpallRha = 6f;
-            ammo_3bm26.SpallMultiplier = 0.9f;
+            ammo_3bm42.SpallMultiplier = 0.9f;
 
             Util.Coalesce(ref ammo_codex_3bm42);
             ammo_codex_3bm42.AmmoType = ammo_3bm42;
@@ -257,7 +254,7 @@ namespace PactIncreasedLethality
             ammo_9m119m1.TntEquivalentKg = 5.72f;
             ammo_9m119m1.MaxSpallRha = 12f;
             ammo_9m119m1.MinSpallRha = 2f;
-            ammo_9m119m1.TurnSpeed = 2f;
+            ammo_9m119m1.TurnSpeed = 0.15f;
             ammo_9m119m1.Guidance = AmmoType.GuidanceType.Laser;
 
             Util.Coalesce(ref ammo_codex_9m119m1);
@@ -292,7 +289,7 @@ namespace PactIncreasedLethality
             ammo_9m119.TntEquivalentKg = 5.72f;
             ammo_9m119.MaxSpallRha = 12f;
             ammo_9m119.MinSpallRha = 2f;
-            ammo_9m119.TurnSpeed = 2f;
+            ammo_9m119.TurnSpeed = 0.15f;
             ammo_9m119.Guidance = AmmoType.GuidanceType.Laser;
 
             Util.Coalesce(ref ammo_codex_9m119);

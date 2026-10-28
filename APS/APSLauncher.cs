@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
 using FMOD.Studio;
+using GHPC;
 using GHPC.Audio;
 using GHPC.Effects;
-using GHPC;
-using UnityEngine;
 using PactIncreasedLethality;
+using UnityEngine;
 
 namespace ActiveProtectionSystem
 {
@@ -63,8 +63,8 @@ namespace ActiveProtectionSystem
                 current_projectile.transform.position,
                 new ValueTuple<PARAMETER_ID, float>
                 (
-                    FmodInteriorTracker._instance._isInteriorParameterID, 
-                    FmodInteriorTracker.IsInteriorView(parent_unit) ? 1f : 0f
+                    FmodParameters.IsVehicleInterior,
+                    VehicleParameterTracker.IsVehicleInterior(parent_unit) ? 1f : 0f
                 )
             );
 

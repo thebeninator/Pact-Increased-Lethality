@@ -7,11 +7,10 @@ namespace PactIncreasedLethality
     {
         public FireControlSystem fcs;
         public MissileGuidanceUnit mgu;
-        public bool autotrackingEnabled = false;
 
         void Update()
         {
-            mgu.AimElement = fcs.MainOptic.transform;
+            mgu.AimElement.LookAt(mgu.AimElement.position + fcs.TargetAimWorldVectorScaled.normalized);
         }
     }
 }

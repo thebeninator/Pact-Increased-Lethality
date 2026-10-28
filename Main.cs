@@ -1,20 +1,20 @@
-﻿using System.Linq;
-using MelonLoader;
-using UnityEngine;
-using GHPC.State;
-using System.Collections;
-using MelonLoader.Utils;
+﻿using System.Collections;
 using System.IO;
-using GHPC.Audio;
-using GHPC.Player;
-using GHPC.Camera;
-using FMOD;
-using GHPC.Vehicle;
-using PactIncreasedLethality;
-using ModUtil;
+using System.Linq;
 using ActiveProtectionSystem;
+using FMOD;
+using GHPC.Audio;
+using GHPC.Camera;
+using GHPC.Player;
+using GHPC.State;
+using GHPC.Vehicle;
+using MelonLoader;
+using MelonLoader.Utils;
+using ModUtil;
+using PactIncreasedLethality;
+using UnityEngine;
 
-[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.7C1", "ATLAS")]
+[assembly: MelonInfo(typeof(Mod), "Pact Increased Lethality", "2.1.8", "ATLAS")]
 [assembly: MelonGame("Radian Simulations LLC", "GHPC")]
 
 namespace PactIncreasedLethality
@@ -98,15 +98,15 @@ namespace PactIncreasedLethality
             BMP2.Update();
         }
 
-        public override void OnSceneWasLoaded(int buildIndex, string sceneName)
+        public override void OnSceneWasLoaded(int build_index, string scene_name)
         {
-            if (sceneName == "MainMenu2_Scene" || sceneName == "MainMenu2-1_Scene" || sceneName == "t64_menu")
+            if (Util.MenuScreens.Contains(scene_name))
             {
                 module_manager.LoadAllStaticAssets();
                 APSLauncher.Init();
             }
 
-            if (Util.menu_screens.Contains(sceneName)) return;
+            if (Util.MenuScreensWithLoader.Contains(scene_name)) return;
 
             valid_scene_count++;
 

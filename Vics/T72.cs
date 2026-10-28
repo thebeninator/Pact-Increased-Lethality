@@ -1,21 +1,21 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using GHPC;
+using GHPC.Effects.Voices;
+using GHPC.Equipment;
 using GHPC.Equipment.Optics;
+using GHPC.State;
 using GHPC.Utility;
 using GHPC.Vehicle;
 using GHPC.Weapons;
-using UnityEngine;
-using GHPC.State;
-using System.Collections;
 using MelonLoader;
-using GHPC;
-using GHPC.Effects.Voices;
 using MelonLoader.Utils;
-using System.IO;
-using NWH.VehiclePhysics;
-using GHPC.Equipment;
 using ModUtil;
+using NWH.VehiclePhysics;
+using UnityEngine;
 using VanillaAssetUtil.AssetUtil;
 
 namespace PactIncreasedLethality
@@ -379,20 +379,22 @@ namespace PactIncreasedLethality
                 night_optic.transform.localPosition = new Vector3(-0.727f, 0.4631f, -5.7249f);
             }
 
-            GameObject guidance_computer_obj = GameObject.Instantiate(new GameObject("guidance computer"), fcs.transform.parent);
-            guidance_computer_obj.transform.localPosition = fcs.transform.localPosition + new Vector3(0, 0, 5f);
-            guidance_computer_obj.transform.SetParent(day_optic.transform.parent, true);
-            MissileGuidanceUnit computer = guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
-            computer.AimElement = guidance_computer_obj.transform;
-            weapon.GuidanceUnit = computer;
+            GameObject guidance_computer_obj = new GameObject("guidance computer");
+            guidance_computer_obj.transform.SetParent(fcs.transform.parent);
+            guidance_computer_obj.transform.localPosition = new Vector3(-0.727f, 0.4631f, -5.7249f);
+            guidance_computer_obj.transform.localEulerAngles = Vector3.zero;
+            //guidance_computer_obj.transform.SetParent(day_optic.transform.parent, true);
+            MissileGuidanceUnit mgu = guidance_computer_obj.AddComponent<MissileGuidanceUnit>();
+            mgu.AimElement = mgu.transform;
+            weapon.GuidanceUnit = mgu;
 
             weapon.Feed.ReloadDuringMissileTracking = false;
-            weapon.Feed._missileGuidance = computer;
+            weapon.Feed._missileGuidance = mgu;
             weapon.FireWhileGuidingMissile = false;
 
             CustomGuidanceComputer gc = fcs.transform.parent.gameObject.AddComponent<CustomGuidanceComputer>();
             gc.fcs = fcs;
-            gc.mgu = computer;
+            gc.mgu = mgu;
 
             if (has_sosna)
             {
@@ -445,6 +447,9 @@ namespace PactIncreasedLethality
                 GameObject kontakt_prefab = null;
                 Mesh turret_mesh = null;
 
+                Transform turret = vic.transform.Find("---MESH---/HULL/TURRET");
+                Transform turret_rend = turret.Find("T72M1_turret");
+
                 if (has_k1 && !has_reflective_plates)
                 {
                     kontakt_prefab = t72av_k1_full;
@@ -462,9 +467,6 @@ namespace PactIncreasedLethality
 
                     if (!has_k5 && !has_k1) kontakt_prefab = t72b_only_smoke;
                 }
-
-                Transform turret = vic.transform.Find("---MESH---/HULL/TURRET");
-                Transform turret_rend = turret.Find("T72M1_turret");
 
                 if (turret_mesh != null)
                 {
@@ -501,7 +503,7 @@ namespace PactIncreasedLethality
                     GameObject kontakt = GameObject.Instantiate(kontakt_prefab, vic.transform.Find("T72M1_mesh (1)/T72M1_hull"));
                     kontakt.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
 
-                    Material t72_material = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret").GetComponent<MeshRenderer>().materials[0];
+                    Material t72_material = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret").GetComponent<MeshRenderer>().sharedMaterials[0];
                     Transform smoke_launcher = kontakt.transform.Find("SMOKE LAUNCHER");
 
                     Transform hull_follow = vic.transform.GetComponent<LateFollowTarget>()._lateFollowers[0].transform;
@@ -510,9 +512,9 @@ namespace PactIncreasedLethality
                     for (int i = 1; i < smoke_launcher.childCount; i++)
                     {
                         Transform smoke = smoke_launcher.GetChild(i);
-                        Material[] smokes_mat = smoke.GetComponent<MeshRenderer>().materials;
+                        Material[] smokes_mat = smoke.GetComponent<MeshRenderer>().sharedMaterials;
                         smokes_mat[0] = t72_material;
-                        smoke.GetComponent<MeshRenderer>().materials = smokes_mat;
+                        smoke.GetComponent<MeshRenderer>().sharedMaterials = smokes_mat;
                     }
                     smoke_launcher.parent = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret");
 
@@ -533,10 +535,11 @@ namespace PactIncreasedLethality
                     {
                         patterns[i] = new VehicleSmokeManager.SmokePattern()
                         {
-                            SmokePatternData = new VehicleSmokeManager.SmokePatternData[] {
-                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = smoke_slot_idx++ },
-                                    new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = smoke_slot_idx++ }
-                                }
+                            SmokePatternData = new VehicleSmokeManager.SmokePatternData[] 
+                            {
+                                new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = smoke_slot_idx++ },
+                                new VehicleSmokeManager.SmokePatternData() { SmokeSlotIndex = smoke_slot_idx++ }
+                            }
                         };
                     }
 
@@ -549,6 +552,8 @@ namespace PactIncreasedLethality
                         _sosna_u.transform.parent = vic.transform.Find("---MESH---/HULL/TURRET/T72M1_turret");
                         _sosna_u.transform.Find("SOSNA U").parent = turret_follow.transform;
 
+
+                        vic.transform.Find("---MESH---").GetComponent<Animator>().enabled = false;
                         turret.Find("LUNA").localScale = new Vector3(0f, 0f, 0f);
                         turret.Find("night sight cover").localScale = new Vector3(0f, 0f, 0f);
                     }
