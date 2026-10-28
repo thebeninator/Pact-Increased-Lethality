@@ -511,14 +511,14 @@ namespace PactIncreasedLethality
             Transform hull_k5 = t80u_hull.transform.Find("HULL ERA/ARMOUR");
             Transform hull_sides_k5 = t80u_hull_sides.transform.Find("HULL SIDE ERA/ARMOUR");
 
-            Kontakt5.Setup(turret_k5, turret_k5.parent, hide_on_detonate: false, destroyed_mat: turret_destroyed, destroyed_target: "turret plate");
-            Kontakt5.Setup(hull_k5, hull_k5.parent, hide_on_detonate: false, destroyed_mat: hull_destroyed, destroyed_target: "hp plate");
-            Kontakt5.Setup(hull_sides_k5, hull_sides_k5.parent, hide_on_detonate: false, destroyed_mat: sides_destroyed, destroyed_target: "hs plate");
-
             Util.SetupFLIRShaders(t80u_front_flaps);
             Util.SetupFLIRShaders(t80u_hull);
             Util.SetupFLIRShaders(t80u_hull_sides);
             Util.SetupFLIRShaders(t80u_turret);
+
+            Kontakt5.Setup(turret_k5, turret_k5.parent, hide_on_detonate: false, destroyed_mat: turret_destroyed, destroyed_target: "turret plate");
+            Kontakt5.Setup(hull_k5, hull_k5.parent, hide_on_detonate: false, destroyed_mat: hull_destroyed, destroyed_target: "hp plate");
+            Kontakt5.Setup(hull_sides_k5, hull_sides_k5.parent, hide_on_detonate: false, destroyed_mat: sides_destroyed, destroyed_target: "hs plate");
 
             t80bv_turret = t80bv_bundle.LoadAsset<Mesh>("t80bv_turret.asset");
             t80bv_turret.hideFlags = HideFlags.DontUnloadUnusedAsset;
@@ -531,10 +531,10 @@ namespace PactIncreasedLethality
 
             Transform hull_k1 = t80bv_full.transform.Find("HULL K1/HULL K1 ARMOUR");
             Transform turret_k1 = t80bv_full.transform.Find("TURRET K1/TURRET K1 ARMOUR");
-            Kontakt1.Setup(hull_k1, hull_k1.parent);
-            Kontakt1.Setup(turret_k1, turret_k1.parent);
 
             Util.SetupFLIRShaders(t80bv_full);
+            Kontakt1.Setup(hull_k1, hull_k1.parent);
+            Kontakt1.Setup(turret_k1, turret_k1.parent);
         }
 
         public override void UnloadDynamicAssets()

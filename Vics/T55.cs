@@ -181,20 +181,25 @@ namespace PactIncreasedLethality
 
                 Transform[] launchers = new Transform[]
                 {
-                        drozd.transform.Find("L1"),
-                        drozd.transform.Find("L2"),
-                        drozd.transform.Find("R1"),
-                        drozd.transform.Find("R2"),
+                    drozd.transform.Find("L1"),
+                    drozd.transform.Find("L2"),
+                    drozd.transform.Find("R1"),
+                    drozd.transform.Find("R2"),
                 };
 
                 Transform colliders_holder = drozd.transform.Find("COLLIDERS");
                 Transform[] colliders = colliders_holder.GetComponentsInChildren<Transform>().Where(t => t != colliders_holder).ToArray();
                 int[][] assignments = new int[][]
                 {
+                    // centre
                     new int[] { 0, 3 },
+                    // left 1
                     new int[] { 0 },
+                    // left 2
                     new int[] { 1 },
+                    // right 1
                     new int[] { 2 },
+                    // right 2
                     new int[] { 3 },
                 };
 
