@@ -175,6 +175,7 @@
     <Compile Include="ProximityFuse.cs" />
     <Compile Include="ReducedATGMSmoke.cs" />
     <Compile Include="Sights\SuperFCS.cs" />
+    <Compile Include="AmmoFeedManager.cs" />
     <Compile Include="Vics\T55.cs" />
     <Compile Include="Vics\T62.cs" />
     <Compile Include="Vics\T64B.cs" />

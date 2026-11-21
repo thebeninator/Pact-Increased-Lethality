@@ -42,6 +42,12 @@ namespace PactIncreasedLethality
 
         internal static AmmoType ammo_3of412;
 
+        internal static AudioClip reload_3s;
+
+        internal static AudioClip reload_9k111_7s;
+
+        internal static AudioClip reload_105mm;
+
         public override void LoadStaticAssets()
         {
             AmmoClipCodexScriptable[] clip_codex_scriptables = Resources.FindObjectsOfTypeAll<AmmoClipCodexScriptable>();
@@ -83,6 +89,12 @@ namespace PactIncreasedLethality
 
             Vehicle brdm2 = AssetUtilApi.LoadVanillaVehicle("BRDM2", temp: true);
             brdm2_hull = AssetUtilApi.CloneVanillaGameObject("BRDM2", "BRDM2_1983 (1)/BRDM_hull_1983");
+
+            AssetUtilApi.LoadVanillaVehicle("STATIC_9K111_SA", temp: true);
+            AudioClip[] audio_clips = Resources.FindObjectsOfTypeAll<AudioClip>();
+            reload_3s = audio_clips.Where(o => o.name == "reload").FirstOrDefault();
+            reload_9k111_7s = audio_clips.Where(o => o.name == "9k111_reload_full_7s").FirstOrDefault();
+            reload_105mm = audio_clips.Where(o => o.name == "105mm reload").FirstOrDefault();
         }
     }
 }

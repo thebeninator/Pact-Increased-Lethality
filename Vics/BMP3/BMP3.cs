@@ -28,6 +28,7 @@ namespace PactIncreasedLethality.Vics.BMP3
     public class BMP3 : ModUtil.Module
     {
         internal static GameObject vis_3of70;
+        internal static GameObject vis_9m117;
 
         private static GameObject bmp3_prefab;
         private static AssetBundle bmp3_bundle;
@@ -143,6 +144,89 @@ namespace PactIncreasedLethality.Vics.BMP3
 
             GameObject muzzle_flash_105 = GameObject.Instantiate(muzzle_flash_105_prefab);
             muzzle_flash_105.SetActive(true);
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // RELOAD SETUP
+            AudioSource atgm_reload_stage1 = bmp3_turret.Find("atgm stage 1 reload").GetComponent<AudioSource>();
+            AudioSource atgm_reload_stage2 = bmp3_turret.Find("atgm stage 2 reload").GetComponent<AudioSource>();
+
+            atgm_reload_stage1.clip = SharedAssets.reload_3s;
+
+            AmmoFeed.ReloadStage[] clip_3of70_reload_stages = new AmmoFeed.ReloadStage[]
+            {
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 0.4f,
+                    StageClips = new AudioClip[] { },
+                    AnimatedParts = new AnimatedPart[] { },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 0.4f,
+                    WaitForCarousel = true,
+                    LessWaitSeconds = 0.2f,
+                    StageClips = new AudioClip[] { },
+                    AnimatedParts = new AnimatedPart[] { },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 0.2f,
+                    StageClips = new AudioClip[] { },
+                    AnimatedParts = new AnimatedPart[] { },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[]
+                    {
+                        new AmmoFeed.ReloadStage.FMODParameter()
+                        {
+                            Name = "WaitForCarousel",
+                            Value = 0
+                        }
+                    }
+                },
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 2f,
+                    StageClips = new AudioClip[] { },
+                    AnimatedParts = new AnimatedPart[] { },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 0.9f,
+                    StageClips = new AudioClip[] { },
+                    AnimatedParts = new AnimatedPart[] { },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+            };
+
+            AmmoFeed.ReloadStage[] clip_atgm_reload_stages = new AmmoFeed.ReloadStage[]
+            {
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 1.5f,
+                    //StageAudio = atgm_reload_stage1,
+                    StageClips = new AudioClip[] { },
+                    AnimatedParts = new AnimatedPart[] { },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 5.75f,
+                    StageAudio = atgm_reload_stage2,
+                    StageClips = new AudioClip[] { SharedAssets.reload_9k111_7s },
+                    AnimatedParts = new AnimatedPart[] { },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 9f,
+                    StageAudio = atgm_reload_stage2,
+                    StageClips = new AudioClip[] { SharedAssets.reload_105mm },
+                    AnimatedParts = new AnimatedPart[] { },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+            };
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////
             // TURRET DETACH SETUP
@@ -537,14 +621,23 @@ namespace PactIncreasedLethality.Vics.BMP3
 
             bmp3_hull_main_compartment.AddCluster(gun_2a70_rack.Flammables);
 
-            LoadoutManager.RackLoadout hull_rack_loadout = new LoadoutManager.RackLoadout();
-            hull_rack_loadout.Name = "rear hull rack";
-            hull_rack_loadout.AdditiveRestockCapacities = new int[] { };
-            hull_rack_loadout.AmmoCounts = new int[] { };
-            hull_rack_loadout.ForbiddenAmmoIndices = new int[] { };
-            hull_rack_loadout.FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] { };
-            hull_rack_loadout.OverrideInitialClips = new GHPC.Weaponry.AmmoClipCodexScriptable[] { };
-            hull_rack_loadout.Rack = bmp3_hull_follower.Find("hull rack").GetComponent<GHPC.Weapons.AmmoRack>();
+            LoadoutManager.RackLoadout hull_3of70_loadout = new LoadoutManager.RackLoadout();
+            hull_3of70_loadout.Name = "rear hull rack";
+            hull_3of70_loadout.AdditiveRestockCapacities = new int[] { };
+            hull_3of70_loadout.AmmoCounts = new int[] { };
+            hull_3of70_loadout.ForbiddenAmmoIndices = new int[] { };
+            hull_3of70_loadout.FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] { };
+            hull_3of70_loadout.OverrideInitialClips = new GHPC.Weaponry.AmmoClipCodexScriptable[] { };
+            hull_3of70_loadout.Rack = bmp3_hull_follower.Find("hull rack").GetComponent<GHPC.Weapons.AmmoRack>();
+
+            LoadoutManager.RackLoadout hull_atgm_loadout = new LoadoutManager.RackLoadout();
+            hull_atgm_loadout.Name = "missile hull rack";
+            hull_atgm_loadout.AdditiveRestockCapacities = new int[] { };
+            hull_atgm_loadout.AmmoCounts = new int[] { };
+            hull_atgm_loadout.ForbiddenAmmoIndices = new int[] { };
+            hull_atgm_loadout.FixedChoices = new LoadoutManager.RackLoadoutFixedChoice[] { };
+            hull_atgm_loadout.OverrideInitialClips = new GHPC.Weaponry.AmmoClipCodexScriptable[] { };
+            hull_atgm_loadout.Rack = bmp3_hull_follower.Find("hull atgm rack").GetComponent<GHPC.Weapons.AmmoRack>();
 
             LoadoutManager.RackLoadout autoloader_rack_loadout = loadout_manager.RackLoadouts[0];
             autoloader_rack_loadout.Name = "autoloader carousel";
@@ -553,7 +646,8 @@ namespace PactIncreasedLethality.Vics.BMP3
             loadout_manager.RackLoadouts = new LoadoutManager.RackLoadout[]
             {
                 autoloader_rack_loadout,
-                hull_rack_loadout
+                hull_3of70_loadout,
+                hull_atgm_loadout,
             };
             loadout_manager._loadedAmmoList = gun_2a70_ammo_list;
             loadout_manager.WeaponIndex = 1;
@@ -615,12 +709,37 @@ namespace PactIncreasedLethality.Vics.BMP3
             wpn_gun_2a70.Impulse = 3500f;
             wpn_gun_2a70._impulseLocation = bmp3_turret.Find("MANTLET");
             wpn_gun_2a70.BaseDeviationAngle = 0.060f;
+
             wpn_gun_2a70.Feed._clipReloadFMODEvent = "event:/Effects/Reload/MZ_Autoloader";
             wpn_gun_2a70.Feed.Carousel = ammo_carousel;
-            wpn_gun_2a70.Feed.ClipReloadStages = BMP3Constants.bmp3_reload_sequence;
+            wpn_gun_2a70.Feed.ClipReloadStages = clip_3of70_reload_stages;
             wpn_gun_2a70.Feed.HumanLoaded = false;
             wpn_gun_2a70.Feed.AmmoTypeInBreech = null;
             wpn_gun_2a70.Feed.Start();
+
+            ClipRackMap gun_2a70_cfmap = new ClipRackMap();
+            gun_2a70_cfmap.Insert(Ammo_100mm.clip_3of70, wpn_gun_2a70.Feed.ReadyRack);
+            gun_2a70_cfmap.Insert(Ammo_100mm.clip_9m117_bmp3, hull_atgm_loadout.Rack);
+            gun_2a70_cfmap.OnChange = (AmmoType.AmmoClip queued_clip) =>
+            {
+                AmmoType ammo_type = queued_clip.MinimalPattern[0].AmmoType;
+                AmmoFeed feed = wpn_gun_2a70.Feed;
+                if (ammo_type.Guidance > AmmoType.GuidanceType.Unguided)
+                {
+                    feed.HumanLoaded = true;
+                    feed._clipReloadFMODEvent = "";
+                    feed.Carousel = null;
+                    feed.ClipReloadStages = clip_atgm_reload_stages;
+                    feed._totalReloadTime = 15.5f;
+                    return;
+                }
+
+                feed.HumanLoaded = false;
+                feed._clipReloadFMODEvent = "event:/Effects/Reload/MZ_Autoloader";
+                feed.Carousel = ammo_carousel;
+                feed.ClipReloadStages = clip_3of70_reload_stages;
+            };
+            AmmoFeedManager.Register(wpn_gun_2a70.GetInstanceID(), gun_2a70_cfmap);
 
             ws_gun_30_2a72.Name = "30mm gun 2A72";
             wpn_gun_30_2a72.name = "bmp3 2a72";
@@ -699,6 +818,12 @@ namespace PactIncreasedLethality.Vics.BMP3
             vis_3of70 = bmp3_bundle.LoadAsset<GameObject>("3of70 vis.prefab");
             vis_3of70.AddComponent<AmmoStoredVisual>();
             vis_3of70.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            Helpers.ProcessCVScripts(vis_3of70.transform);
+
+            vis_9m117 = bmp3_bundle.LoadAsset<GameObject>("9m117 vis.prefab");
+            vis_9m117.AddComponent<AmmoStoredVisual>();
+            vis_9m117.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            Helpers.ProcessCVScripts(vis_9m117.transform);
 
             Transform bmp3_hull = bmp3_prefab.transform.Find("RIG/HULL");
             Transform bmp3_turret = bmp3_hull.transform.Find("TURRET");
@@ -737,17 +862,33 @@ namespace PactIncreasedLethality.Vics.BMP3
                 placeholder.RackIndex = i;
             }
 
-            Transform hull_ammo_rack = bmp3_hull_follower.Find("hull rack");
-            GHPC.Weapons.AmmoRack hull_rack = hull_ammo_rack.gameObject.AddComponent<GHPC.Weapons.AmmoRack>();
-            hull_rack.Name = "rear hull rack";
-            hull_rack._initialClipCounts = new int[] { 17, 1 };
-            hull_rack.ClipTypes = new AmmoType.AmmoClip[] { Ammo_100mm.clip_3of70, Ammo_100mm.clip_9m117_bmp3 };
-            hull_rack.UseVisibleRounds = true;
-            hull_rack._compartment = bmp3_hull_follower.Find("volumes/rear bay").GetComponent<Compartment>();
+            // 3of70 hull rack
+            Transform hull_3of70_rack_transform = bmp3_hull_follower.Find("hull rack");
+            GHPC.Weapons.AmmoRack hull_3of70_rack = hull_3of70_rack_transform.gameObject.AddComponent<GHPC.Weapons.AmmoRack>();
+            hull_3of70_rack.Name = "rear hull rack";
+            hull_3of70_rack._initialClipCounts = new int[] { 18 };
+            hull_3of70_rack.ClipTypes = new AmmoType.AmmoClip[] { Ammo_100mm.clip_3of70 };
+            hull_3of70_rack.UseVisibleRounds = true;
+            hull_3of70_rack._compartment = bmp3_hull_follower.Find("volumes/rear bay").GetComponent<Compartment>();
 
             for (int i = 0; i < 18; i++)
             {
-                AmmoVisualPlaceholder placeholder = hull_ammo_rack.GetChild(i).gameObject.AddComponent<AmmoVisualPlaceholder>();
+                AmmoVisualPlaceholder placeholder = hull_3of70_rack_transform.GetChild(i).gameObject.AddComponent<AmmoVisualPlaceholder>();
+                placeholder.RackIndex = i;
+            }
+
+            //atgm hull rack
+            Transform hull_atgm_rack_transform = bmp3_hull_follower.Find("hull atgm rack");
+            GHPC.Weapons.AmmoRack hull_atgm_rack = hull_atgm_rack_transform.gameObject.AddComponent<GHPC.Weapons.AmmoRack>();
+            hull_atgm_rack.Name = "ATGM hull rack";
+            hull_atgm_rack._initialClipCounts = new int[] { 5 };
+            hull_atgm_rack.ClipTypes = new AmmoType.AmmoClip[] { Ammo_100mm.clip_9m117_bmp3 };
+            hull_atgm_rack.UseVisibleRounds = true;
+            hull_atgm_rack._compartment = bmp3_hull_follower.Find("volumes/hull fighting compartment").GetComponent<Compartment>();
+
+            for (int i = 0; i < 5; i++)
+            {
+                AmmoVisualPlaceholder placeholder = hull_atgm_rack_transform.GetChild(i).gameObject.AddComponent<AmmoVisualPlaceholder>();
                 placeholder.RackIndex = i;
             }
 
@@ -783,7 +924,6 @@ namespace PactIncreasedLethality.Vics.BMP3
             Helpers.ProcessCVScripts(bmp3_turret_follower.Find("autoloader"));
             Helpers.ProcessCVScripts(bmp3_turret_follower.Find("flammables"));
             Helpers.ProcessCVScripts(bmp3_hull_follower.Find("flammables"));
-            Helpers.ProcessCVScripts(vis_3of70.transform);
 
             Material bmp3_material = Resources.FindObjectsOfTypeAll<Material>().Where(o => o.name == "MI_East_IFV_BMP3_01").First();
             Material bmp3_track_material = Resources.FindObjectsOfTypeAll<Material>().Where(o => o.name == "MI_East_IFV_BMP3_02").First();

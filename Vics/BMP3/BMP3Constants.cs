@@ -1,7 +1,4 @@
-﻿using GHPC.Weapons;
-using UnityEngine;
-
-namespace PactIncreasedLethality.Vics.BMP3
+﻿namespace PactIncreasedLethality.Vics.BMP3
 {
     internal class BMP3Constants
     {
@@ -27,54 +24,6 @@ namespace PactIncreasedLethality.Vics.BMP3
             "Gun_Elevation_Motor_PartOf2E36-1Stabilizer",
             "Gunner_ElectronicControls",
             "Commander_ElectronicControls",
-        };
-
-        internal static readonly AmmoFeed.ReloadStage[] bmp3_reload_sequence = new AmmoFeed.ReloadStage[]
-        {
-            new AmmoFeed.ReloadStage()
-            {
-                Duration = 0.4f,
-                StageClips = new AudioClip[] { },
-                AnimatedParts = new AnimatedPart[] { },
-                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
-            },
-            new AmmoFeed.ReloadStage()
-            {
-                Duration = 0.4f,
-                WaitForCarousel = true,
-                LessWaitSeconds = 0.2f,
-                StageClips = new AudioClip[] { },
-                AnimatedParts = new AnimatedPart[] { },
-                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
-            },
-            new AmmoFeed.ReloadStage()
-            {
-                Duration = 0.2f,
-                StageClips = new AudioClip[] { },
-                AnimatedParts = new AnimatedPart[] { },
-                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[]
-                {
-                    new AmmoFeed.ReloadStage.FMODParameter()
-                    {
-                        Name = "WaitForCarousel",
-                        Value = 0
-                    }
-                }
-            },
-            new AmmoFeed.ReloadStage()
-            {
-                Duration = 2f,
-                StageClips = new AudioClip[] { },
-                AnimatedParts = new AnimatedPart[] { },
-                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
-            },
-            new AmmoFeed.ReloadStage()
-            {
-                Duration = 0.9f,
-                StageClips = new AudioClip[] { },
-                AnimatedParts = new AnimatedPart[] { },
-                ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
-            },
         };
     }
 }

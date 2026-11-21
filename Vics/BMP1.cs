@@ -23,8 +23,8 @@ namespace PactIncreasedLethality
     [HarmonyPatch(typeof(WeaponAudio), "FinalStartLoop")]
     public class AGS17_Sound
     {
-        public static FMOD.Sound[] sounds_interior = new FMOD.Sound[6];
-        public static FMOD.Sound[] sounds_exterior = new FMOD.Sound[7];
+        public static FMOD.Sound[] sounds_interior = new FMOD.Sound[1];
+        public static FMOD.Sound[] sounds_exterior = new FMOD.Sound[1];
 
         public static bool Prefix(WeaponAudio __instance)
         {
@@ -503,19 +503,27 @@ namespace PactIncreasedLethality
 
             var corSystem = FMODUnity.RuntimeManager.CoreSystem;
 
-            for (int i = 0; i < 6; i++)
-            {
-                corSystem.createSound(
-                    Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_1p_0" + (i + 1) + ".ogg"), MODE._3D_IGNOREGEOMETRY, out AGS17_Sound.sounds_interior[i]);
-                AGS17_Sound.sounds_interior[i].set3DMinMaxDistance(300f, 550f);
-            }
+            //for (int i = 0; i < 6; i++)
+            //{
+            //    corSystem.createSound(
+            //        Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_1p_0" + (i + 1) + ".ogg"), MODE._3D_IGNOREGEOMETRY, out AGS17_Sound.sounds_interior[i]);
+            //    AGS17_Sound.sounds_interior[i].set3DMinMaxDistance(300f, 550f);
+            //}
 
-            for (int i = 0; i < 7; i++)
-            {
-                corSystem.createSound(
-                    Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_close_3p_0" + (i + 1) + ".ogg"), MODE._3D_INVERSETAPEREDROLLOFF, out AGS17_Sound.sounds_exterior[i]);
-                AGS17_Sound.sounds_exterior[i].set3DMinMaxDistance(50f, 550f);
-            }
+            //for (int i = 0; i < 7; i++)
+            //{
+            //    corSystem.createSound(
+            //        Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "aavp7a1_mk19_fire_close_3p_0" + (i + 1) + ".ogg"), MODE._3D_INVERSETAPEREDROLLOFF, out AGS17_Sound.sounds_exterior[i]);
+            //    AGS17_Sound.sounds_exterior[i].set3DMinMaxDistance(50f, 550f);
+            //}
+
+            corSystem.createSound(
+                Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "gun_ags17_interior.wav"), MODE._3D_IGNOREGEOMETRY, out AGS17_Sound.sounds_interior[0]);
+            AGS17_Sound.sounds_interior[0].set3DMinMaxDistance(300f, 550f);
+
+            corSystem.createSound(
+                Path.Combine(MelonEnvironment.ModsDirectory + "/PIL/ags17", "gun_ags17_exterior.wav"), MODE._3D_INVERSETAPEREDROLLOFF, out AGS17_Sound.sounds_exterior[0]);
+            AGS17_Sound.sounds_exterior[0].set3DMinMaxDistance(50f, 550f);
 
             //var arty_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "bmp1_arty"));
             //arty_monitor = arty_bundle.LoadAsset<GameObject>("BMP1 ARTY MONITOR.prefab");

@@ -3,7 +3,6 @@ using System.Linq;
 using CustomVicUnityScripts;
 using GHPC;
 using GHPC.Effects;
-using GHPC.Equipment;
 using UnityEngine;
 
 namespace CustomVicUtil

@@ -64,13 +64,19 @@ namespace PactIncreasedLethality
             ammo_3of70.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_3of70;
             ammo_3of70.VisualModel.GetComponent<AmmoStoredVisual>().AmmoScriptable = ammo_codex_3of70;
 
-            Util.ShallowCopy(ammo_9m117_bmp3, ammo_3of412);
+            Util.ShallowCopy(ammo_9m117_bmp3, SharedAssets.ammo_kobra);
             ammo_9m117_bmp3.Name = "9M117 Bastion";
-            ammo_9m117_bmp3.Caliber = 100;
-            ammo_9m117_bmp3.Mass = 13.4f;
-            ammo_9m117_bmp3.MuzzleVelocity = 355f;
-            ammo_9m117_bmp3.TntEquivalentKg = 3.5f;
-            ammo_9m117_bmp3.Coeff = 0.12f;
+            ammo_9m117_bmp3.Mass = 18.8f;
+            ammo_9m117_bmp3.Coeff = 0.25f;
+            ammo_9m117_bmp3.Caliber = 100f;
+            ammo_9m117_bmp3.MuzzleVelocity = 350f;
+            ammo_9m117_bmp3.RhaPenetration = 550f;
+            ammo_9m117_bmp3.TntEquivalentKg = 4.77f;
+            ammo_9m117_bmp3.TurnSpeed = 0.25f;
+            ammo_9m117_bmp3.RangedFuseTime = 12.5f;
+            ammo_9m117_bmp3.SpiralPower = 25f;
+            ammo_9m117_bmp3.SpiralAngularRate = 1800f;
+            ammo_9m117_bmp3.ArmingDistance = 45f;
             ammo_9m117_bmp3.CachedIndex = -1;
             Util.CacheAmmo(ammo_9m117_bmp3);
 
@@ -87,7 +93,7 @@ namespace PactIncreasedLethality
             clip_codex_9m117_bmp3.name = "clip_9m117_bmp3";
             clip_codex_9m117_bmp3.ClipType = clip_9m117_bmp3;
 
-            ammo_9m117_bmp3_vis = GameObject.Instantiate(ammo_3of412.VisualModel);
+            ammo_9m117_bmp3_vis = GameObject.Instantiate(BMP3.vis_9m117);
             ammo_9m117_bmp3_vis.name = "9m117 bmp3 visual";
             ammo_9m117_bmp3.VisualModel = ammo_9m117_bmp3_vis;
             ammo_9m117_bmp3.VisualModel.GetComponent<AmmoStoredVisual>().AmmoType = ammo_9m117_bmp3;

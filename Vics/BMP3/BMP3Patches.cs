@@ -56,20 +56,20 @@ namespace PactIncreasedLethality.Vics.BMP3
             }
         }
 
-        [HarmonyPatch(typeof(GHPC.Weapons.AmmoRack), "HasClipWithPattern", new Type[] { typeof(AmmoType.AmmoClip) })]
-        public static class test
-        {
-            public static bool Prefix(GHPC.Weapons.AmmoRack __instance, AmmoType.AmmoClip pattern, ref bool __result)
-            {
-                if (pattern.Name == Ammo_100mm.clip_9m117_bmp3.Name)
-                {
-                    __result = false;
-                    return false;
-                }
+        //[HarmonyPatch(typeof(GHPC.Weapons.AmmoRack), "HasClipWithPattern", new Type[] { typeof(AmmoType.AmmoClip) })]
+        //public static class test
+        //{
+        //    public static bool Prefix(GHPC.Weapons.AmmoRack __instance, AmmoType.AmmoClip pattern, ref bool __result)
+        //    {
+        //        if (pattern.Name == Ammo_100mm.clip_9m117_bmp3.Name)
+        //        {
+        //            __result = false;
+        //            return false;
+        //        }
 
-                return true;
-            }
-        }
+        //        return true;
+        //    }
+        //}
 
         [HarmonyPatch(typeof(PlayerInput), "QueueAmmoIndex", new Type[] { typeof(int) })]
         public static class AllowQueueAmmoFor2A72
