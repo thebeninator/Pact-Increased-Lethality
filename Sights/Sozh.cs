@@ -1,9 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using GHPC.Equipment.Optics;
 using GHPC.Weaponry;
 using GHPC.Weapons;
+using MelonLoader.Utils;
 using ModUtil;
 using Reticle;
+using TMPro;
 using UnityEngine;
 using static Reticle.AngularLength;
 using static Reticle.ReticleTree;
@@ -12,9 +16,68 @@ namespace PactIncreasedLethality
 {
     internal class Sozh : Module
     {
-        internal static ReticleSO day_reticleSO;
-        internal static ReticleSO night_reticleSO;
+        private static ReticleSO day_reticleSO;
+        private static ReticleSO night_reticleSO;
         private static VerticalBallistic mg_vert_ballistic;
+        private static GameObject hud_prefab;
+
+        public static void Add(
+            UsableOptic day_optic, 
+            WeaponSystem gun_30mm, WeaponSystem gun_100mm
+        ) {
+            day_optic.reticleMesh.reticleSO = day_reticleSO;
+            day_optic.reticleMesh.SMR = null;
+            day_optic.reticleMesh.Load();
+
+            GameObject hud = GameObject.Instantiate(hud_prefab, day_optic.transform);
+            GameObject ready = hud.transform.Find("ready").gameObject;
+            GameObject he_100 = hud.transform.Find("100mm/he 100mm").gameObject;
+            GameObject atgm = hud.transform.Find("100mm/atgm 100mm").gameObject;
+            GameObject ap_30 = hud.transform.Find("30mm/ap 30mm").gameObject;
+            GameObject he_30 = hud.transform.Find("30mm/he 30mm").gameObject;
+
+            day_optic.ReadyToFireObject = ready;
+            day_optic.RangeText = hud.transform.Find("range").GetComponent<TextMeshProUGUI>();
+            day_optic.RangeTextArchetype = "0000";
+
+            gun_30mm.ExclusiveItems = new GameObject[] { hud.transform.Find("30mm").gameObject };
+            gun_30mm.Feed.ExclusiveItems = new AmmoFeed.AmmoExclusiveItems[]
+            {
+                new AmmoFeed.AmmoExclusiveItems()
+                {
+                    AmmoCategories = new AmmoType.AmmoShortName[] { AmmoType.AmmoShortName.Ap },
+                    Items = new GameObject[] { ap_30 }
+                },
+
+                new AmmoFeed.AmmoExclusiveItems()
+                {
+                    AmmoCategories = new AmmoType.AmmoShortName[] { AmmoType.AmmoShortName.He },
+                    Items = new GameObject[] { he_30 }
+                },
+            };
+
+            gun_100mm.ExclusiveItems = new GameObject[] { hud.transform.Find("100mm").gameObject };
+            gun_100mm.Feed.ExclusiveItems = new AmmoFeed.AmmoExclusiveItems[]
+            {
+                new AmmoFeed.AmmoExclusiveItems()
+                {
+                    AmmoCategories = new AmmoType.AmmoShortName[] { AmmoType.AmmoShortName.Missile },
+                    Items = new GameObject[] { atgm }
+                },
+
+                new AmmoFeed.AmmoExclusiveItems()
+                {
+                    AmmoCategories = new AmmoType.AmmoShortName[] { AmmoType.AmmoShortName.He },
+                    Items = new GameObject[] { he_100 }
+                },
+            };
+
+            gun_30mm.Feed.ExclusivesChangeBeforeReload = true;
+            gun_30mm.SetExclusiveItemsActive(true);
+            gun_100mm.SetExclusiveItemsActive(false);
+            gun_30mm.Feed.ToggleExclusiveItems(gun_30mm.Feed.ReadyRack.ClipTypes[0]);
+            gun_100mm.Feed.ToggleExclusiveItems(gun_100mm.Feed.ReadyRack.ClipTypes[0]);
+        }
 
         private void DayReticle()
         {
@@ -195,6 +258,14 @@ namespace PactIncreasedLethality
         public override void LoadDynamicAssets()
         {
             DayReticle();
+        }
+
+        public override void LoadStaticAssets()
+        {
+            AssetBundle sozh_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "sozh_hud"));
+
+            hud_prefab = sozh_bundle.LoadAsset<GameObject>("sozh hud.prefab");
+            hud_prefab.hideFlags = HideFlags.DontUnloadUnusedAsset;
         }
     }
 }

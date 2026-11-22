@@ -71,6 +71,8 @@ namespace PactIncreasedLethality.Vics.BMP3
         //    }
         //}
 
+
+
         [HarmonyPatch(typeof(PlayerInput), "QueueAmmoIndex", new Type[] { typeof(int) })]
         public static class AllowQueueAmmoFor2A72
         {

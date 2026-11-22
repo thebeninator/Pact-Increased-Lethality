@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using CustomVicUtil;
 using GHPC;
+using GHPC.Audio;
 using GHPC.Camera;
 using GHPC.Crew;
 using GHPC.Effects;
@@ -23,6 +24,15 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using VanillaAssetUtil.AssetUtil;
 
+///// CONVERSION SECTIONS
+// RELOAD SETUP
+// TURRET DETACH SETUP
+// COMPARTMENT SETUP
+// INFANTRY SEATING 
+// REPOSITIONING
+// WEAPONS SETUP
+// VEHICLE CONTROLLER SETUP
+
 namespace PactIncreasedLethality.Vics.BMP3
 {
     public class BMP3 : ModUtil.Module
@@ -32,7 +42,9 @@ namespace PactIncreasedLethality.Vics.BMP3
 
         private static GameObject bmp3_prefab;
         private static AssetBundle bmp3_bundle;
+        private static AudioClip silence;
         private static GameObject muzzle_flash_105_prefab;
+        private static GameObject stub_100;
 
         private static GHPC.Weaponry.VehicleAmmoListScriptable gun_2a70_ammo_list;
 
@@ -142,12 +154,24 @@ namespace PactIncreasedLethality.Vics.BMP3
             bmp2_turret.Find("konkurs_azimuth").gameObject.SetActive(false);
             bmp2_turret.Find("turret scripts/R123_Prefab").gameObject.SetActive(false);
 
+            Transform animated_scripts = bmp3.Find("animated scripts");
+            AnimatedPart gun_2a70_recoil_start = animated_scripts.Find("2a70 recoil start").GetComponent<AnimatedPart>();
+            AnimatedPart gun_2a70_recoil_end = animated_scripts.Find("2a70 recoil end").GetComponent<AnimatedPart>();
+
+            AnimatedPart poop_chute_open = animated_scripts.Find("poop chute open").GetComponent<AnimatedPart>();
+            AnimatedPart poop_chute_close = animated_scripts.Find("poop chute close").GetComponent<AnimatedPart>();
+
+            Transform stub_ejection_path = bmp3_turret.Find("ejection path");
+            Transform stub_torque = stub_ejection_path.Find("ejection torque");
+
             GameObject muzzle_flash_105 = GameObject.Instantiate(muzzle_flash_105_prefab);
             muzzle_flash_105.SetActive(true);
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////
             // RELOAD SETUP
+
             AudioSource atgm_reload_stage1 = bmp3_turret.Find("atgm stage 1 reload").GetComponent<AudioSource>();
+
             AudioSource atgm_reload_stage2 = bmp3_turret.Find("atgm stage 2 reload").GetComponent<AudioSource>();
 
             atgm_reload_stage1.clip = SharedAssets.reload_3s;
@@ -174,7 +198,7 @@ namespace PactIncreasedLethality.Vics.BMP3
                 {
                     Duration = 0.2f,
                     StageClips = new AudioClip[] { },
-                    AnimatedParts = new AnimatedPart[] { },
+                    AnimatedParts = new AnimatedPart[] { poop_chute_open },
                     ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[]
                     {
                         new AmmoFeed.ReloadStage.FMODParameter()
@@ -186,16 +210,28 @@ namespace PactIncreasedLethality.Vics.BMP3
                 },
                 new AmmoFeed.ReloadStage()
                 {
-                    Duration = 2f,
+                    Duration = 1f,
+                    EjectedPrefab = stub_100,
+                    SpinAxis = stub_torque,
+                    EjectionForward = stub_ejection_path,
+                    EjectionVelocity = 6.5f,
+                    Torque = 500f,
                     StageClips = new AudioClip[] { },
                     AnimatedParts = new AnimatedPart[] { },
                     ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
                 },
                 new AmmoFeed.ReloadStage()
                 {
+                    Duration = 1f,
+                    StageClips = new AudioClip[] { },
+                    AnimatedParts = new AnimatedPart[] { poop_chute_close },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+                new AmmoFeed.ReloadStage()
+                {
                     Duration = 0.9f,
                     StageClips = new AudioClip[] { },
-                    AnimatedParts = new AnimatedPart[] { },
+                    AnimatedParts = new AnimatedPart[] { gun_2a70_recoil_end },
                     ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
                 },
             };
@@ -204,25 +240,83 @@ namespace PactIncreasedLethality.Vics.BMP3
             {
                 new AmmoFeed.ReloadStage()
                 {
-                    Duration = 1.5f,
-                    //StageAudio = atgm_reload_stage1,
+                    Duration = 0.2f,
                     StageClips = new AudioClip[] { },
                     AnimatedParts = new AnimatedPart[] { },
                     ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
                 },
                 new AmmoFeed.ReloadStage()
                 {
-                    Duration = 5.75f,
-                    StageAudio = atgm_reload_stage2,
+                    Duration = 0.2f,
+                    StageClips = new AudioClip[] { },
+                    AnimatedParts = new AnimatedPart[] { poop_chute_open },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 1f,
+                    EjectedPrefab = stub_100,
+                    SpinAxis = stub_torque,
+                    EjectionForward = stub_ejection_path,
+                    EjectionVelocity = 5.5f,
+                    Torque = 500f,
+                    StageClips = new AudioClip[] { },
+                    AnimatedParts = new AnimatedPart[] { },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 0.3f,
+                    StageClips = new AudioClip[] { },
+                    AnimatedParts = new AnimatedPart[] { poop_chute_close },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 5.70f,
+                    StageAudio = atgm_reload_stage1,
                     StageClips = new AudioClip[] { SharedAssets.reload_9k111_7s },
                     AnimatedParts = new AnimatedPart[] { },
                     ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
                 },
                 new AmmoFeed.ReloadStage()
                 {
-                    Duration = 9f,
+                    Duration = 0.01f,
+                    StageAudio = atgm_reload_stage1,
+                    StageClips = new AudioClip[] { silence },
+                    AnimatedParts = new AnimatedPart[] { },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 8f,
                     StageAudio = atgm_reload_stage2,
                     StageClips = new AudioClip[] { SharedAssets.reload_105mm },
+                    AnimatedParts = new AnimatedPart[] { },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 0.01f,
+                    AnimatedParts = new AnimatedPart[] { gun_2a70_recoil_end },
+                    StageClips = new AudioClip[] { SharedAssets.reload_105mm },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                }
+            };
+
+            AmmoFeed.ReloadStage[] gun_2a70_round_cycle_stages = new AmmoFeed.ReloadStage[] {
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 0.05f,
+                    StageClips = new AudioClip[] { },
+                    AnimatedParts = new AnimatedPart[] { gun_2a70_recoil_start },
+                    ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
+                },
+
+                new AmmoFeed.ReloadStage()
+                {
+                    Duration = 0.3f,
+                    StageClips = new AudioClip[] { },
                     AnimatedParts = new AnimatedPart[] { },
                     ClipReloadFMODParameters = new AmmoFeed.ReloadStage.FMODParameter[] {}
                 },
@@ -652,7 +746,12 @@ namespace PactIncreasedLethality.Vics.BMP3
             loadout_manager._loadedAmmoList = gun_2a70_ammo_list;
             loadout_manager.WeaponIndex = 1;
             loadout_manager.NoRestocking = false;
-            loadout_manager.RefreshSnapshot();
+
+            foreach (LoadoutManager.RackLoadout rack_loadout in loadout_manager.RackLoadouts)
+            {
+                rack_loadout.Rack.AmmoSetupChanged -= loadout_manager.RefreshSnapshot;
+                rack_loadout.Rack.AmmoSetupChanged += loadout_manager.RefreshSnapshot;
+            }
 
             AmmoCarousel ammo_carousel = bmp3_turret_follower.Find("autoloader").gameObject.AddComponent<AmmoCarousel>();
             ammo_carousel.RotationTransform = autoloader_carousel;
@@ -710,6 +809,7 @@ namespace PactIncreasedLethality.Vics.BMP3
             wpn_gun_2a70._impulseLocation = bmp3_turret.Find("MANTLET");
             wpn_gun_2a70.BaseDeviationAngle = 0.060f;
 
+            wpn_gun_2a70.Feed.RoundCycleStages = gun_2a70_round_cycle_stages;
             wpn_gun_2a70.Feed._clipReloadFMODEvent = "event:/Effects/Reload/MZ_Autoloader";
             wpn_gun_2a70.Feed.Carousel = ammo_carousel;
             wpn_gun_2a70.Feed.ClipReloadStages = clip_3of70_reload_stages;
@@ -730,7 +830,7 @@ namespace PactIncreasedLethality.Vics.BMP3
                     feed._clipReloadFMODEvent = "";
                     feed.Carousel = null;
                     feed.ClipReloadStages = clip_atgm_reload_stages;
-                    feed._totalReloadTime = 15.5f;
+                    feed._totalReloadTime = 15.42f;
                     return;
                 }
 
@@ -739,7 +839,7 @@ namespace PactIncreasedLethality.Vics.BMP3
                 feed.Carousel = ammo_carousel;
                 feed.ClipReloadStages = clip_3of70_reload_stages;
             };
-            AmmoFeedManager.Register(wpn_gun_2a70.GetInstanceID(), gun_2a70_cfmap);
+            MultiReadyRackManager.Register(wpn_gun_2a70.GetInstanceID(), gun_2a70_cfmap);
 
             ws_gun_30_2a72.Name = "30mm gun 2A72";
             wpn_gun_30_2a72.name = "bmp3 2a72";
@@ -752,9 +852,7 @@ namespace PactIncreasedLethality.Vics.BMP3
             wpn_gun_30_2a72.WeaponSound.SingleShotEventPaths = new string[] { "actually_2a72" };
             wpn_gun_30_2a72.Feed.ReadyRack._compartment = bmp3_turret_compartment;
 
-            day_optic.reticleMesh.reticleSO = Sozh.day_reticleSO;
-            day_optic.reticleMesh.SMR = null;
-            day_optic.reticleMesh.Load();
+            Sozh.Add(day_optic, wpn_gun_30_2a72, wpn_gun_2a70);
 
             detachable.AddDetachablesFromTransform(bmp3_turret);
 
@@ -786,9 +884,31 @@ namespace PactIncreasedLethality.Vics.BMP3
             yield break;
         }
 
+        public override void UnloadDynamicAssets()
+        {
+            EjectorPrefabFix.Remove("bmp3 100mm stub");
+        }
+
         public override void LoadDynamicAssets()
         {
             muzzle_flash_105_prefab = AssetUtilApi.CloneVanillaGameObject("T55A", "Gun Scripts/100mm Gun D-10T/GameObject/105mm Muzzle Flash");
+
+            // TODO update asset util to support this
+            AssetUtilApi.LoadVanillaVehicle("T72M1", temp: true);
+            GameObject stub_125 = Resources.FindObjectsOfTypeAll<ObjectImpactAudioEmitter>()
+                .Where(o => o.name == "125mm charge endcap new").First().gameObject;
+
+            stub_125.SetActive(false);
+
+            stub_100 = GameObject.Instantiate(stub_125);
+            stub_100.transform.localScale = new Vector3(80f, 80f, 80f);
+            stub_100.GetComponent<DestroyInSeconds>().enabled = false;
+            stub_100.GetComponent<Rigidbody>().useGravity = false;
+            EjectorPrefabFix fix = stub_100.AddComponent<EjectorPrefabFix>();
+            fix.Id = "bmp3 100mm stub";
+
+            stub_100.SetActive(true);
+            stub_125.SetActive(true);
 
             gun_2a70_ammo_list = new GHPC.Weaponry.VehicleAmmoListScriptable
             {
@@ -801,6 +921,9 @@ namespace PactIncreasedLethality.Vics.BMP3
         public override void LoadStaticAssets()
         {
             bmp3_bundle = AssetBundle.LoadFromFile(Path.Combine(MelonEnvironment.ModsDirectory + "/PIL", "bmp3"));
+
+            silence = bmp3_bundle.LoadAsset<AudioClip>("silence.wav");
+            silence.hideFlags = HideFlags.DontUnloadUnusedAsset;
 
             Texture bmp3_albedo = bmp3_bundle.LoadAsset<Texture>("bmp3 albedo.TGA");
             Texture bmp3_occlusion = bmp3_bundle.LoadAsset<Texture>("bmp3 ao.png");
@@ -918,6 +1041,7 @@ namespace PactIncreasedLethality.Vics.BMP3
                 ["fuel"] = Armour.fuel_tank_bmp3_armour
             };
 
+            Helpers.ProcessCVScripts(bmp3_prefab.transform.Find("animated scripts"));
             Helpers.ProcessCVScripts(bmp3_hull_follower.Find("hull armour"), armour_codices);
             Helpers.ProcessCVScripts(bmp3_turret_follower.Find("turret armour"), armour_codices);
             Helpers.ProcessCVScripts(bmp3_mantlet_follower.transform.Find("mantlet armour"), armour_codices);

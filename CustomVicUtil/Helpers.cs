@@ -37,6 +37,18 @@ namespace CustomVicUtil
                 CVAarVisual cv_aar_visual = t.GetComponent<CVAarVisual>();
                 CVFlammableItem cv_flammable_item = t.GetComponent<CVFlammableItem>();
                 CVDestructibleComponent cv_destructible_component = t.GetComponent<CVDestructibleComponent>();
+                CVAnimatedPart cv_animated_part = t.GetComponent<CVAnimatedPart>();
+
+                if (cv_animated_part != null)
+                {
+                    AnimatedPart animated_part = t.gameObject.AddComponent<AnimatedPart>();
+                    animated_part.AnimationTime = cv_animated_part.AnimationTime;
+                    animated_part.Transform = cv_animated_part.Transform;
+                    animated_part.StartTransform = cv_animated_part.StartTransform;
+                    animated_part.EndTransform = cv_animated_part.EndTransform;
+
+                    Component.DestroyImmediate(cv_animated_part);
+                }
 
                 if (cv_flammable_item != null)
                 {

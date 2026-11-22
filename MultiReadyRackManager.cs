@@ -22,7 +22,7 @@ namespace PactIncreasedLethality
     }
 
     [HarmonyPatch(typeof(AmmoFeed), "FeedNewClip")]
-    internal static class AmmoFeedManager
+    internal static class MultiReadyRackManager
     {
         private static Dictionary<int, ClipRackMap> registry = new Dictionary<int, ClipRackMap>();
 

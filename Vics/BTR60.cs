@@ -221,13 +221,13 @@ namespace PactIncreasedLethality
 
                 if (casing == null)
                 {
-                    CasingFix.definitely_a_prefab = true;
                     feed.RoundCycleStages[0].EjectedPrefab.GetComponent<DestroyInSeconds>().enabled = false;
                     casing = GameObject.Instantiate(feed.RoundCycleStages[0].EjectedPrefab);
                     casing.hideFlags = HideFlags.DontUnloadUnusedAsset;
                     casing.transform.localScale = new Vector3(2f, 2f, 2f);
                     casing.GetComponent<Rigidbody>().useGravity = false;
-                    CasingFix fix = casing.AddComponent<CasingFix>();
+                    EjectorPrefabFix fix = casing.AddComponent<EjectorPrefabFix>();
+                    fix.Id = "btr60_30mm_casing";
                     feed.RoundCycleStages[0].EjectedPrefab.GetComponent<DestroyInSeconds>().enabled = true;
                 }
 
@@ -295,23 +295,6 @@ namespace PactIncreasedLethality
                     ppv.enabled = false;
                     day_optic.slot.BaseBlur = 0f;
                 }
-            }
-        }
-
-        public class CasingFix : MonoBehaviour
-        {
-            public static bool definitely_a_prefab = true;
-
-            void Awake()
-            {
-                if (definitely_a_prefab)
-                {
-                    definitely_a_prefab = false;
-                    return;
-                }
-
-                GetComponent<Rigidbody>().useGravity = true;
-                GetComponent<DestroyInSeconds>().enabled = true;
             }
         }
 

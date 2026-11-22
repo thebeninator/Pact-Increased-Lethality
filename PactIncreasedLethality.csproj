@@ -138,6 +138,7 @@
     <Compile Include="CustomVicUtil\CustomSpawnHandler.cs" />
     <Compile Include="CustomVicUtil\Helpers.cs" />
     <Compile Include="CustomVicUtil\SpawnedIdCatcher.cs" />
+    <Compile Include="EjectorPrefabFix.cs" />
     <Compile Include="ERA\EraVisual.cs" />
     <Compile Include="ERA\PactEra.cs" />
     <Compile Include="ERA\Relikt.cs" />
@@ -175,7 +176,7 @@
     <Compile Include="ProximityFuse.cs" />
     <Compile Include="ReducedATGMSmoke.cs" />
     <Compile Include="Sights\SuperFCS.cs" />
-    <Compile Include="AmmoFeedManager.cs" />
+    <Compile Include="MultiReadyRackManager.cs" />
     <Compile Include="Vics\T55.cs" />
     <Compile Include="Vics\T62.cs" />
     <Compile Include="Vics\T64B.cs" />
