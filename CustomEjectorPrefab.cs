@@ -4,10 +4,12 @@ using UnityEngine;
 
 namespace PactIncreasedLethality
 {
-    public class EjectorPrefabFix : MonoBehaviour
+    public class CustomEjectorPrefab : MonoBehaviour
     {
         private static HashSet<string> prefabs = new HashSet<string>();
+
         public string Id = "";
+        public bool HasSmoke = false; 
 
         void Awake()
         {
@@ -19,6 +21,12 @@ namespace PactIncreasedLethality
 
             GetComponent<Rigidbody>().useGravity = true;
             GetComponent<DestroyInSeconds>().enabled = true;
+            if (HasSmoke)
+            {
+                ParticleSystem smoke = GetComponentInChildren<ParticleSystem>(true);
+                smoke.gameObject.SetActive(true);
+                smoke.Play();
+            }
         }
 
         public static void Remove(string id)

@@ -44,7 +44,8 @@ namespace PactIncreasedLethality.Vics.BMP3
         private static AssetBundle bmp3_bundle;
         private static AudioClip silence;
         private static GameObject muzzle_flash_105_prefab;
-        private static GameObject stub_100;
+        private static GameObject stub_100_smoke_prefab;
+        private static GameObject stub_100_prefab;
 
         private static GHPC.Weaponry.VehicleAmmoListScriptable gun_2a70_ammo_list;
 
@@ -211,7 +212,7 @@ namespace PactIncreasedLethality.Vics.BMP3
                 new AmmoFeed.ReloadStage()
                 {
                     Duration = 1f,
-                    EjectedPrefab = stub_100,
+                    EjectedPrefab = stub_100_prefab,
                     SpinAxis = stub_torque,
                     EjectionForward = stub_ejection_path,
                     EjectionVelocity = 6.5f,
@@ -255,7 +256,7 @@ namespace PactIncreasedLethality.Vics.BMP3
                 new AmmoFeed.ReloadStage()
                 {
                     Duration = 1f,
-                    EjectedPrefab = stub_100,
+                    EjectedPrefab = stub_100_prefab,
                     SpinAxis = stub_torque,
                     EjectionForward = stub_ejection_path,
                     EjectionVelocity = 5.5f,
@@ -817,6 +818,11 @@ namespace PactIncreasedLethality.Vics.BMP3
             wpn_gun_2a70.Feed.AmmoTypeInBreech = null;
             wpn_gun_2a70.Feed.Start();
 
+            MissileGuidanceUnit mgu = fcs.gameObject.AddComponent<MissileGuidanceUnit>();
+            mgu.AimElement = fcs.transform;
+            wpn_gun_2a70.GuidanceUnit = mgu;
+            wpn_gun_2a70.Feed._missileGuidance = mgu;
+
             ClipRackMap gun_2a70_cfmap = new ClipRackMap();
             gun_2a70_cfmap.Insert(Ammo_100mm.clip_3of70, wpn_gun_2a70.Feed.ReadyRack);
             gun_2a70_cfmap.Insert(Ammo_100mm.clip_9m117_bmp3, hull_atgm_loadout.Rack);
@@ -830,7 +836,7 @@ namespace PactIncreasedLethality.Vics.BMP3
                     feed._clipReloadFMODEvent = "";
                     feed.Carousel = null;
                     feed.ClipReloadStages = clip_atgm_reload_stages;
-                    feed._totalReloadTime = 15.42f;
+                    feed._totalReloadTime = 15.45f;
                     return;
                 }
 
@@ -886,12 +892,13 @@ namespace PactIncreasedLethality.Vics.BMP3
 
         public override void UnloadDynamicAssets()
         {
-            EjectorPrefabFix.Remove("bmp3 100mm stub");
+            CustomEjectorPrefab.Remove("bmp3 100mm stub");
         }
 
         public override void LoadDynamicAssets()
         {
             muzzle_flash_105_prefab = AssetUtilApi.CloneVanillaGameObject("T55A", "Gun Scripts/100mm Gun D-10T/GameObject/105mm Muzzle Flash");
+            stub_100_smoke_prefab = AssetUtilApi.CloneVanillaGameObject("MARDER1A2", "gun scripts/20mm Gun MK20/Marder Vent Smoke long");
 
             // TODO update asset util to support this
             AssetUtilApi.LoadVanillaVehicle("T72M1", temp: true);
@@ -900,14 +907,19 @@ namespace PactIncreasedLethality.Vics.BMP3
 
             stub_125.SetActive(false);
 
-            stub_100 = GameObject.Instantiate(stub_125);
-            stub_100.transform.localScale = new Vector3(80f, 80f, 80f);
-            stub_100.GetComponent<DestroyInSeconds>().enabled = false;
-            stub_100.GetComponent<Rigidbody>().useGravity = false;
-            EjectorPrefabFix fix = stub_100.AddComponent<EjectorPrefabFix>();
-            fix.Id = "bmp3 100mm stub";
+            stub_100_prefab = GameObject.Instantiate(stub_125);
+            stub_100_prefab.transform.localScale = new Vector3(80f, 80f, 80f);
+            stub_100_prefab.GetComponent<DestroyInSeconds>().enabled = false;
+            stub_100_prefab.GetComponent<Rigidbody>().useGravity = false;
+            stub_100_smoke_prefab.transform.SetParent(stub_100_prefab.transform);
+            stub_100_smoke_prefab.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            stub_100_smoke_prefab.transform.localScale = new Vector3(1f, 1f, 1f);
 
-            stub_100.SetActive(true);
+            CustomEjectorPrefab custom_ejector_script = stub_100_prefab.AddComponent<CustomEjectorPrefab>();
+            custom_ejector_script.Id = "bmp3 100mm stub";
+            custom_ejector_script.HasSmoke = true;
+
+            stub_100_prefab.SetActive(true);
             stub_125.SetActive(true);
 
             gun_2a70_ammo_list = new GHPC.Weaponry.VehicleAmmoListScriptable

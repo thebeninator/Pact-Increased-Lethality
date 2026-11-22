@@ -226,7 +226,7 @@ namespace PactIncreasedLethality
                     casing.hideFlags = HideFlags.DontUnloadUnusedAsset;
                     casing.transform.localScale = new Vector3(2f, 2f, 2f);
                     casing.GetComponent<Rigidbody>().useGravity = false;
-                    EjectorPrefabFix fix = casing.AddComponent<EjectorPrefabFix>();
+                    CustomEjectorPrefab fix = casing.AddComponent<CustomEjectorPrefab>();
                     fix.Id = "btr60_30mm_casing";
                     feed.RoundCycleStages[0].EjectedPrefab.GetComponent<DestroyInSeconds>().enabled = true;
                 }

@@ -138,7 +138,7 @@
     <Compile Include="CustomVicUtil\CustomSpawnHandler.cs" />
     <Compile Include="CustomVicUtil\Helpers.cs" />
     <Compile Include="CustomVicUtil\SpawnedIdCatcher.cs" />
-    <Compile Include="EjectorPrefabFix.cs" />
+    <Compile Include="CustomEjectorPrefab.cs" />
     <Compile Include="ERA\EraVisual.cs" />
     <Compile Include="ERA\PactEra.cs" />
     <Compile Include="ERA\Relikt.cs" />
